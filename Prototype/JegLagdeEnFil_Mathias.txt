@@ -1,1 +1,3 @@
 Jeg kommita en fil!
+
+Jeg har også endret denne filen!
