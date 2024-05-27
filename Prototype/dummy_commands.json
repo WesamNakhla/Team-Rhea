@@ -1,0 +1,137 @@
+[
+    {
+        "type": "Framework Information",
+        "command": "frameworkinfo",
+        "description": "Provides detailed information about the Volatility framework."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.pslist",
+        "description": "Lists processes."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.pstree",
+        "description": "Displays processes in a tree structure."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.pstreegraph",
+        "description": "Graphical representation of the process tree."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.dlllist",
+        "description": "Lists loaded DLLs."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.handles",
+        "description": "Lists open handles for each process."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.cmdline",
+        "description": "Extracts command line arguments."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.netscan",
+        "description": "Scans for network connections and sockets."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.vaddump",
+        "description": "Dumps virtual address space for processes."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.memmap",
+        "description": "Displays memory mappings for processes."
+    },
+    {
+        "type": "Windows-Specific Plugins",
+        "command": "windows.malfind",
+        "description": "Detects hidden and injected code in processes."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.pslist",
+        "description": "Lists processes."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.lsmod",
+        "description": "Lists loaded kernel modules."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.bash",
+        "description": "Retrieves bash history."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.ifconfig",
+        "description": "Displays network interfaces."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.dmesg",
+        "description": "Shows kernel ring buffer messages."
+    },
+    {
+        "type": "Linux-Specific Plugins",
+        "command": "linux.proc_maps",
+        "description": "Displays process memory maps."
+    },
+    {
+        "type": "Mac-Specific Plugins",
+        "command": "mac.pslist",
+        "description": "Lists processes."
+    },
+    {
+        "type": "Mac-Specific Plugins",
+        "command": "mac.lsmod",
+        "description": "Lists loaded kernel modules."
+    },
+    {
+        "type": "Mac-Specific Plugins",
+        "command": "mac.lsof",
+        "description": "Lists open files."
+    },
+    {
+        "type": "Mac-Specific Plugins",
+        "command": "mac.machoinfo",
+        "description": "Displays Mach-O file information."
+    },
+    {
+        "type": "Mac-Specific Plugins",
+        "command": "mac.check_syscall",
+        "description": "Checks system call table."
+    },
+    {
+        "type": "Volshell",
+        "command": "volshell",
+        "description": "An interactive shell for exploring memory images."
+    },
+    {
+        "type": "Volshell Commands",
+        "command": "list_tasks",
+        "description": "Lists tasks in the interactive shell."
+    },
+    {
+        "type": "Volshell Commands",
+        "command": "display_bytes",
+        "description": "Displays bytes in the interactive shell."
+    },
+    {
+        "type": "Volshell Commands",
+        "command": "disassemble",
+        "description": "Disassembles code in the interactive shell."
+    },
+    {
+        "type": "Volshell Commands",
+        "command": "change_process",
+        "description": "Changes the current process in the interactive shell."
+    }
+]
