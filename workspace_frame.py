@@ -3,6 +3,7 @@ from tkinter import ttk
 import time
 import threading
 import json
+import os
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent):
@@ -20,7 +21,7 @@ class WorkspaceFrame(tk.Frame):
         # Using grid layout for better control
 
         # File loaded label
-        self.file_label = ttk.Label(self, text="Loaded file: memory_dummy.DMP")
+        self.file_label = ttk.Label(self, text=f"Loaded file: {self.parent.loaded_file}")
         self.file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
         # Choose command label
