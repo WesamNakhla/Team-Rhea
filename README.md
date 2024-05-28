@@ -6,7 +6,7 @@ Mnemonic Volatility3 GUI is a robust Python/Tkinter application designed for man
 ## Features
 
 ### Import Frame
-- **Drag and Drop:** Users can drag and drop memory dump files directly into the GUI.
+- **Drag and Drop:** Users can drag and drop memory dump files directly into the GUI..
 - **Browse Functionality:** Alternatively, users can browse their filesystem to select a memory dump file.
 
 ### Workspace Frame
