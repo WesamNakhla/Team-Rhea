@@ -59,8 +59,8 @@ class ExportFrame(ttk.Frame):
 
 # Example usage
 if __name__ == "__main__":
-    def switch_to_combined_frame():
-        print("Switching to CombinedFrame")
+    def switch_to_workspace_frame():
+        print("Switching to workspaceFrame")
 
     root = tk.Tk()
     root.title('Export Frame Example')
@@ -70,7 +70,7 @@ if __name__ == "__main__":
     root.grid_rowconfigure(0, weight=1)
     root.grid_columnconfigure(0, weight=1)
 
-    export_frame = ExportFrame(root, switch_frame_callback=switch_to_combined_frame)
+    export_frame = ExportFrame(root, switch_frame_callback=switch_to_workspace_frame)
     export_frame.grid(row=0, column=0, sticky="nsew")
 
     root.mainloop()
