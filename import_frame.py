@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
+import os
 
 class ImportFrame(ttk.Frame):
     def __init__(self, parent, app):
