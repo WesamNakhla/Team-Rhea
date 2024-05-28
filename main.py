@@ -2,10 +2,10 @@ import tkinter as tk
 from tkinter import messagebox
 from tkinterdnd2 import TkinterDnD
 from tkinter import ttk
-from drag_and_drop_frame import DragAndDropFrame
-from combined_frame import CombinedFrame
+from import_frame import ImportFrame
+from workspace_frame import WorkspaceFrame
 from export_frame import ExportFrame
-from preferences import PreferencesFrame
+from preferences_frame import PreferencesFrame
 import os
 
 class MainApplication(TkinterDnD.Tk):
@@ -30,17 +30,17 @@ class MainApplication(TkinterDnD.Tk):
 
         # Edit Menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
-        edit_menu.add_command(label="Preferences", command=self.open_preferences)
+        edit_menu.add_command(label="Preferences", command=self.switch_to_preferences_frame)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
         self.loaded_file = "No file loaded"
         # Initialize all frames and store in the dictionary
-        for FrameClass in (DragAndDropFrame, CombinedFrame, ExportFrame, PreferencesFrame):
-            if FrameClass is DragAndDropFrame:
+        for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, PreferencesFrame):
+            if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
-                frame = FrameClass(self, switch_frame_callback=self.switch_to_combined_frame)
+                frame = FrameClass(self, switch_frame_callback=self.switch_to_workspace_frame)
             else:
                 frame = FrameClass(self)
             self.frames[FrameClass] = frame
@@ -50,7 +50,7 @@ class MainApplication(TkinterDnD.Tk):
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
-        self.show_frame(DragAndDropFrame)
+        self.show_frame(ImportFrame)
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
@@ -63,19 +63,23 @@ class MainApplication(TkinterDnD.Tk):
         if response:  # Yes, export changes
             self.show_frame(ExportFrame)
         elif response is False:  # No or already exported
-            self.reset_to_drag_and_drop()
+            self.reset_to_import()
 
-    def reset_to_drag_and_drop(self):
+    def reset_to_import(self):
         """Reset the application state and go back to the drag and drop page."""
-        self.show_frame(DragAndDropFrame)
+        self.show_frame(ImportFrame)
 
     def switch_to_export_frame(self):
         """Switch to the export frame."""
         self.show_frame(ExportFrame)
 
-    def switch_to_combined_frame(self):
-        """Switch to the combined frame."""
-        self.show_frame(CombinedFrame)
+    def switch_to_workspace_frame(self):
+        """Switch to the workspace frame."""
+        self.show_frame(WorkspaceFrame)
+
+    def switch_to_preferences_frame(self):
+        """Switch to the preferences frame."""
+        self.show_frame(PreferencesFrame)
 
     def show_frame(self, cont):
         """Raise the given frame to the top for viewing."""
@@ -89,10 +93,6 @@ class MainApplication(TkinterDnD.Tk):
     def save_file(self):
         # Placeholder function to save a file
         print("File saved")
-
-    def open_preferences(self):
-        """Switch to the preferences frame."""
-        self.show_frame(PreferencesFrame)
 
 if __name__ == "__main__":
     app = MainApplication()

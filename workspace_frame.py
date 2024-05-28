@@ -4,7 +4,7 @@ import time
 import threading
 import json
 
-class CombinedFrame(tk.Frame):
+class WorkspaceFrame(tk.Frame):
     def __init__(self, parent):
         super().__init__(parent)
         self.parent = parent
@@ -173,6 +173,6 @@ class CombinedFrame(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("1000x600")
-    app = CombinedFrame(root)
+    app = WorkspaceFrame(root)
     app.pack(fill="both", expand=True)
     root.mainloop()
