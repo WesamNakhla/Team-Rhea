@@ -5,7 +5,7 @@ from tkinter import ttk
 from import_frame import ImportFrame
 from workspace_frame import WorkspaceFrame
 from export_frame import ExportFrame
-from preferences_frame import PreferencesFrame
+from settings_frame import SettingsFrame
 import os
 
 class MainApplication(TkinterDnD.Tk):
@@ -30,13 +30,13 @@ class MainApplication(TkinterDnD.Tk):
 
         # Edit Menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
-        edit_menu.add_command(label="Preferences", command=self.switch_to_preferences_frame)
+        edit_menu.add_command(label="Settings", command=self.switch_to_settings_frame)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
         self.loaded_file = "No file loaded"
         # Initialize all frames and store in the dictionary
-        for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, PreferencesFrame):
+        for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, SettingsFrame):
             if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
@@ -77,9 +77,9 @@ class MainApplication(TkinterDnD.Tk):
         """Switch to the workspace frame."""
         self.show_frame(WorkspaceFrame)
 
-    def switch_to_preferences_frame(self):
-        """Switch to the preferences frame."""
-        self.show_frame(PreferencesFrame)
+    def switch_to_settings_frame(self):
+        """Switch to the settings frame."""
+        self.show_frame(SettingsFrame)
 
     def show_frame(self, cont):
         """Raise the given frame to the top for viewing."""
