@@ -13,8 +13,7 @@ class MainApplication(TkinterDnD.Tk):
         super().__init__()
         self.title('Mnemonic Volatility3 GUI')
         self.geometry('1024x768')
-
-        # Load the Azure theme
+        
         self.load_theme()
 
         self.menu_bar = tk.Menu(self)
@@ -34,7 +33,7 @@ class MainApplication(TkinterDnD.Tk):
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
-        self.loaded_file = "No file loaded"
+        self.loaded_file = None  # This holds the current loaded file
         # Initialize all frames and store in the dictionary
         for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, SettingsFrame):
             if FrameClass is ImportFrame:
@@ -77,24 +76,18 @@ class MainApplication(TkinterDnD.Tk):
 
     def switch_to_workspace_frame(self):
         """Switch to the workspace frame."""
+        frame = self.frames[WorkspaceFrame]
+        frame.update_loaded_file_label()  # Update label when switching to workspace
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
         """Switch to the settings frame."""
         self.show_frame(SettingsFrame)
 
-    def show_frame(self, cont):
+    def show_frame(self, frame_class):
         """Raise the given frame to the top for viewing."""
-        frame = self.frames[cont]
+        frame = self.frames[frame_class]
         frame.tkraise()
-
-    def open_file(self):
-        # Placeholder function to open a file
-        print("File opened")
-
-    def save_file(self):
-        # Placeholder function to save a file
-        print("File saved")
 
 if __name__ == "__main__":
     app = MainApplication()

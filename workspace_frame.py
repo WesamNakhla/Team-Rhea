@@ -6,6 +6,7 @@ import threading
 import json
 import re
 import os
+import datetime
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent):
@@ -26,29 +27,40 @@ class WorkspaceFrame(tk.Frame):
             messagebox.showerror("Error", "Error decoding the commands file.")
             return []
 
-
-
     def init_ui(self):
-        self.file_label = ttk.Label(self, text="Memory Dump File:")
-        self.file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        # Using grid layout for better control
 
-        self.file_entry = ttk.Entry(self, width=50)
-        self.file_entry.grid(row=0, column=1, padx=10, pady=5, sticky="we")
+        # Update file_label text to show the loaded file
+        self.file_label = ttk.Label(self, text="Loaded file: No file loaded", anchor="w")
+        self.file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
+        self.grid_columnconfigure(0, weight=1)  # Make column expandable
 
-        self.browse_button = ttk.Button(self, text="Browse", command=self.browse_file)
-        self.browse_button.grid(row=0, column=2, padx=10, pady=5)
+        # Choose command label
+        self.command_label = ttk.Label(self, text="Choose command:")
+        self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
-        # Populate command dropdown with descriptions
-        command_descriptions = [f"{cmd['command']} - {cmd['description']}" for cmd in self.commands]
-        self.command_dropdown = ttk.Combobox(self, values=command_descriptions, state="readonly")
+        # Command dropdown
+        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
+        self.command_var = tk.StringVar()
+        self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="readonly")
         self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
-        self.command_dropdown.current(0)
+        self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
 
-        self.run_button = ttk.Button(self, text="Run Command", command=self.run_command)
-        self.run_button.grid(row=1, column=2, padx=10, pady=5)
+        # Execute command button
+        self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
+        self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 
-        self.output_text = tk.Text(self, height=20, width=80)
-        self.output_text.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
+        # Command description label
+        self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
+        self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
+
+        # Custom command label and entry
+        self.custom_command_label = ttk.Label(self, text="Custom command:")
+        self.custom_command_entry = ttk.Entry(self)
+
+        # Initially hide the custom command entry
+        self.custom_command_label.grid_forget()
+        self.custom_command_entry.grid_forget()
 
         # OutputFrame UI elements
         self.tab_control = ttk.Notebook(self)
@@ -78,11 +90,6 @@ class WorkspaceFrame(tk.Frame):
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
-    def browse_file(self):
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            self.file_entry.delete(0, tk.END)
-            self.file_entry.insert(0, file_path)
 
     def get_volatility_path(self):
         # Load the settings from the settings.json file
@@ -99,6 +106,12 @@ class WorkspaceFrame(tk.Frame):
         full_path = full_path.replace('/', os.sep)
         
         return full_path
+
+    def update_loaded_file_label(self):
+        full_path = self.parent.loaded_file
+        filename_only = os.path.basename(full_path) if full_path else "No file loaded"
+        self.file_label.config(text=f"Loaded file: {filename_only}")
+
 
     def update_command_info(self, event):
         selected_command = self.command_var.get()
@@ -123,12 +136,17 @@ class WorkspaceFrame(tk.Frame):
             self.custom_command_entry.grid_forget()
 
     def run_command(self):
-        file = self.file_entry.get().strip()
+        # Use the loaded_file from the MainApplication
+        file = self.parent.loaded_file
+        if not file:  # Check if the file is loaded
+            messagebox.showerror("Error", "No file loaded.")
+            return
+
         selected_index = self.command_dropdown.current()
         if selected_index < 0:
             messagebox.showerror("Error", "Please select a command.")
             return
-        
+
         selected_command = self.commands[selected_index]["command"]
         vol_path = self.get_volatility_path()
 
@@ -137,22 +155,24 @@ class WorkspaceFrame(tk.Frame):
             return
 
         command = f"python {vol_path} -f {file} {selected_command}"
-        print(f"Command to run: {command}")  # Debugging output
         self.run_volatility(command)
+
 
     def run_volatility(self, command):
         print(f"Running command: {command}")
         try:
             result = subprocess.run(command, capture_output=True, text=True, shell=True)
-            self.output_text.delete(1.0, tk.END)
+            findings = result.stdout if result.stdout else "No output received."
+
             if result.stderr:
-                self.output_text.insert(tk.END, "\nError:\n" + result.stderr)
-            self.output_text.insert(tk.END, result.stdout)
-            findings = self.parse_output(result.stdout, command)
-            self.display_findings(findings)
+                findings += "\nError:\n" + result.stderr
+
+            self.add_tab(self.unique_tab_title(command.split()[-1]), findings)  # Use the command name as the tab title
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception: {e}")
+
+
 
     def parse_output(self, output, command):
         findings = []
@@ -219,19 +239,25 @@ class WorkspaceFrame(tk.Frame):
         self.progress['value'] = 0
         self.update_idletasks()
 
-    def add_tab(self, title):
-        new_tab = ttk.Frame(self.tab_control)
-        text_output = tk.Text(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
-        text_output.pack(expand=1, fill='both')
+    def add_tab(self, title, output):
+        if title in self.command_tabs:
+            # Focus the existing tab if it's already open
+            self.tab_control.select(self.command_tabs[title])
+        else:
+            # Create a new tab for new command output
+            new_tab = ttk.Frame(self.tab_control)
+            text_output = tk.Text(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
+            text_output.pack(expand=1, fill='both')
+            text_output.insert(tk.END, output)
 
-        # Read the content of dummy_output.txt
-        with open('dummy_output.txt', 'r') as file:
-            content = file.read()
+            # Add the new tab to the notebook
+            self.tab_control.add(new_tab, text=title)
+            self.command_tabs[title] = new_tab  # Store reference to the tab
 
-        text_output.insert(tk.END, content)
+    def unique_tab_title(self, base_title):
+        current_time = datetime.datetime.now().strftime("%H:%M:%S")
+        return f"{base_title} - {current_time}"
 
-        self.tab_control.add(new_tab, text=title)
-        self.command_tabs[title] = new_tab  # Store reference to the tab
 
     def highlight_text(self, color):
         try:
