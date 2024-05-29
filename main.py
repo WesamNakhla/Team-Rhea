@@ -39,9 +39,9 @@ class MainApplication(TkinterDnD.Tk):
             if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
-                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame)
+                frame = FrameClass(self, switch_frame_callback=self.switch_to_workspace_frame)
             elif FrameClass is SettingsFrame:
-                frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
+                frame = FrameClass(self, app=self)  # Pass self to SettingsFrame
             else:
                 frame = FrameClass(self)
             self.frames[FrameClass] = frame

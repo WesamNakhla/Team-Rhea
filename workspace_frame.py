@@ -90,7 +90,6 @@ class WorkspaceFrame(tk.Frame):
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
-
     def get_volatility_path(self):
         # Load the settings from the settings.json file
         with open('settings.json', 'r') as file:
@@ -111,7 +110,6 @@ class WorkspaceFrame(tk.Frame):
         full_path = self.parent.loaded_file
         filename_only = os.path.basename(full_path) if full_path else "No file loaded"
         self.file_label.config(text=f"Loaded file: {filename_only}")
-
 
     def update_command_info(self, event):
         selected_command = self.command_var.get()
@@ -157,7 +155,6 @@ class WorkspaceFrame(tk.Frame):
         command = f"python {vol_path} -f {file} {selected_command}"
         self.run_volatility(command)
 
-
     def run_volatility(self, command):
         print(f"Running command: {command}")
         try:
@@ -171,8 +168,6 @@ class WorkspaceFrame(tk.Frame):
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception: {e}")
-
-
 
     def parse_output(self, output, command):
         findings = []
@@ -258,7 +253,6 @@ class WorkspaceFrame(tk.Frame):
         current_time = datetime.datetime.now().strftime("%H:%M:%S")
         return f"{base_title} - {current_time}"
 
-
     def highlight_text(self, color):
         try:
             selected_tab = self.tab_control.nametowidget(self.tab_control.select())
@@ -281,6 +275,14 @@ class WorkspaceFrame(tk.Frame):
         except tk.TclError:
             print("No text selected")
 
+    def apply_font_settings(self, font_size):
+        # Apply font settings to relevant widgets
+        self.file_label.config(font=('Arial', font_size))
+        self.command_label.config(font=('Arial', font_size))
+        self.command_info_label.config(font=('Arial', font_size))
+        for tab in self.tab_control.tabs():
+            text_widget = self.tab_control.nametowidget(tab).winfo_children()[0]
+            text_widget.config(font=('Arial', font_size))
 
 if __name__ == "__main__":
     root = tk.Tk()
