@@ -1,8 +1,10 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog, messagebox
+import subprocess
 import time
 import threading
 import json
+import re
 import os
 
 class WorkspaceFrame(tk.Frame):
@@ -14,42 +16,39 @@ class WorkspaceFrame(tk.Frame):
         self.init_ui()
 
     def load_commands(self):
-        with open('dummy_commands.json', 'r') as file:
-            return json.load(file)
+        try:
+            with open('dummy_commands.json', 'r') as file:
+                return json.load(file)
+        except FileNotFoundError:
+            messagebox.showerror("Error", "Commands file not found.")
+            return []
+        except json.JSONDecodeError:
+            messagebox.showerror("Error", "Error decoding the commands file.")
+            return []
+
+
 
     def init_ui(self):
-        # Using grid layout for better control
-
-        # File loaded label
-        self.file_label = ttk.Label(self, text=f"Loaded file: {self.parent.loaded_file}")
+        self.file_label = ttk.Label(self, text="Memory Dump File:")
         self.file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
-        # Choose command label
-        self.command_label = ttk.Label(self, text="Choose command:")
-        self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        self.file_entry = ttk.Entry(self, width=50)
+        self.file_entry.grid(row=0, column=1, padx=10, pady=5, sticky="we")
 
-        # Command dropdown
-        self.command_options = ["-choose command-", "Custom"] + [command['command'] for command in self.commands]
-        self.command_var = tk.StringVar()
-        self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="readonly")
-        self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="w")
-        self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
+        self.browse_button = ttk.Button(self, text="Browse", command=self.browse_file)
+        self.browse_button.grid(row=0, column=2, padx=10, pady=5)
 
-        # Execute command button
-        self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
-        self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        # Populate command dropdown with descriptions
+        command_descriptions = [f"{cmd['command']} - {cmd['description']}" for cmd in self.commands]
+        self.command_dropdown = ttk.Combobox(self, values=command_descriptions, state="readonly")
+        self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+        self.command_dropdown.current(0)
 
-        # Command description label
-        self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
-        self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
+        self.run_button = ttk.Button(self, text="Run Command", command=self.run_command)
+        self.run_button.grid(row=1, column=2, padx=10, pady=5)
 
-        # Custom command label and entry
-        self.custom_command_label = ttk.Label(self, text="Custom command:")
-        self.custom_command_entry = ttk.Entry(self)
-
-        # Initially hide the custom command entry
-        self.custom_command_label.grid_forget()
-        self.custom_command_entry.grid_forget()
+        self.output_text = tk.Text(self, height=20, width=80)
+        self.output_text.grid(row=2, column=0, columnspan=3, padx=10, pady=10, sticky="nsew")
 
         # OutputFrame UI elements
         self.tab_control = ttk.Notebook(self)
@@ -79,6 +78,12 @@ class WorkspaceFrame(tk.Frame):
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
+    def browse_file(self):
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            self.file_entry.delete(0, tk.END)
+            self.file_entry.insert(0, file_path)
+
     def update_command_info(self, event):
         selected_command = self.command_var.get()
         if selected_command == "-choose command-":
@@ -102,18 +107,81 @@ class WorkspaceFrame(tk.Frame):
             self.custom_command_entry.grid_forget()
 
     def run_command(self):
-        command = self.custom_command_entry.get() if self.command_var.get() == "Custom" else self.command_var.get()
-        if command == "-choose command-":
-            tk.messagebox.showerror("Error", "Please choose a valid command.")
+        file = self.file_entry.get().strip()
+        selected_index = self.command_dropdown.current()
+        if selected_index < 0:
+            messagebox.showerror("Error", "Please select a command.")
+            return
+        
+        selected_command = self.commands[selected_index]["command"]
+        vol_path = r"C:\Projects\VolatilityGUI\volatility3-develop\vol.py"  # Adjust this path to your environment
+
+        if not os.path.isfile(vol_path):
+            messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
             return
 
-        # Check if command has already been run
-        if command in self.command_tabs:
-            self.show_alert(command)
-            self.tab_control.select(self.command_tabs[command])
+        command = f"python {vol_path} -f {file} {selected_command}"
+        print(f"Command to run: {command}")  # Debugging output
+        self.run_volatility(command)
+
+    def run_volatility(self, command):
+        print(f"Running command: {command}")
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            self.output_text.delete(1.0, tk.END)
+            if result.stderr:
+                self.output_text.insert(tk.END, "\nError:\n" + result.stderr)
+            self.output_text.insert(tk.END, result.stdout)
+            findings = self.parse_output(result.stdout, command)
+            self.display_findings(findings)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            print(f"Exception: {e}")
+
+    def parse_output(self, output, command):
+        findings = []
+        if "pslist" in command:
+            findings = self.parse_pslist(output)
+        elif "pstree" in command:
+            findings = self.parse_pstree(output)
+        elif "cmdline" in command:  # Handle cmdline output
+            findings = self.parse_cmdline(output)
+        return findings
+
+    def parse_pslist(self, output):
+        findings = []
+        lines = output.splitlines()
+        for line in lines:
+            if "System" not in line and re.search(r"\b\d+\b", line):
+                findings.append(line)
+        return findings
+
+    def parse_pstree(self, output):
+        findings = []
+        lines = output.splitlines()
+        for line in lines:
+            if "System" not in line and re.search(r"\b\d+\b", line):
+                findings.append(line)
+        return findings
+
+    def parse_cmdline(self, output):
+        findings = []
+        lines = output.splitlines()
+        for line in lines:
+            if line.strip():  # Add any non-empty line
+                findings.append(line)
+        return findings
+
+    def display_findings(self, findings):
+        if findings:
+            self.output_text.insert(tk.END, "Findings:\n")
+            for finding in findings:
+                self.output_text.insert(tk.END, finding + "\n")
+            self.output_text.insert(tk.END, "\nSuggestions:\n")
+            self.output_text.insert(tk.END, "1. Investigate the processes listed above for suspicious activity.\n")
+            self.output_text.insert(tk.END, "2. Use additional plugins for more detailed analysis.\n")
         else:
-            print(f"Executing command: {command}")
-            self.start_loading(command)
+            self.output_text.insert(tk.END, "No suspicious findings detected.\n")
 
     def show_alert(self, command):
         tk.messagebox.showinfo("Alert", f"The command '{command}' has already been run.")
