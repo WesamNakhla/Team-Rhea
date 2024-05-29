@@ -84,7 +84,7 @@ class WorkspaceFrame(tk.Frame):
             self.file_entry.delete(0, tk.END)
             self.file_entry.insert(0, file_path)
 
-    def get_volatility_path():
+    def get_volatility_path(self):
         # Load the settings from the settings.json file
         with open('settings.json', 'r') as file:
             settings = json.load(file)
