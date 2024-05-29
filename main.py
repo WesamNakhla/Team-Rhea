@@ -34,14 +34,18 @@ class MainApplication(TkinterDnD.Tk):
 
         self.frames = {}
         self.loaded_file = None  # This holds the current loaded file
+        self.scan_result = None  # To hold scan results
+        self.commands_used = []  # To hold commands used
+        self.highlights = []  # To hold highlights
+
         # Initialize all frames and store in the dictionary
         for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, SettingsFrame):
             if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
-                frame = FrameClass(self, switch_frame_callback=self.switch_to_workspace_frame)
+                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
             elif FrameClass is SettingsFrame:
-                frame = FrameClass(self, app=self)  # Pass self to SettingsFrame
+                frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
             else:
                 frame = FrameClass(self)
             self.frames[FrameClass] = frame
@@ -72,6 +76,8 @@ class MainApplication(TkinterDnD.Tk):
 
     def switch_to_export_frame(self):
         """Switch to the export frame."""
+        frame = self.frames[ExportFrame]
+        frame.update_data(self.scan_result, self.commands_used, self.highlights)
         self.show_frame(ExportFrame)
 
     def switch_to_workspace_frame(self):
@@ -92,3 +98,4 @@ class MainApplication(TkinterDnD.Tk):
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()
+

@@ -76,7 +76,6 @@ class ImportFrame(ttk.Frame):
             self.app.loaded_file = filename  # Store the loaded file name in the app
             self.app.switch_to_workspace_frame()  # Switch to workspace after loading
 
-
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)
 

@@ -165,6 +165,8 @@ class WorkspaceFrame(tk.Frame):
                 findings += "\nError:\n" + result.stderr
 
             self.add_tab(self.unique_tab_title(command.split()[-1]), findings)  # Use the command name as the tab title
+            self.parent.commands_used.append(command)
+            self.parent.scan_result = findings  # Store the results
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception: {e}")
@@ -261,6 +263,7 @@ class WorkspaceFrame(tk.Frame):
             end = text_widget.index("sel.last")
             text_widget.tag_add(color, start, end)
             text_widget.tag_config(color, background=color)
+            self.parent.highlights.append((text_widget.get(start, end), color))  # Store the highlight
         except tk.TclError:
             print("No text selected")
 
