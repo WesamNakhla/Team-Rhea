@@ -84,6 +84,22 @@ class WorkspaceFrame(tk.Frame):
             self.file_entry.delete(0, tk.END)
             self.file_entry.insert(0, file_path)
 
+    def get_volatility_path():
+        # Load the settings from the settings.json file
+        with open('settings.json', 'r') as file:
+            settings = json.load(file)
+        
+        # Retrieve the base path for volatility from the settings
+        base_path = settings.get('volatility_path', '')
+
+        # Construct the full path to the vol.py file
+        full_path = os.path.join(base_path, 'vol.py')
+        
+        # Convert path to a format suitable for Python scripts
+        full_path = full_path.replace('/', os.sep)
+        
+        return full_path
+
     def update_command_info(self, event):
         selected_command = self.command_var.get()
         if selected_command == "-choose command-":
@@ -114,7 +130,7 @@ class WorkspaceFrame(tk.Frame):
             return
         
         selected_command = self.commands[selected_index]["command"]
-        vol_path = r"C:\Projects\VolatilityGUI\volatility3-develop\vol.py"  # Adjust this path to your environment
+        vol_path = self.get_volatility_path()
 
         if not os.path.isfile(vol_path):
             messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
