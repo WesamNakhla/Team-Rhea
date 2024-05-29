@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinterdnd2 import TkinterDnD
 from tkinter import ttk
 from import_frame import ImportFrame
@@ -7,6 +7,7 @@ from workspace_frame import WorkspaceFrame
 from export_frame import ExportFrame
 from settings_frame import SettingsFrame
 import os
+import json
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
@@ -23,6 +24,8 @@ class MainApplication(TkinterDnD.Tk):
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="New...", command=self.new_session)
         file_menu.add_command(label="Export...", command=self.switch_to_export_frame)
+        file_menu.add_command(label="Save Session", command=self.save_session)
+        file_menu.add_command(label="Load Session", command=self.load_session)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
         self.menu_bar.add_cascade(label="File", menu=file_menu)
@@ -95,7 +98,34 @@ class MainApplication(TkinterDnD.Tk):
         frame = self.frames[frame_class]
         frame.tkraise()
 
+    def save_session(self):
+        session_data = {
+            'loaded_file': self.loaded_file,
+            'scan_result': self.scan_result,
+            'commands_used': self.commands_used,
+            'highlights': self.highlights
+        }
+        save_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if save_path:
+            with open(save_path, 'w') as f:
+                json.dump(session_data, f)
+            messagebox.showinfo("Session Saved", f"Session successfully saved to {save_path}")
+
+    def load_session(self):
+        load_path = filedialog.askopenfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if load_path:
+            with open(load_path, 'r') as f:
+                session_data = json.load(f)
+                self.loaded_file = session_data.get('loaded_file')
+                self.scan_result = session_data.get('scan_result')
+                self.commands_used = session_data.get('commands_used', [])
+                self.highlights = session_data.get('highlights', [])
+
+                # Update frames with loaded data
+                self.frames[WorkspaceFrame].update_loaded_file_label()
+                self.frames[WorkspaceFrame].load_previous_commands()
+                messagebox.showinfo("Session Loaded", f"Session successfully loaded from {load_path}")
+
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()
-
