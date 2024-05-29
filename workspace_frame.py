@@ -10,6 +10,7 @@ class WorkspaceFrame(tk.Frame):
         self.parent = parent
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
+        self.stop_flag = threading.Event() # Flag to stop the thread 
         self.init_ui()
 
     def load_commands(self):
@@ -35,12 +36,16 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
 
         # Execute command button
-        self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
-        self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        self.run_command_button = ttk.Button(self, text="\u25B6 Execute", command=self.run_command)
+        self.run_command_button.grid(row=1, column=3, padx=(90, 10), pady=5, sticky="w")
+
+        # Kill command button
+        self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.stop_command)
+        self.kill_command_button.grid(row=1, column=4, padx=(10,10), pady=5, sticky="w")
 
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
-        self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
+        self.command_info_label.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 
         # Custom command label and entry
         self.custom_command_label = ttk.Label(self, text="Custom command:")
@@ -58,13 +63,13 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_frame = tk.Frame(self)
         self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="w")
 
-        self.highlight_button_red = tk.Button(self.highlight_frame, text="A", fg="red", command=lambda: self.highlight_text('red'))
+        self.highlight_button_red = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="red", command=lambda: self.highlight_text('red'))
         self.highlight_button_red.pack(side="left", padx=5, pady=5)
 
-        self.highlight_button_green = tk.Button(self.highlight_frame, text="A", fg="green", command=lambda: self.highlight_text('green'))
+        self.highlight_button_green = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="green", command=lambda: self.highlight_text('green'))
         self.highlight_button_green.pack(side="left", padx=5, pady=5)
 
-        self.highlight_button_orange = tk.Button(self.highlight_frame, text="A", fg="orange", command=lambda: self.highlight_text('orange'))
+        self.highlight_button_orange = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="orange", command=lambda: self.highlight_text('orange'))
         self.highlight_button_orange.pack(side="left", padx=5, pady=5)
 
         self.remove_highlight_button = tk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
@@ -120,7 +125,9 @@ class WorkspaceFrame(tk.Frame):
     def start_loading(self, command):
         self.progress['value'] = 0
         self.update_idletasks()
-        threading.Thread(target=self.simulate_long_running_task, args=(command,)).start()
+        self.stop_flag.clear()
+        self.thread = threading.Thread(target=self.simulate_long_running_task, args=(command,))
+        self.thread.start()
 
     def simulate_long_running_task(self, command):
         for i in range(30):
@@ -133,6 +140,9 @@ class WorkspaceFrame(tk.Frame):
         time.sleep(0.5)  # Brief pause before resetting the progress bar
         self.progress['value'] = 0
         self.update_idletasks()
+
+    def stop_command(self):
+        self.stop_flag.set()
 
     def add_tab(self, title):
         new_tab = ttk.Frame(self.tab_control)
