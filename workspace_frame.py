@@ -114,7 +114,7 @@ class WorkspaceFrame(tk.Frame):
             return
         
         selected_command = self.commands[selected_index]["command"]
-        vol_path = r"C:\Projects\VolatilityGUI\volatility3-develop\vol.py"  # Adjust this path to your environment
+        vol_path = r"C:\\Users\\ahmed\\Documents\\volatility3-develop\\volatility3-develop\\vol.py"  # Adjust this path to your environment
 
         if not os.path.isfile(vol_path):
             messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
