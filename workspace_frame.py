@@ -276,10 +276,11 @@ class WorkspaceFrame(tk.Frame):
             text_widget = selected_tab.winfo_children()[0]
             start = text_widget.index("sel.first")
             end = text_widget.index("sel.last")
-            for tag in text_widget.tag_names(start):
+            for tag in text_widget.tag_names():
                 text_widget.tag_remove(tag, start, end)
         except tk.TclError:
             print("No text selected")
+
 
 if __name__ == "__main__":
     root = tk.Tk()
