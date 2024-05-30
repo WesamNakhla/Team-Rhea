@@ -50,7 +50,7 @@ class MainApplication(TkinterDnD.Tk):
             elif FrameClass is SettingsFrame:
                 frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
             else:
-                frame = FrameClass(self)  # Pass self to WorkspaceFrame
+                frame = FrameClass(self)  # Updated to pass only `self`
             self.frames[FrameClass] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
