@@ -148,37 +148,41 @@ class WorkspaceFrame(tk.Frame):
                 self.run_command_button.config(state=tk.NORMAL)
 
     def run_command(self):
-        # Retrieve the full path of the loaded file from the parent (MainApplication)
         file_path = self.parent.loaded_file
         if not file_path:
             messagebox.showerror("Error", "No file loaded.")
             return
 
         selected_index = self.command_dropdown.current()
-
-        # Handle the selection index properly
         if selected_index <= 1:  # 'Choose command...' or 'Custom'
             if selected_index == 1 and self.custom_command_entry.get().strip():
-                # Custom command handling
                 command = self.custom_command_entry.get().strip()
             else:
                 messagebox.showerror("Error", "Please select a command or enter a custom command.")
                 return
         else:
-            # Adjust index for actual commands
-            command_index = selected_index - 2  # Adjust index by subtracting for 'Choose command...' and 'Custom'
+            command_index = selected_index - 2  # Adjust index for 'Choose command...' and 'Custom'
             if command_index < len(self.commands):
                 command = self.commands[command_index]['command']
             else:
                 messagebox.showerror("Error", "Selected command index is out of range.")
                 return
 
+        # Check if the command has already been run (tab exists)
+        if command in self.command_tabs:
+            self.tab_control.select(self.command_tabs[command])  # Focus the existing tab
+            messagebox.showinfo("Info", f"The command '{command}' has already been run.")
+            return
+
+        # Continue running the command if not already executed
+        self.execute_command(file_path, command)
+
+    def execute_command(self, file_path, command):
         vol_path = self.get_volatility_path()
         if not os.path.isfile(vol_path):
             messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
             return
 
-        # Construct the full command to run
         full_command = f"python {vol_path} -f {file_path} {command}"
         self.run_volatility(full_command)
 
@@ -191,7 +195,8 @@ class WorkspaceFrame(tk.Frame):
             if result.stderr:
                 findings += "\nError:\n" + result.stderr
 
-            self.add_tab(self.unique_tab_title(command.split()[-1]), findings)
+            # Directly use the command name for the tab title
+            self.add_tab(command.split()[-1], findings)  # Assumes command.split()[-1] gives a simplified command identifier
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception: {e}")
@@ -261,24 +266,23 @@ class WorkspaceFrame(tk.Frame):
         self.progress['value'] = 0
         self.update_idletasks()
 
-    def add_tab(self, title, output):
-        if title in self.command_tabs:
-            # Focus the existing tab if it's already open
-            self.tab_control.select(self.command_tabs[title])
+    def add_tab(self, command, output):
+        # Check if the tab for this command already exists
+        if command in self.command_tabs:
+            # If the tab exists, focus it and notify the user
+            self.tab_control.select(self.command_tabs[command])
+            messagebox.showinfo("Info", f"The command '{command}' has already been run.")
         else:
-            # Create a new tab for new command output
+            # If the tab does not exist, create a new one
             new_tab = ttk.Frame(self.tab_control)
             text_output = tk.Text(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
             text_output.pack(expand=1, fill='both')
             text_output.insert(tk.END, output)
+            
+            # Add the new tab to the notebook with the command as its title
+            self.tab_control.add(new_tab, text=command)
+            self.command_tabs[command] = new_tab  # Store the reference to the new tab
 
-            # Add the new tab to the notebook
-            self.tab_control.add(new_tab, text=title)
-            self.command_tabs[title] = new_tab  # Store reference to the tab
-
-    def unique_tab_title(self, base_title):
-        current_time = datetime.datetime.now().strftime("%H:%M:%S")
-        return f"{base_title} - {current_time}"
 
     def highlight_text(self, color):
         try:
