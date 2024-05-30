@@ -3,7 +3,7 @@ from tkinter import messagebox, filedialog
 from tkinterdnd2 import TkinterDnD
 from tkinter import ttk
 from import_frame import ImportFrame
-from workspace_frame import WorkspaceFrame
+from workspace_frame import WorkspaceFrame  # Ensure this is the correct import
 from export_frame import ExportFrame
 from settings_frame import SettingsFrame
 import os
@@ -50,7 +50,7 @@ class MainApplication(TkinterDnD.Tk):
             elif FrameClass is SettingsFrame:
                 frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
             else:
-                frame = FrameClass(self)
+                frame = FrameClass(self)  # Pass self to WorkspaceFrame
             self.frames[FrameClass] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
@@ -86,7 +86,12 @@ class MainApplication(TkinterDnD.Tk):
     def switch_to_workspace_frame(self):
         """Switch to the workspace frame."""
         frame = self.frames[WorkspaceFrame]
-        frame.update_loaded_file_label()  # Update label when switching to workspace
+        print("Switching to WorkspaceFrame")
+        try:
+            frame.update_loaded_file_label()  # Update label when switching to workspace
+        except AttributeError as e:
+            print(f"Error: {e}")
+            messagebox.showerror("Error", f"WorkspaceFrame has no method 'update_loaded_file_label'")
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
@@ -122,8 +127,15 @@ class MainApplication(TkinterDnD.Tk):
                 self.highlights = session_data.get('highlights', [])
 
                 # Update frames with loaded data
-                self.frames[WorkspaceFrame].update_loaded_file_label()
-                self.frames[WorkspaceFrame].load_previous_commands()
+                frame = self.frames.get(WorkspaceFrame)
+                if frame:
+                    print("Updating WorkspaceFrame with loaded session data")
+                    try:
+                        frame.update_loaded_file_label()
+                        frame.load_previous_commands()
+                    except AttributeError as e:
+                        print(f"Error: {e}")
+                        messagebox.showerror("Error", f"AttributeError: {str(e)}")
 
                 # Automatically switch to the WorkspaceFrame after loading the session
                 self.switch_to_workspace_frame()
