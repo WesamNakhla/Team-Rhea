@@ -127,47 +127,60 @@ class WorkspaceFrame(tk.Frame):
 
     def update_command_info(self, event):
         selected_command = self.command_var.get()
-        if selected_command == "-choose command-":
-            self.command_info_label.config(text="Select a command to see the description and type.")
-            self.run_command_button.config(state=tk.DISABLED)
-        elif selected_command == "Custom":
-            self.command_info_label.config(text="Enter your custom command.")
-            self.run_command_button.config(state=tk.NORMAL)
-        else:
-            for command in self.commands:
-                if command['command'] == selected_command:
-                    self.command_info_label.config(text=f"Type: {command['type']}\nDescription: {command['description']}")
-                    self.run_command_button.config(state=tk.NORMAL)
-                    break
-
         if selected_command == "Custom":
             self.custom_command_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-            self.custom_command_entry.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+            self.custom_command_entry.grid(row=2, column=1, padx=10, pady=5, sticky="we")
+            self.command_info_label.config(text="Enter your custom command.")
+            self.run_command_button.config(state=tk.NORMAL)
+        elif selected_command == "-choose command-":
+            self.custom_command_label.grid_forget()
+            self.custom_command_entry.grid_forget()
+            self.command_info_label.config(text="Select a command to see the description and type.")
+            self.run_command_button.config(state=tk.DISABLED)
         else:
             self.custom_command_label.grid_forget()
             self.custom_command_entry.grid_forget()
+            # Update command info display
+            index = self.command_dropdown.current() - 2  # Adjust the index
+            if index >= 0 and index < len(self.commands):
+                command_info = self.commands[index]
+                self.command_info_label.config(text=f"Type: {command_info['type']}\nDescription: {command_info['description']}")
+                self.run_command_button.config(state=tk.NORMAL)
 
     def run_command(self):
-        # Use the loaded_file from the MainApplication
-        file = self.parent.loaded_file
-        if not file:  # Check if the file is loaded
+        # Retrieve the full path of the loaded file from the parent (MainApplication)
+        file_path = self.parent.loaded_file
+        if not file_path:
             messagebox.showerror("Error", "No file loaded.")
             return
 
         selected_index = self.command_dropdown.current()
-        if selected_index < 0:
-            messagebox.showerror("Error", "Please select a command.")
-            return
 
-        selected_command = self.commands[selected_index]["command"]
+        # Handle the selection index properly
+        if selected_index <= 1:  # 'Choose command...' or 'Custom'
+            if selected_index == 1 and self.custom_command_entry.get().strip():
+                # Custom command handling
+                command = self.custom_command_entry.get().strip()
+            else:
+                messagebox.showerror("Error", "Please select a command or enter a custom command.")
+                return
+        else:
+            # Adjust index for actual commands
+            command_index = selected_index - 2  # Adjust index by subtracting for 'Choose command...' and 'Custom'
+            if command_index < len(self.commands):
+                command = self.commands[command_index]['command']
+            else:
+                messagebox.showerror("Error", "Selected command index is out of range.")
+                return
+
         vol_path = self.get_volatility_path()
-
         if not os.path.isfile(vol_path):
             messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
             return
 
-        command = f"python {vol_path} -f {file} {selected_command}"
-        self.run_volatility(command)
+        # Construct the full command to run
+        full_command = f"python {vol_path} -f {file_path} {command}"
+        self.run_volatility(full_command)
 
     def run_volatility(self, command):
         print(f"Running command: {command}")
@@ -178,9 +191,7 @@ class WorkspaceFrame(tk.Frame):
             if result.stderr:
                 findings += "\nError:\n" + result.stderr
 
-            self.add_tab(self.unique_tab_title(command.split()[-1]), findings)  # Use the command name as the tab title
-            self.parent.commands_used.append(command)
-            self.parent.scan_result = findings  # Store the results
+            self.add_tab(self.unique_tab_title(command.split()[-1]), findings)
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception: {e}")
