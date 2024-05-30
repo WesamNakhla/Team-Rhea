@@ -67,21 +67,29 @@ class WorkspaceFrame(tk.Frame):
         self.tab_control.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
         # Highlight buttons
+        # Highlight buttons
         self.highlight_frame = tk.Frame(self)
         self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="w")
 
-        self.highlight_button_red = tk.Button(self.highlight_frame, text="A", fg="red", command=lambda: self.highlight_text('red'))
+        self.highlight_button_red = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="red", command=lambda: self.highlight_text('red'))
         self.highlight_button_red.pack(side="left", padx=5, pady=5)
 
-        self.highlight_button_green = tk.Button(self.highlight_frame, text="A", fg="green", command=lambda: self.highlight_text('green'))
+        self.highlight_button_green = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="green", command=lambda: self.highlight_text('green'))
         self.highlight_button_green.pack(side="left", padx=5, pady=5)
 
-        self.highlight_button_orange = tk.Button(self.highlight_frame, text="A", fg="orange", command=lambda: self.highlight_text('orange'))
+        self.highlight_button_orange = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="orange", command=lambda: self.highlight_text('orange'))
         self.highlight_button_orange.pack(side="left", padx=5, pady=5)
 
         self.remove_highlight_button = tk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
 
+        # Progress bar
+        self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
+        self.progress.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="we")
+
+        # Configure grid to expand correctly
+        self.grid_rowconfigure(3, weight=1)
+        self.grid_columnconfigure(3, weight=1)
         # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
         self.progress.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="we")
