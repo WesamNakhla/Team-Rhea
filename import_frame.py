@@ -4,48 +4,48 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 
 # Define the allowed file types
-ALLOWED_FILE_TYPES = ['.dmp', '.raw','.mem', '.bin', '.vmem', '.mddramimage',]
+ALLOWED_FILE_TYPES = ['.dmp', '.raw', '.mem', '.bin', '.vmem', '.mddramimage']
 
 def load_memory_file(file_path):
-    # Check if the file exists
     if not os.path.isfile(file_path):
         return "Error: File does not exist."
     
-    # Check the file extension
     file_extension = os.path.splitext(file_path)[1].lower()
     if file_extension not in ALLOWED_FILE_TYPES:
         return "Error: Invalid file type. Allowed types are: " + ", ".join(ALLOWED_FILE_TYPES)
     
-    # Load the file path into a variable
     loaded_file_path = file_path
     return f"File loaded: {loaded_file_path}"
 
 class ImportFrame(ttk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
-        self.app = app  # Store the reference to the MainApplication instance
+        self.app = app
+
+        # Frame for content
+        content_frame = ttk.Frame(self)
+        content_frame.pack(expand=True)
 
         # Add text and button
-        self.label = ttk.Label(self, text="Drag and drop your file here OR", padding=20)
+        self.label = ttk.Label(content_frame, text="Drag and drop your file here OR", font=("Arial", 14), padding=20)
         self.label.pack()
 
         # Create a canvas to display the image
-        self.canvas = tk.Canvas(self, width=200, height=200)
+        self.canvas = tk.Canvas(content_frame, width=200, height=200)
         self.canvas.pack()
 
         # Load the image
-        self.image = tk.PhotoImage(file="img/Drag.png")  # Replace "your_image.png" with the path to your image
-        self.canvas.create_image(110, 80, anchor="center", image=self.image)  # Centering the image
+        self.image = tk.PhotoImage(file="img/Drag.png")
+        self.canvas.create_image(110, 80, anchor="center", image=self.image)
 
         # Add text and button
-        self.browse_label = ttk.Label(self, text="Browse for file", padding=20)
+        self.browse_label = ttk.Label(content_frame, text="Browse for file", font=("Arial", 14), padding=20)
         self.browse_label.pack()
 
-        self.browse_button = ttk.Button(self, text="Browse", command=self.browse_file)
-        self.browse_button.pack(pady=5)  # Add padding between Browse button and label
+        self.browse_button = ttk.Button(content_frame, text="Browse", command=self.browse_file)
+        self.browse_button.pack(pady=5)
 
-        # Add more space between the Browse button and the Import button
-        self.import_button = ttk.Button(self, text="Import dump package", command=self.import_file)
+        self.import_button = ttk.Button(content_frame, text="Import dump package", command=self.import_file)
         self.import_button.pack()
 
         # Register this widget as a drop target
@@ -73,8 +73,8 @@ class ImportFrame(ttk.Frame):
             messagebox.showerror("File Error", result)
         else:
             self.label.config(text=result)
-            self.app.loaded_file = filename  # Store the loaded file name in the app
-            self.app.switch_to_workspace_frame()  # Switch to workspace after loading
+            self.app.loaded_file = filename
+            self.app.switch_to_workspace_frame()
 
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)
@@ -84,18 +84,17 @@ class MainApplication(TkinterDnD.Tk):
         super().__init__()
 
         self.title("Drag and Drop Example")
-        self.geometry("400x400")
-        self.loaded_file = None  # Add a loaded_file attribute
+        self.geometry("600x600")
+        self.loaded_file = None
 
         self.frame = ImportFrame(self, self)
         self.frame.pack(expand=True, fill=tk.BOTH)
 
     def switch_to_workspace_frame(self):
         print("Switching to workspace frame...")
-        # Implement the logic to switch to the workspace frame here
-        self.frame.pack_forget()  # Hide the current frame
-        self.workspace_frame = WorkspaceFrame(self)  # Initialize the new frame
-        self.workspace_frame.pack(expand=True, fill=tk.BOTH)  # Show the new frame
+        self.frame.pack_forget()
+        self.workspace_frame = WorkspaceFrame(self)
+        self.workspace_frame.pack(expand=True, fill=tk.BOTH)
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent):
@@ -104,11 +103,8 @@ class WorkspaceFrame(tk.Frame):
         self.init_ui()
 
     def init_ui(self):
-        # Display the loaded file path
-        self.file_label = ttk.Label(self, text=f"Loaded file: {self.parent.loaded_file}")
+        self.file_label = ttk.Label(self, text=f"Loaded file: {self.parent.loaded_file}", font=("Arial", 14))
         self.file_label.pack(pady=10)
-
-        # Additional UI elements can be added here
 
 if __name__ == "__main__":
     app = MainApplication()
