@@ -50,6 +50,11 @@ class WorkspaceFrame(tk.Frame):
         self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
         self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 
+        # Kill command button
+        self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.run_command)
+        self.kill_command_button.grid(row=1, column=4, padx=(10,10), pady=5, sticky="w")
+        
+
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
         self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
