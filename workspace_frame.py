@@ -73,11 +73,7 @@ class WorkspaceFrame(tk.Frame):
 
         # Highlight buttons
         self.highlight_frame = tk.Frame(self)
-        self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="w")
-
-        # Export button with unicode icon
-        self.export_button = tk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
-        self.export_button.pack(side="left", padx=5, pady=5)
+        self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="we")
 
         self.highlight_button_red = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="red", command=lambda: self.highlight_text('red'))
         self.highlight_button_red.pack(side="left", padx=5, pady=5)
@@ -90,6 +86,10 @@ class WorkspaceFrame(tk.Frame):
 
         self.remove_highlight_button = tk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
+
+        # Export button with unicode icon
+        self.export_button = tk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
+        self.export_button.pack(side="right", padx=5, pady=5)
 
         # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
