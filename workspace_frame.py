@@ -9,9 +9,10 @@ import os
 import datetime
 
 class WorkspaceFrame(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, switch_frame_callback):
         super().__init__(parent)
         self.parent = parent
+        self.switch_frame_callback = switch_frame_callback  # Callback to switch frames
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
         self.init_ui()
@@ -54,7 +55,6 @@ class WorkspaceFrame(tk.Frame):
         self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.run_command)
         self.kill_command_button.grid(row=1, column=4, padx=(10,10), pady=5, sticky="w")
         
-
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
         self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
@@ -72,7 +72,6 @@ class WorkspaceFrame(tk.Frame):
         self.tab_control.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
         # Highlight buttons
-        # Highlight buttons
         self.highlight_frame = tk.Frame(self)
         self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="w")
 
@@ -88,6 +87,10 @@ class WorkspaceFrame(tk.Frame):
         self.remove_highlight_button = tk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
 
+        # Export button with unicode icon
+        self.export_button = tk.Button(self.highlight_frame, text="\u23CF", command=self.export_results)
+        self.export_button.pack(side="left", padx=5, pady=5)
+
         # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
         self.progress.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="we")
@@ -95,13 +98,9 @@ class WorkspaceFrame(tk.Frame):
         # Configure grid to expand correctly
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
-        # Progress bar
-        self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
-        self.progress.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="we")
 
-        # Configure grid to expand correctly
-        self.grid_rowconfigure(3, weight=1)
-        self.grid_columnconfigure(3, weight=1)
+    def export_results(self):
+        self.switch_frame_callback()  # Call the function to switch frames
 
     def get_volatility_path(self):
         # Load the settings from the settings.json file
@@ -334,6 +333,9 @@ class WorkspaceFrame(tk.Frame):
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("1000x600")
-    app = WorkspaceFrame(root)
+    def switch_to_export_frame():
+        print("Switch to export frame")
+
+    app = WorkspaceFrame(root, switch_to_export_frame)
     app.pack(fill="both", expand=True)
     root.mainloop()

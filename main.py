@@ -46,11 +46,11 @@ class MainApplication(TkinterDnD.Tk):
             if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
-                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
+                frame = FrameClass(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
             elif FrameClass is SettingsFrame:
-                frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
-            else:
-                frame = FrameClass(self)  # Updated to pass only `self`
+                frame = FrameClass(self, app=self)  # Pass self to SettingsFrame
+            elif FrameClass is WorkspaceFrame:
+                frame = FrameClass(self, self.switch_to_export_frame)  # Pass switch_frame_callback
             self.frames[FrameClass] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
