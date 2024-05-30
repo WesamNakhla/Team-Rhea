@@ -6,9 +6,9 @@ class SettingsFrame(tk.Frame):
     def __init__(self, parent, app):
         super().__init__(parent)
         self.app = app  # Store the reference to the MainApplication instance
+        self.original_settings = {}
         self.init_ui()
         self.load_settings()
-        self.original_settings = {}
 
     def init_ui(self):
         self.label = tk.Label(self, text="Settings", font=('Arial', 14))
@@ -47,37 +47,36 @@ class SettingsFrame(tk.Frame):
         self.exit_button.pack(pady=5)
 
     def browse_folder(self):
-        folder_selected = filedialog.askdirectory()
-        if folder_selected:
-            # Update the entry field without affecting the original_settings
+        folder_path = filedialog.askdirectory()
+        if folder_path:
             self.volatility_path_entry.delete(0, tk.END)
-            self.volatility_path_entry.insert(0, folder_selected)
-
+            self.volatility_path_entry.insert(0, folder_path)
 
     def save_settings(self):
         settings = {
             'volatility_path': self.volatility_path_entry.get(),
-            'font_size': self.font_size_spinbox.get(),
+            'font_size': int(self.font_size_spinbox.get()),
             'line_distance': self.line_distance_spinbox.get(),
             'letter_distance': self.letter_distance_spinbox.get()
         }
-        with open('settings.json', 'w') as f:
-            json.dump(settings, f, indent=4)
-        messagebox.showinfo("Settings", "Settings have been saved successfully.")
+        with open('settings.json', 'w') as settings_file:
+            json.dump(settings, settings_file)
         self.original_settings = settings.copy()
+        messagebox.showinfo("Settings", "Settings saved successfully!")
+        self.apply_font_settings(settings['font_size'])  # Apply font size changes
 
     def load_settings(self):
         try:
-            with open('settings.json', 'r') as f:
-                settings = json.load(f)
-            self.volatility_path_entry.insert(0, settings.get('volatility_path', ''))
-            self.font_size_spinbox.delete(0, tk.END)
-            self.font_size_spinbox.insert(0, settings.get('font_size', 12))
-            self.line_distance_spinbox.delete(0, tk.END)
-            self.line_distance_spinbox.insert(0, settings.get('line_distance', 1))
-            self.letter_distance_spinbox.delete(0, tk.END)
-            self.letter_distance_spinbox.insert(0, settings.get('letter_distance', 1))
-            self.original_settings = settings.copy()
+            with open('settings.json', 'r') as settings_file:
+                settings = json.load(settings_file)
+                self.volatility_path_entry.insert(0, settings.get('volatility_path', ''))
+                self.font_size_spinbox.delete(0, tk.END)
+                self.font_size_spinbox.insert(0, settings.get('font_size', 12))
+                self.line_distance_spinbox.delete(0, tk.END)
+                self.line_distance_spinbox.insert(0, settings.get('line_distance', 1))
+                self.letter_distance_spinbox.delete(0, tk.END)
+                self.letter_distance_spinbox.insert(0, settings.get('letter_distance', 1))
+                self.original_settings = settings.copy()
         except FileNotFoundError:
             print("Settings file not found. Using defaults.")
 
@@ -104,12 +103,13 @@ class SettingsFrame(tk.Frame):
         if current_settings != self.original_settings:
             # Confirm if the user wants to exit without saving
             if messagebox.askyesno("Exit Settings", "Are you sure you want to exit without saving your latest changes?"):
-                # If exiting without saving, revert the UI to original settings
-                self.revert_unsaved_changes()
                 self.app.switch_to_workspace_frame()
+            else:
+                self.revert_unsaved_changes()
         else:
             self.app.switch_to_workspace_frame()
 
-
-    def cancel(self):
-        print("Settings changes cancelled.")
+    def apply_font_settings(self, font_size):
+        for frame in self.app.frames.values():
+            if hasattr(frame, 'apply_font_settings'):
+                frame.apply_font_settings(font_size)
