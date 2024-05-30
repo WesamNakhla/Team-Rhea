@@ -8,6 +8,35 @@ import re
 import os
 import datetime
 
+class LineNumberCanvas(tk.Canvas):
+    def __init__(self, master, text_widget, start_line=5, **kwargs): #Line count is set to start at line 5 here, might need to update it in the future
+        super().__init__(master, **kwargs)
+        self.text_widget = text_widget
+        self.start_line = start_line
+        self.text_widget.bind("<KeyRelease>", self.on_key_release)
+        self.text_widget.bind("<MouseWheel>", self.on_scroll)
+        self.update_line_numbers()
+
+    def on_key_release(self, event=None):
+        self.update_line_numbers()
+
+    def on_scroll(self, event=None):
+        self.update_line_numbers()
+
+    def update_line_numbers(self):
+        self.delete("all")
+        i = self.text_widget.index(f"{self.start_line}.0")
+        line_count = 1  # Start line count from 1
+        while True:
+            dline = self.text_widget.dlineinfo(i)
+            if dline is None:
+                break
+            y = dline[1]
+            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")  # Set color here or adjust line size and writing theme 
+            i = self.text_widget.index(f"{i}+1line")                                                 # What colour should it be? grey is conflicting with the background, also i dont recommend white. 
+            line_count += 1
+   
+
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, switch_frame_callback):
         super().__init__(parent)
@@ -281,7 +310,10 @@ class WorkspaceFrame(tk.Frame):
             # Add the new tab to the notebook with the command as its title
             self.tab_control.add(new_tab, text=command)
             self.command_tabs[command] = new_tab  # Store the reference to the new tab
-
+            # Add line number canvas
+            line_number_canvas = LineNumberCanvas(new_tab, text_output, start_line=5, width=30)  
+            line_number_canvas.pack(side="left", fill="y")
+            text_output.pack(side="right", fill="both", expand=True)  
 
     def highlight_text(self, color):
         try:
