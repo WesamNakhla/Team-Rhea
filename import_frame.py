@@ -36,7 +36,7 @@ class ImportFrame(ttk.Frame):
 
         # Load the image
         self.image = tk.PhotoImage(file="img/Drag.png")
-        self.canvas.create_image(110, 80, anchor="center", image=self.image)
+        self.canvas.create_image(100, 80, anchor="center", image=self.image)
 
         # Add text and button
         self.browse_label = ttk.Label(content_frame, text="Browse for file", font=("Arial", 14), padding=20)
