@@ -287,6 +287,25 @@ class WorkspaceFrame(tk.Frame):
             text_widget = self.tab_control.nametowidget(tab).winfo_children()[0]
             text_widget.config(font=('Arial', font_size))
 
+    def load_previous_commands(self):
+        for command in self.parent.commands_used:
+            self.add_tab(self.unique_tab_title(command.split()[-1]), "Loaded from session: " + command)
+        for text, color in self.parent.highlights:
+            self.highlight_text_from_session(text, color)
+
+    def highlight_text_from_session(self, text, color):
+        for tab in self.command_tabs.values():
+            text_widget = tab.winfo_children()[0]
+            start = "1.0"
+            while True:
+                start = text_widget.search(text, start, stopindex=tk.END)
+                if not start:
+                    break
+                end = f"{start}+{len(text)}c"
+                text_widget.tag_add(color, start, end)
+                text_widget.tag_config(color, background=color)
+                start = end
+
 if __name__ == "__main__":
     root = tk.Tk()
     root.geometry("1000x600")

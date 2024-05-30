@@ -124,6 +124,10 @@ class MainApplication(TkinterDnD.Tk):
                 # Update frames with loaded data
                 self.frames[WorkspaceFrame].update_loaded_file_label()
                 self.frames[WorkspaceFrame].load_previous_commands()
+
+                # Automatically switch to the WorkspaceFrame after loading the session
+                self.switch_to_workspace_frame()
+
                 messagebox.showinfo("Session Loaded", f"Session successfully loaded from {load_path}")
 
 if __name__ == "__main__":
