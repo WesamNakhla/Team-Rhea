@@ -55,7 +55,7 @@ class SettingsFrame(tk.Frame):
     def save_settings(self):
         settings = {
             'volatility_path': self.volatility_path_entry.get(),
-            'font_size': self.font_size_spinbox.get(),
+            'font_size': int(self.font_size_spinbox.get()),
             'line_distance': self.line_distance_spinbox.get(),
             'letter_distance': self.letter_distance_spinbox.get()
         }
@@ -63,6 +63,7 @@ class SettingsFrame(tk.Frame):
             json.dump(settings, settings_file)
         self.original_settings = settings.copy()
         messagebox.showinfo("Settings", "Settings saved successfully!")
+        self.apply_font_settings(settings['font_size'])  # Apply font size changes
 
     def load_settings(self):
         try:
@@ -108,6 +109,7 @@ class SettingsFrame(tk.Frame):
         else:
             self.app.switch_to_workspace_frame()
 
-
-    def cancel(self):
-        print("Settings changes cancelled.")
+    def apply_font_settings(self, font_size):
+        for frame in self.app.frames.values():
+            if hasattr(frame, 'apply_font_settings'):
+                frame.apply_font_settings(font_size)

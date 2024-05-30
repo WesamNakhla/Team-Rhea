@@ -4,7 +4,7 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 
 # Define the allowed file types
-ALLOWED_FILE_TYPES = ['.dmp', '.raw', '.bin', '.vmem', '.mddramimage',]
+ALLOWED_FILE_TYPES = ['.dmp', '.raw','.mem', '.bin', '.vmem', '.mddramimage',]
 
 def load_memory_file(file_path):
     # Check if the file exists
@@ -73,8 +73,8 @@ class ImportFrame(ttk.Frame):
             messagebox.showerror("File Error", result)
         else:
             self.label.config(text=result)
-            self.app.loaded_file = filename
-            self.app.switch_to_workspace_frame()
+            self.app.loaded_file = filename  # Store the loaded file name in the app
+            self.app.switch_to_workspace_frame()  # Switch to workspace after loading
 
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)

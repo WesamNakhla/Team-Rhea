@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinterdnd2 import TkinterDnD
 from tkinter import ttk
 from import_frame import ImportFrame
@@ -7,14 +7,14 @@ from workspace_frame import WorkspaceFrame
 from export_frame import ExportFrame
 from settings_frame import SettingsFrame
 import os
+import json
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         self.title('Mnemonic Volatility3 GUI')
         self.geometry('1024x768')
-
-        # Load the Azure theme
+        
         self.load_theme()
 
         self.menu_bar = tk.Menu(self)
@@ -24,6 +24,8 @@ class MainApplication(TkinterDnD.Tk):
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
         file_menu.add_command(label="New...", command=self.new_session)
         file_menu.add_command(label="Export...", command=self.switch_to_export_frame)
+        file_menu.add_command(label="Save Session", command=self.save_session)
+        file_menu.add_command(label="Load Session", command=self.load_session)
         file_menu.add_separator()
         file_menu.add_command(label="Exit", command=self.quit)
         self.menu_bar.add_cascade(label="File", menu=file_menu)
@@ -34,13 +36,17 @@ class MainApplication(TkinterDnD.Tk):
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
-        self.loaded_file = "No file loaded"
+        self.loaded_file = None  # This holds the current loaded file
+        self.scan_result = None  # To hold scan results
+        self.commands_used = []  # To hold commands used
+        self.highlights = []  # To hold highlights
+
         # Initialize all frames and store in the dictionary
         for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, SettingsFrame):
             if FrameClass is ImportFrame:
                 frame = FrameClass(self, app=self)
             elif FrameClass is ExportFrame:
-                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame)
+                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
             elif FrameClass is SettingsFrame:
                 frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
             else:
@@ -73,28 +79,56 @@ class MainApplication(TkinterDnD.Tk):
 
     def switch_to_export_frame(self):
         """Switch to the export frame."""
+        frame = self.frames[ExportFrame]
+        frame.update_data(self.scan_result, self.commands_used, self.highlights)
         self.show_frame(ExportFrame)
 
     def switch_to_workspace_frame(self):
         """Switch to the workspace frame."""
+        frame = self.frames[WorkspaceFrame]
+        frame.update_loaded_file_label()  # Update label when switching to workspace
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
         """Switch to the settings frame."""
         self.show_frame(SettingsFrame)
 
-    def show_frame(self, cont):
+    def show_frame(self, frame_class):
         """Raise the given frame to the top for viewing."""
-        frame = self.frames[cont]
+        frame = self.frames[frame_class]
         frame.tkraise()
 
-    def open_file(self):
-        # Placeholder function to open a file
-        print("File opened")
+    def save_session(self):
+        session_data = {
+            'loaded_file': self.loaded_file,
+            'scan_result': self.scan_result,
+            'commands_used': self.commands_used,
+            'highlights': self.highlights
+        }
+        save_path = filedialog.asksaveasfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if save_path:
+            with open(save_path, 'w') as f:
+                json.dump(session_data, f)
+            messagebox.showinfo("Session Saved", f"Session successfully saved to {save_path}")
 
-    def save_file(self):
-        # Placeholder function to save a file
-        print("File saved")
+    def load_session(self):
+        load_path = filedialog.askopenfilename(defaultextension=".json", filetypes=[("JSON files", "*.json")])
+        if load_path:
+            with open(load_path, 'r') as f:
+                session_data = json.load(f)
+                self.loaded_file = session_data.get('loaded_file')
+                self.scan_result = session_data.get('scan_result')
+                self.commands_used = session_data.get('commands_used', [])
+                self.highlights = session_data.get('highlights', [])
+
+                # Update frames with loaded data
+                self.frames[WorkspaceFrame].update_loaded_file_label()
+                self.frames[WorkspaceFrame].load_previous_commands()
+
+                # Automatically switch to the WorkspaceFrame after loading the session
+                self.switch_to_workspace_frame()
+
+                messagebox.showinfo("Session Loaded", f"Session successfully loaded from {load_path}")
 
 if __name__ == "__main__":
     app = MainApplication()
