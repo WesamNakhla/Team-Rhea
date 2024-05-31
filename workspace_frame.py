@@ -6,10 +6,10 @@ import threading
 import json
 import re
 import os
-import datetime
+import textwrap
 
 class LineNumberCanvas(tk.Canvas):
-    def __init__(self, master, text_widget, start_line=5, **kwargs): #Line count is set to start at line 5 here, might need to update it in the future
+    def __init__(self, master, text_widget, start_line=5, **kwargs): 
         super().__init__(master, **kwargs)
         self.text_widget = text_widget
         self.start_line = start_line
@@ -32,10 +32,9 @@ class LineNumberCanvas(tk.Canvas):
             if dline is None:
                 break
             y = dline[1]
-            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")  # Set color here or adjust line size and writing theme 
-            i = self.text_widget.index(f"{i}+1line")                                                 # What colour should it be? grey is conflicting with the background, also i dont recommend white. 
+            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")
+            i = self.text_widget.index(f"{i}+1line")
             line_count += 1
-   
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, switch_frame_callback):
@@ -82,10 +81,10 @@ class WorkspaceFrame(tk.Frame):
 
         # Kill command button
         self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.run_command)
-        self.kill_command_button.grid(row=1, column=4, padx=(10,10), pady=5, sticky="w")
+        self.kill_command_button.grid(row=1, column=4, padx=(10, 10), pady=5, sticky="w")
         
         # Command description label
-        self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.")
+        self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.", width=50, anchor="w", wraplength=400)
         self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
 
         # Custom command label and entry
@@ -168,11 +167,11 @@ class WorkspaceFrame(tk.Frame):
         else:
             self.custom_command_label.grid_forget()
             self.custom_command_entry.grid_forget()
-            # Update command info display
             index = self.command_dropdown.current() - 2  # Adjust the index
             if index >= 0 and index < len(self.commands):
                 command_info = self.commands[index]
-                self.command_info_label.config(text=f"Type: {command_info['type']}\nDescription: {command_info['description']}")
+                wrapped_text = textwrap.fill(f"Type: {command_info['type']}\nDescription: {command_info['description']}", width=50)
+                self.command_info_label.config(text=wrapped_text)
                 self.run_command_button.config(state=tk.NORMAL)
 
     def run_command(self):

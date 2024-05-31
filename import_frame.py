@@ -40,7 +40,7 @@ class ImportFrame(ttk.Frame):
         self.logo_label.pack()
 
         # Create a rectangular area for drag and drop
-        self.drag_area = tk.Label(content_frame, text="Drag and Drop File Here", font=("Arial", 20), bg="#d9d9d9", fg="#4a90e2", width=160, height=10, relief="solid")
+        self.drag_area = tk.Label(content_frame, text="Drag and Drop File Here", font=("Arial", 20), bg="#d9d9d9", fg="#4a90e2", width=50, height=10, relief="solid")
         self.drag_area.pack(pady=10)
 
         # Add the browse label and button
