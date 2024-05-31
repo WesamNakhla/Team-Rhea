@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog, messagebox, colorchooser
 import subprocess
 import time
 import threading
@@ -103,14 +103,9 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_frame = tk.Frame(self)
         self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="we")
 
-        self.highlight_button_red = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="red", command=lambda: self.highlight_text('red'))
-        self.highlight_button_red.pack(side="left", padx=5, pady=5)
-
-        self.highlight_button_green = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="green", command=lambda: self.highlight_text('green'))
-        self.highlight_button_green.pack(side="left", padx=5, pady=5)
-
-        self.highlight_button_orange = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="orange", command=lambda: self.highlight_text('orange'))
-        self.highlight_button_orange.pack(side="left", padx=5, pady=5)
+        # Single highlight button with color chooser
+        self.highlight_button = tk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
+        self.highlight_button.pack(side="left", padx=5, pady=5)
 
         self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
@@ -313,6 +308,11 @@ class WorkspaceFrame(tk.Frame):
             line_number_canvas = LineNumberCanvas(new_tab, text_output, start_line=5, width=30)  
             line_number_canvas.pack(side="left", fill="y")
             text_output.pack(side="right", fill="both", expand=True)  
+
+    def choose_highlight_color(self):
+        color_code = colorchooser.askcolor(title="Choose highlight color")
+        if color_code:
+            self.highlight_text(color_code[1])
 
     def highlight_text(self, color):
         try:
