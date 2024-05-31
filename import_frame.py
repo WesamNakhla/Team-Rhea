@@ -4,7 +4,7 @@ from tkinterdnd2 import TkinterDnD, DND_FILES
 import os
 
 # Define the allowed file types
-ALLOWED_FILE_TYPES = ['.dmp', '.raw', '.mem', '.bin', '.vmem', '.mddramimage']
+ALLOWED_FILE_TYPES = ['.dmp', '.raw', '.mem', '.bin', '.vmem', '.mddramimage', '.winddramimage']
 
 def load_memory_file(file_path):
     if not os.path.isfile(file_path):
