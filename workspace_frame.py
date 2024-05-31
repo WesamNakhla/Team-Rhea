@@ -112,11 +112,11 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_button_orange = tk.Button(self.highlight_frame, text="\U0001F58D", fg="white", bg="orange", command=lambda: self.highlight_text('orange'))
         self.highlight_button_orange.pack(side="left", padx=5, pady=5)
 
-        self.remove_highlight_button = tk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
+        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
 
         # Export button with unicode icon
-        self.export_button = tk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
+        self.export_button = ttk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
         self.export_button.pack(side="right", padx=5, pady=5)
 
         # Progress bar
