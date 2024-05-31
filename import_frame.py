@@ -26,36 +26,46 @@ class ImportFrame(ttk.Frame):
         content_frame = ttk.Frame(self)
         content_frame.pack(expand=True)
 
-        # Add text and button
-        self.label = ttk.Label(content_frame, text="Drag and drop your file here OR", font=("Arial", 14), padding=20)
-        self.label.pack()
+        # Add the ASCII art logo text
+        ascii_logo = """
+       ____   ____________  .____     ________ ____ ___.___ 
+       \   \ /   /\_____  \ |    |   /  _____/|    |   \   |
+        \   Y   /  /   |   \|    |  /   \  ___|    |   /   |
+         \     /  /    |    \    |__\    \_\  \    |  /|   |
+          \___/   \_______  /_______ \______  /______/ |___|
+                          \/        \/      \/                      
 
-        # Create a canvas to display the image
-        self.canvas = tk.Canvas(content_frame, width=200, height=200)
-        self.canvas.pack()
+        """
+        self.logo_label = tk.Label(content_frame, text=ascii_logo, font=("Courier", 12), fg="#4a90e2", justify="left", padx=10, pady=20)
+        self.logo_label.pack()
 
-        # Load the image
-        self.image = tk.PhotoImage(file="img/Drag.png")
-        self.canvas.create_image(100, 80, anchor="center", image=self.image)
+        # Create a rectangular area for drag and drop
+        self.drag_area = tk.Label(content_frame, text="⬇\nDrag and Drop File Here\n⬇", font=("Arial", 14), bg="#d9d9d9", fg="#4a90e2", width=60, height=10, relief="solid")
+        self.drag_area.pack(pady=10)
 
-        # Add text and button
-        self.browse_label = ttk.Label(content_frame, text="Browse for file", font=("Arial", 14), padding=20)
+        # Add the browse label and button
+        self.browse_label = ttk.Label(content_frame, text="Or manually browse for a file", font=("Arial", 14), padding=20)
         self.browse_label.pack()
 
         self.browse_button = ttk.Button(content_frame, text="Browse", command=self.browse_file)
         self.browse_button.pack(pady=5)
 
-        self.import_button = ttk.Button(content_frame, text="Import dump package", command=self.import_file)
-        self.import_button.pack()
+        self.run_button = ttk.Button(content_frame, text="Run File", command=self.import_file)
+        self.run_button.pack()
 
         # Register this widget as a drop target
         self.drop_target_register(DND_FILES)
         self.dnd_bind('<<Drop>>', self.drop)
 
+        # Bind hover events
+        self.drag_area.bind('<Enter>', self.on_enter)
+        self.drag_area.bind('<Leave>', self.on_leave)
+
     def drop(self, event):
         files = self.parse_file_drop(event.data)
         if files:
             self.handle_file(files[0])
+            self.on_leave(event)  # Reset color after file drop
 
     def import_file(self):
         filename = filedialog.askopenfilename()
@@ -72,12 +82,18 @@ class ImportFrame(ttk.Frame):
         if result.startswith("Error"):
             messagebox.showerror("File Error", result)
         else:
-            self.label.config(text=result)
+            self.drag_area.config(text=result)
             self.app.loaded_file = filename
             self.app.switch_to_workspace_frame()
 
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)
+
+    def on_enter(self, event):
+        self.drag_area.config(bg="#a3a3a3")
+
+    def on_leave(self, event):
+        self.drag_area.config(bg="#d9d9d9")
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
