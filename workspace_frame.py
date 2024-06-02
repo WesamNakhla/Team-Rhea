@@ -47,7 +47,7 @@ class WorkspaceFrame(tk.Frame):
 
     def load_commands(self):
         try:
-            with open('dummy_commands.json', 'r') as file:
+            with open('commands.json', 'r') as file:
                 return json.load(file)
         except FileNotFoundError:
             messagebox.showerror("Error", "Commands file not found.")
