@@ -45,3 +45,8 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.exit_button = ttk.Button(self, text="Exit", command=self.exit_settings)
         self.save_button.pack(pady=5)
         self.exit_button.pack(pady=5)
+
+        # Version Label at Bottom Left corner
+        version_text = "VolGUI 1.0.0 and Volatility 3 Framework 2.7.0"
+        self.version_label = tk.Label(self, text=version_text)
+        self.version_label.pack(side="bottom", anchor="w", padx=10, pady=10)
