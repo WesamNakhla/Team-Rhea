@@ -41,7 +41,7 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.letter_distance_spinbox.pack()
 
         # Save and Exit Buttons
-        self.save_button = tk.Button(self, text="Save", command=self.save_settings)
-        self.exit_button = tk.Button(self, text="Exit", command=self.exit_settings)
+        self.save_button = ttk.Button(self, text="Save", command=self.save_settings)
+        self.exit_button = ttk.Button(self, text="Exit", command=self.exit_settings)
         self.save_button.pack(pady=5)
         self.exit_button.pack(pady=5)
