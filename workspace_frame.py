@@ -11,9 +11,7 @@ import textwrap
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        
 
-# Your existing LineNumberCanvas and WorkspaceFrame classes
 class LineNumberCanvas(tk.Canvas):
     def __init__(self, master, text_widget, start_line=5, **kwargs):
         super().__init__(master, **kwargs)
@@ -84,8 +82,6 @@ class LineNumberCanvas(tk.Canvas):
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
 
-
-
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, switch_frame_callback):
         super().__init__(parent)
@@ -151,7 +147,7 @@ class WorkspaceFrame(tk.Frame):
 
         # Highlight buttons
         self.highlight_frame = tk.Frame(self)
-        self.highlight_frame.grid(row=4, column=0, columnspan=4, pady=5, sticky="we")
+        self.highlight_frame.grid(row=5, column=0, columnspan=4, pady=5, sticky="we")
 
         # Single highlight button with color chooser
         self.highlight_button = tk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
@@ -166,11 +162,39 @@ class WorkspaceFrame(tk.Frame):
 
         # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
-        self.progress.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="we")
+        self.progress.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="we")
 
         # Configure grid to expand correctly
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
+
+        # Search bar
+        self.search_frame = tk.Frame(self)
+        self.search_frame.grid(row=5, column=3, columnspan=1, pady=5, sticky="we")
+        self.search_label = ttk.Label(self.search_frame, text="Search:")
+        self.search_label.pack(side="left", padx=5, pady=5)
+        self.search_entry = ttk.Entry(self.search_frame)
+        self.search_entry.pack(side="left", padx=5, pady=5, fill="x", expand=True)
+        self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
+        self.search_button.pack(side="left", padx=5, pady=5)
+
+    def search_text(self):
+        search_term = self.search_entry.get()
+        if not search_term:
+            return
+
+        selected_tab = self.tab_control.nametowidget(self.tab_control.select())
+        text_widget = selected_tab.winfo_children()[0]
+
+        start = "1.0"
+        while True:
+            start = text_widget.search(search_term, start, stopindex=tk.END)
+            if not start:
+                break
+            end = f"{start}+{len(search_term)}c"
+            text_widget.tag_add('search_highlight', start, end)
+            text_widget.tag_config('search_highlight', background='yellow')
+            start = end
 
     def export_results(self):
         self.switch_frame_callback()  # Call the function to switch frames
@@ -373,7 +397,6 @@ class WorkspaceFrame(tk.Frame):
             # Add the new tab to the notebook with the command as its title
             self.tab_control.add(new_tab, text=title)
             self.command_tabs[title] = new_tab  # Store the reference to the new tab
-
 
     def choose_highlight_color(self):
         color_code = colorchooser.askcolor(title="Choose highlight color")
