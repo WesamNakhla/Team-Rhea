@@ -11,8 +11,7 @@ import textwrap
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # Add any custom initialization here if needed
-        # For example, you can add custom methods or override existing ones
+        
 
 # Your existing LineNumberCanvas and WorkspaceFrame classes
 class LineNumberCanvas(tk.Canvas):
@@ -40,58 +39,43 @@ class LineNumberCanvas(tk.Canvas):
 
         self.update_line_numbers()
 
+    
     def on_content_change(self, event=None):
-        self.update_line_numbers()
+     self.update_line_numbers()
 
     def on_text_widget_scroll(self, event):
-        self.update_line_numbers()
-        return "break"
+     self.update_line_numbers()
+     return "break"
 
     def on_mouse_scroll(self, event):
-        self.text_widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
-        self.update_line_numbers()
-        return "break"
+      self.text_widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
+      self.update_line_numbers()
+      return "break"
+
     def on_scroll(self, event=None):
-        self.update_line_numbers()
+      self.update_line_numbers()
 
     def on_key_release(self, event=None):
         self.update_line_numbers()
-        
+
     def update_line_numbers(self):
-        self.delete("all")
-        i = self.text_widget.index(f"{self.start_line}.0")
-        line_count = 1  # Start line count from 1
-        # Check if the top part of the text widget contains an error message
-        top_content = self.text_widget.get("1.0", "1.0 + 2 lines")  # Get the first two lines of the content
-        if "Error" in top_content or "error" in top_content:
-            return  # Do not display line numbers if there is an error message at the start
+      self.delete("all")
+     # Calculate the starting line index
+      visible_start_index = self.text_widget.index("@0,0")
+      line_index = int(visible_start_index.split(".")[0])
+      line_count = max(1, line_index - self.start_line + 1)
 
-        visible_start_index = self.text_widget.index("@0,0")
-        line_index = int(visible_start_index.split(".")[0])
+      i = self.text_widget.index(f"{self.start_line}.0")
 
-        # Calculate the starting line number based on the visible line index and the start line
-        if line_index >= self.start_line:
-            line_number = line_index - self.start_line + 1
-        else:
-            line_number = 1  # No line numbers should be shown if we're before the start_line
-
-        i = self.text_widget.index(f"{line_index}.0")
-
-        while True:
-            dline = self.text_widget.dlineinfo(i)
-            if dline is None:
-                break
-            y = dline[1]
-            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")  # Set color here or adjust line size and writing theme
-            i = self.text_widget.index(f"{i}+1line")                                                 # What colour should it be? grey is conflicting with the background, also i dont recommend white.
+      while True:
+        dline = self.text_widget.dlineinfo(i)
+        if dline is None:
+            break
+        y = dline[1]
+        if int(i.split(".")[0]) >= self.start_line:
+            self.create_text(2, y, anchor="nw", text=str(line_count), font=("Arial", 10), fill="white")
             line_count += 1
-
-            if line_index >= self.start_line:  # Only show line numbers for lines starting from self.start_line
-                linenum = str(line_number)
-                self.create_text(2, y, anchor="nw", text=linenum, font=("Arial", 10), fill="white")  # Set color here
-                line_number += 1
-            i = self.text_widget.index(f"{i}+1line")
-            line_index += 1
+        i = self.text_widget.index(f"{i}+1line")
 
     def attach(self, widget):
         widget.bind("<MouseWheel>", self.on_mouse_scroll)
@@ -100,6 +84,7 @@ class LineNumberCanvas(tk.Canvas):
 
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
+
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, switch_frame_callback):
