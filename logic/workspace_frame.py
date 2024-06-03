@@ -5,10 +5,9 @@ import subprocess
 import textwrap
 import threading
 import time
-from tkinter import ttk  # Add this line to import ttk
+from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
-
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -90,6 +89,13 @@ class WorkspaceFrameLogic:
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
 
+    def update_loaded_file_label(self):
+        full_path = self.parent.loaded_file
+        filename_only = os.path.basename(full_path) if full_path else "No file loaded"
+        print(f"Setting file label to: {filename_only}")  # Debug statement
+        self.file_label.config(text=f"Loaded file: {filename_only}")
+
+
     def load_commands(self):
         try:
             with open('commands.json', 'r') as file:
@@ -137,12 +143,6 @@ class WorkspaceFrameLogic:
         full_path = full_path.replace('/', os.sep)
 
         return full_path
-
-    def update_loaded_file_label(self):
-        print("Updating loaded file label")
-        full_path = self.parent.loaded_file
-        filename_only = os.path.basename(full_path) if full_path else "No file loaded"
-        self.file_label.config(text=f"Loaded file: {filename_only}")
 
     def update_command_info(self, event):
         selected_command = self.command_var.get()
@@ -356,7 +356,8 @@ class WorkspaceFrameLogic:
         self.command_info_label.config(font=('Arial', font_size))
         for tab in self.tab_control.tabs():
             text_widget = self.tab_control.nametowidget(tab).winfo_children()[0]
-            text_widget.config(font=('Arial', font_size))
+           
+
 
     def load_previous_commands(self):
         for command in self.parent.commands_used:

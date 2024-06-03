@@ -1,7 +1,6 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD
-from tkinter import ttk
 from ui.import_frame import ImportFrame
 from ui.workspace_frame import WorkspaceFrame
 from ui.export_frame import ExportFrame
@@ -22,6 +21,7 @@ class MainApplication(TkinterDnD.Tk):
 
         # File Menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
+        file_menu.add_command(label="Open...", command=self.open_file)  # Bind open_file here
         file_menu.add_command(label="New...", command=self.new_session)
         file_menu.add_command(label="Export...", command=self.switch_to_export_frame)
         file_menu.add_separator()
@@ -34,7 +34,7 @@ class MainApplication(TkinterDnD.Tk):
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
-        self.loaded_file = "No file loaded"
+        self.loaded_file = None  # Initialize loaded_file to None
         self.scan_result = None  # To hold scan results
         self.commands_used = []  # To hold commands used
         self.highlights = []  # To hold highlights
@@ -78,6 +78,8 @@ class MainApplication(TkinterDnD.Tk):
 
     def reset_to_import(self):
         """Reset the application state and go back to the drag and drop page."""
+        self.loaded_file = None  # Reset loaded file
+        self.update_loaded_file_label()  # Update label
         self.show_frame(ImportFrame)
 
     def switch_to_export_frame(self):
@@ -86,6 +88,7 @@ class MainApplication(TkinterDnD.Tk):
 
     def switch_to_workspace_frame(self):
         """Switch to the workspace frame."""
+        self.update_loaded_file_label()  # Update the loaded file label
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
@@ -98,12 +101,23 @@ class MainApplication(TkinterDnD.Tk):
         frame.tkraise()
 
     def open_file(self):
-        # Placeholder function to open a file
-        print("File opened")
+        print("open_file called")  # Debug statement
+        file_path = filedialog.askopenfilename()
+        if file_path:
+            print(f"Loaded file: {file_path}")  # Debug statement
+            self.loaded_file = file_path
+            self.update_loaded_file_label()
+            self.show_frame(WorkspaceFrame)
 
     def save_file(self):
         # Placeholder function to save a file
         print("File saved")
+
+    def update_loaded_file_label(self):
+        if self.loaded_file:
+            frame = self.frames[WorkspaceFrame]
+            print(f"Updating label with file: {self.loaded_file}")  # Debug statement
+            frame.update_loaded_file_label()
 
 if __name__ == "__main__":
     app = MainApplication()

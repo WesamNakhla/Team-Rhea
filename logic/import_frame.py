@@ -29,6 +29,7 @@ class ImportFrameLogic:
         filename = filedialog.askopenfilename()
         if filename:
             self.handle_file(filename)
+            
 
     def browse_file(self):
         filename = filedialog.askopenfilename()

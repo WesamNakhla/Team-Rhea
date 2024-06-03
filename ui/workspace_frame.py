@@ -1,10 +1,11 @@
 import tkinter as tk
 from tkinter import ttk
+import os
 from logic.workspace_frame import WorkspaceFrameLogic
 
 class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def __init__(self, parent, switch_to_export_frame):
-        ttk.Frame.__init__(self, parent)
+        tk.Frame.__init__(self, parent)
         WorkspaceFrameLogic.__init__(self, parent)
         self.switch_to_export_frame = switch_to_export_frame
         self.init_ui()
@@ -53,11 +54,11 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.tab_control.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
         # Highlight buttons
-        self.highlight_frame = ttk.Frame(self)
+        self.highlight_frame = tk.Frame(self)
         self.highlight_frame.grid(row=5, column=0, columnspan=4, pady=5, sticky="we")
 
         # Single highlight button with color chooser
-        self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
+        self.highlight_button = tk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
         self.highlight_button.pack(side="left", padx=5, pady=5)
 
         self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
@@ -76,7 +77,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.grid_columnconfigure(3, weight=1)
 
         # Search bar
-        self.search_frame = ttk.Frame(self)
+        self.search_frame = tk.Frame(self)
         self.search_frame.grid(row=5, column=3, columnspan=1, pady=5, sticky="we")
         self.search_label = ttk.Label(self.search_frame, text="Search:")
         self.search_label.pack(side="left", padx=5, pady=5)
@@ -84,3 +85,4 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.search_entry.pack(side="left", padx=5, pady=5, fill="x", expand=True)
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
         self.search_button.pack(side="left", padx=5, pady=5)
+
