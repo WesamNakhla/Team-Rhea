@@ -39,43 +39,42 @@ class LineNumberCanvas(tk.Canvas):
 
         self.update_line_numbers()
 
-    
     def on_content_change(self, event=None):
-     self.update_line_numbers()
+        self.update_line_numbers()
 
     def on_text_widget_scroll(self, event):
-     self.update_line_numbers()
-     return "break"
+        self.update_line_numbers()
+        return "break"
 
     def on_mouse_scroll(self, event):
-      self.text_widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
-      self.update_line_numbers()
-      return "break"
+        self.text_widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        self.update_line_numbers()
+        return "break"
 
     def on_scroll(self, event=None):
-      self.update_line_numbers()
+        self.update_line_numbers()
 
     def on_key_release(self, event=None):
         self.update_line_numbers()
 
     def update_line_numbers(self):
-      self.delete("all")
-     # Calculate the starting line index
-      visible_start_index = self.text_widget.index("@0,0")
-      line_index = int(visible_start_index.split(".")[0])
-      line_count = max(1, line_index - self.start_line + 1)
+        self.delete("all")
+        # Calculate the starting line index
+        visible_start_index = self.text_widget.index("@0,0")
+        line_index = int(visible_start_index.split(".")[0])
+        line_count = max(1, line_index - self.start_line + 1)
 
-      i = self.text_widget.index(f"{self.start_line}.0")
+        i = self.text_widget.index(f"{visible_start_index}")
 
-      while True:
-        dline = self.text_widget.dlineinfo(i)
-        if dline is None:
-            break
-        y = dline[1]
-        if int(i.split(".")[0]) >= self.start_line:
-            self.create_text(2, y, anchor="nw", text=str(line_count), font=("Arial", 10), fill="white")
-            line_count += 1
-        i = self.text_widget.index(f"{i}+1line")
+        while True:
+            dline = self.text_widget.dlineinfo(i)
+            if dline is None:
+                break
+            y = dline[1]
+            if int(i.split(".")[0]) >= self.start_line:
+                self.create_text(2, y, anchor="nw", text=str(line_count), font=("Arial", 10), fill="white")
+                line_count += 1
+            i = self.text_widget.index(f"{i}+1line")
 
     def attach(self, widget):
         widget.bind("<MouseWheel>", self.on_mouse_scroll)
@@ -84,6 +83,7 @@ class LineNumberCanvas(tk.Canvas):
 
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
+
 
 
 class WorkspaceFrame(tk.Frame):
