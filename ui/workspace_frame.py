@@ -58,7 +58,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.highlight_frame.grid(row=5, column=0, columnspan=4, pady=5, sticky="we")
 
         # Single highlight button with color chooser
-        self.highlight_button = tk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
+        self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
         self.highlight_button.pack(side="left", padx=5, pady=5)
 
         self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
