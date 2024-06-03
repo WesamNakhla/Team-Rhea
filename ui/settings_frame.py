@@ -1,3 +1,4 @@
+#located at ui/settings_frame.py
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from logic.settings_frame import SettingsFrameLogic
