@@ -11,42 +11,64 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.load_settings()  # Ensure this is called after UI initialization
 
     def init_ui(self):
-        self.label = tk.Label(self, text="Settings", font=('Arial', 14))
-        self.label.pack(pady=10)
+        # Main content frame
+        self.main_frame = tk.Frame(self)
+        self.main_frame.grid(row=0, column=0, sticky="nsew")
+        self.main_frame.grid_columnconfigure(0, weight=1)
+        self.main_frame.grid_columnconfigure(1, weight=2)
+        self.main_frame.grid_columnconfigure(2, weight=1)
+
+        # Bottom frame for version label
+        self.bottom_frame = tk.Frame(self)
+        self.bottom_frame.grid(row=1, column=0, sticky="ew")
+        self.bottom_frame.grid_columnconfigure(0, weight=1)
+
+        # Configure the main grid
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=0)
+        self.grid_columnconfigure(0, weight=1)
+
+        # Settings label
+        self.label = tk.Label(self.main_frame, text="Settings", font=('Arial', 28))
+        self.label.grid(row=0, column=0, columnspan=3, pady=10, padx=10, sticky="w")
 
         # Volatility Path
-        self.volatility_path_label = tk.Label(self, text="Path to Volatility3:", pady=5)
-        self.volatility_path_label.pack()
-        self.volatility_path_entry = ttk.Entry(self, width=50)
-        self.volatility_path_entry.pack()
-        self.browse_button = ttk.Button(self, text="Browse", command=self.browse_folder)
-        self.browse_button.pack(pady=5)
+        self.volatility_path_label = tk.Label(self.main_frame, text="Path to Volatility3:", pady=5, font=('Arial', 12))
+        self.volatility_path_label.grid(row=1, column=0, sticky="w", padx=10, pady=5)
+        self.volatility_path_entry = ttk.Entry(self.main_frame, width=50)
+        self.volatility_path_entry.grid(row=1, column=1, sticky="ew", padx=10, pady=5)
+        self.browse_button = ttk.Button(self.main_frame, text="Browse", command=self.browse_folder)
+        self.browse_button.grid(row=1, column=2, sticky="w", padx=10, pady=5)
+
+        # Result Window Options
+        self.result_window_options_label = tk.Label(self.main_frame, text="Result window options", font=('Arial', 18))
+        self.result_window_options_label.grid(row=2, column=0, columnspan=3, pady=20, padx=10, sticky="w")
 
         # Font Size
-        self.font_size_label = tk.Label(self, text="Output Console Font Size:", pady=5)
-        self.font_size_label.pack()
-        self.font_size_spinbox = tk.Spinbox(self, from_=8, to=48)
-        self.font_size_spinbox.pack()
+        self.font_size_label = tk.Label(self.main_frame, text="Font size:", font=('Arial', 12))
+        self.font_size_label.grid(row=3, column=0, sticky="w", padx=10, pady=5)
+        self.font_size_spinbox = ttk.Spinbox(self.main_frame, from_=8, to=48, width=5)
+        self.font_size_spinbox.grid(row=3, column=1, sticky="ew", padx=10, pady=5)
 
         # Line Distance
-        self.line_distance_label = tk.Label(self, text="Output Console Line Distance:", pady=5)
-        self.line_distance_label.pack()
-        self.line_distance_spinbox = tk.Spinbox(self, from_=1, to=10)
-        self.line_distance_spinbox.pack()
+        self.line_distance_label = tk.Label(self.main_frame, text="Line distance:", font=('Arial', 12))
+        self.line_distance_label.grid(row=4, column=0, sticky="w", padx=10, pady=5)
+        self.line_distance_spinbox = ttk.Spinbox(self.main_frame, from_=1, to=10, width=5)
+        self.line_distance_spinbox.grid(row=4, column=1, sticky="ew", padx=10, pady=5)
 
         # Letter Distance
-        self.letter_distance_label = tk.Label(self, text="Output Console Letter Distance:", pady=5)
-        self.letter_distance_label.pack()
-        self.letter_distance_spinbox = tk.Spinbox(self, from_=0, to=10)
-        self.letter_distance_spinbox.pack()
+        self.letter_distance_label = tk.Label(self.main_frame, text="Letter distance:", font=('Arial', 12))
+        self.letter_distance_label.grid(row=5, column=0, sticky="w", padx=10, pady=5)
+        self.letter_distance_spinbox = ttk.Spinbox(self.main_frame, from_=0, to=10, width=5)
+        self.letter_distance_spinbox.grid(row=5, column=1, sticky="ew", padx=10, pady=5)
 
         # Save and Exit Buttons
-        self.save_button = ttk.Button(self, text="Save", command=self.save_settings)
-        self.exit_button = ttk.Button(self, text="Exit", command=self.exit_settings)
-        self.save_button.pack(pady=5)
-        self.exit_button.pack(pady=5)
+        self.save_button = ttk.Button(self.main_frame, text="Save", command=self.save_settings)
+        self.save_button.grid(row=6, column=1, pady=20, padx=10, sticky="e")
+        self.exit_button = ttk.Button(self.main_frame, text="Exit", command=self.exit_settings)
+        self.exit_button.grid(row=6, column=2, pady=20, padx=10, sticky="w")
 
         # Version Label at Bottom Left corner
         version_text = "VolGUI 1.0.0 and Volatility 3 Framework 2.7.0"
-        self.version_label = tk.Label(self, text=version_text)
-        self.version_label.pack(side="bottom", anchor="w", padx=10, pady=10)
+        self.version_label = tk.Label(self.bottom_frame, text=version_text)
+        self.version_label.grid(row=0, column=0, sticky="w", padx=10, pady=10)
