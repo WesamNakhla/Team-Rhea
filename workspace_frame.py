@@ -8,33 +8,98 @@ import re
 import os
 import textwrap
 
+class CustomText(tk.Text):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Add any custom initialization here if needed
+        # For example, you can add custom methods or override existing ones
+
+# Your existing LineNumberCanvas and WorkspaceFrame classes
 class LineNumberCanvas(tk.Canvas):
-    def __init__(self, master, text_widget, start_line=5, **kwargs): 
+    def __init__(self, master, text_widget, start_line=5, **kwargs):
         super().__init__(master, **kwargs)
         self.text_widget = text_widget
         self.start_line = start_line
         self.text_widget.bind("<KeyRelease>", self.on_key_release)
         self.text_widget.bind("<MouseWheel>", self.on_scroll)
+
+        self.text_widget.bind("<KeyRelease>", self.on_content_change)
+        self.text_widget.bind("<MouseWheel>", self.on_content_change)
+        self.text_widget.bind("<<Change>>", self.on_content_change)
+        self.text_widget.bind("<Configure>", self.on_content_change)
+        self.text_widget.bind("<Button-1>", self.on_content_change)
+
+        # Synchronize scrolling
+        self.text_widget.bind("<MouseWheel>", self.on_text_widget_scroll)
+        self.text_widget.bind("<Button-4>", self.on_text_widget_scroll)
+        self.text_widget.bind("<Button-5>", self.on_text_widget_scroll)
+        self.text_widget.bind("<KeyPress>", self.on_text_widget_scroll)
+        self.text_widget.bind("<Motion>", self.on_text_widget_scroll)
+        self.text_widget.bind("<ButtonRelease-1>", self.on_text_widget_scroll)
+        self.text_widget.bind("<<ScrollbarVisible>>", self.on_text_widget_scroll)
+
+        self.update_line_numbers()
+
+    def on_content_change(self, event=None):
+        self.update_line_numbers()
+
+    def on_text_widget_scroll(self, event):
+        self.update_line_numbers()
+        return "break"
+
+    def on_mouse_scroll(self, event):
+        self.text_widget.yview_scroll(int(-1 * (event.delta / 120)), "units")
+        self.update_line_numbers()
+        return "break"
+    def on_scroll(self, event=None):
         self.update_line_numbers()
 
     def on_key_release(self, event=None):
         self.update_line_numbers()
-
-    def on_scroll(self, event=None):
-        self.update_line_numbers()
-
+        
     def update_line_numbers(self):
         self.delete("all")
         i = self.text_widget.index(f"{self.start_line}.0")
         line_count = 1  # Start line count from 1
+        # Check if the top part of the text widget contains an error message
+        top_content = self.text_widget.get("1.0", "1.0 + 2 lines")  # Get the first two lines of the content
+        if "Error" in top_content or "error" in top_content:
+            return  # Do not display line numbers if there is an error message at the start
+
+        visible_start_index = self.text_widget.index("@0,0")
+        line_index = int(visible_start_index.split(".")[0])
+
+        # Calculate the starting line number based on the visible line index and the start line
+        if line_index >= self.start_line:
+            line_number = line_index - self.start_line + 1
+        else:
+            line_number = 1  # No line numbers should be shown if we're before the start_line
+
+        i = self.text_widget.index(f"{line_index}.0")
+
         while True:
             dline = self.text_widget.dlineinfo(i)
             if dline is None:
                 break
             y = dline[1]
-            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")
-            i = self.text_widget.index(f"{i}+1line")
+            self.create_text(2, y, anchor="nw", text=line_count, font=("Arial", 10), fill="white")  # Set color here or adjust line size and writing theme
+            i = self.text_widget.index(f"{i}+1line")                                                 # What colour should it be? grey is conflicting with the background, also i dont recommend white.
             line_count += 1
+
+            if line_index >= self.start_line:  # Only show line numbers for lines starting from self.start_line
+                linenum = str(line_number)
+                self.create_text(2, y, anchor="nw", text=linenum, font=("Arial", 10), fill="white")  # Set color here
+                line_number += 1
+            i = self.text_widget.index(f"{i}+1line")
+            line_index += 1
+
+    def attach(self, widget):
+        widget.bind("<MouseWheel>", self.on_mouse_scroll)
+        widget.bind("<Button-4>", self.on_mouse_scroll)
+        widget.bind("<Button-5>", self.on_mouse_scroll)
+
+    def on_mouse_scroll(self, event):
+        self.update_line_numbers()
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, switch_frame_callback):
@@ -82,7 +147,7 @@ class WorkspaceFrame(tk.Frame):
         # Kill command button
         self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.run_command)
         self.kill_command_button.grid(row=1, column=4, padx=(10, 10), pady=5, sticky="w")
-        
+
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.", width=50, anchor="w", wraplength=400)
         self.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
@@ -129,16 +194,16 @@ class WorkspaceFrame(tk.Frame):
         # Load the settings from the settings.json file
         with open('settings.json', 'r') as file:
             settings = json.load(file)
-        
+
         # Retrieve the base path for volatility from the settings
         base_path = settings.get('volatility_path', '')
 
         # Construct the full path to the vol.py file
         full_path = os.path.join(base_path, 'vol.py')
-        
+
         # Convert path to a format suitable for Python scripts
         full_path = full_path.replace('/', os.sep)
-        
+
         return full_path
 
     def update_loaded_file_label(self):
@@ -288,26 +353,42 @@ class WorkspaceFrame(tk.Frame):
         self.progress['value'] = 0
         self.update_idletasks()
 
-    def add_tab(self, command, output):
-        # Check if the tab for this command already exists
-        if command in self.command_tabs:
-            # If the tab exists, focus it and notify the user
-            self.tab_control.select(self.command_tabs[command])
-            messagebox.showinfo("Info", f"The command '{command}' has already been run.")
+    def add_tab(self, title, output):
+        if title in self.command_tabs:
+            # Focus the existing tab if it's already open
+            self.tab_control.select(self.command_tabs[title])
         else:
             # If the tab does not exist, create a new one
             new_tab = ttk.Frame(self.tab_control)
-            text_output = tk.Text(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
-            text_output.pack(expand=1, fill='both')
+            
+            # Create the Text widget
+            text_output = CustomText(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
+            
+            # Add a vertical scrollbar
+            v_scrollbar = tk.Scrollbar(new_tab, orient="vertical", command=text_output.yview)
+            v_scrollbar.pack(side="right", fill="y")
+            text_output.config(yscrollcommand=v_scrollbar.set)
+            
+            # Pack the Text widget
+            text_output.pack(side="right", fill="both", expand=True)
+            
+            # Add line number canvas
+            line_number_canvas = LineNumberCanvas(new_tab, text_output, start_line=5, width=30)
+            line_number_canvas.pack(side="left", fill="y")
+            
+            # Attach the line number canvas to the text widget
+            line_number_canvas.attach(text_output)
+            
+            # Insert the output text
             text_output.insert(tk.END, output)
             
+            # Ensure line numbers update immediately
+            text_output.event_generate("<<Change>>")
+            
             # Add the new tab to the notebook with the command as its title
-            self.tab_control.add(new_tab, text=command)
-            self.command_tabs[command] = new_tab  # Store the reference to the new tab
-            # Add line number canvas
-            line_number_canvas = LineNumberCanvas(new_tab, text_output, start_line=5, width=30)  
-            line_number_canvas.pack(side="left", fill="y")
-            text_output.pack(side="right", fill="both", expand=True)  
+            self.tab_control.add(new_tab, text=title)
+            self.command_tabs[title] = new_tab  # Store the reference to the new tab
+
 
     def choose_highlight_color(self):
         color_code = colorchooser.askcolor(title="Choose highlight color")
