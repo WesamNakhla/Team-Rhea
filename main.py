@@ -1,4 +1,3 @@
-#located at main.py
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD
@@ -14,19 +13,15 @@ class MainApplication(TkinterDnD.Tk):
         self.title('Mnemonic Volatility3 GUI')
         self.geometry('1024x768')
 
+        # Load the Azure theme
         self.load_theme()
 
         self.menu_bar = tk.Menu(self)
         self.config(menu=self.menu_bar)
 
-        # Initialize placeholders for frame data
-        self.scan_result = None
-        self.commands_used = []
-        self.highlights = []
-
         # File Menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
-        file_menu.add_command(label="Open...", command=self.open_file)
+        file_menu.add_command(label="Open...", command=self.open_file)  # Bind open_file here
         file_menu.add_command(label="New...", command=self.new_session)
         file_menu.add_command(label="Export...", command=self.switch_to_export_frame)
         file_menu.add_separator()
@@ -39,33 +34,30 @@ class MainApplication(TkinterDnD.Tk):
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
-
-        # Initialize all frames properly
-        self.frames[ImportFrame] = ImportFrame(self, app=self)
-        self.frames[WorkspaceFrame] = WorkspaceFrame(self, switch_to_export_frame=self.switch_to_export_frame)
-        self.frames[ExportFrame] = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
-        self.frames[SettingsFrame] = SettingsFrame(self, app=self)  # Pass `app=self` to SettingsFrame
-
-        # Grid all frames
-        for frame in self.frames.values():
+        self.loaded_file = None  # Initialize loaded_file to None
+        self.scan_result = None  # To hold scan results
+        self.commands_used = []  # To hold commands used
+        self.highlights = []  # To hold highlights
+        # Initialize all frames and store in the dictionary
+        for FrameClass in (ImportFrame, WorkspaceFrame, ExportFrame, SettingsFrame):
+            if FrameClass is ImportFrame:
+                frame = FrameClass(self, app=self)
+            elif FrameClass is ExportFrame:
+                frame = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
+            elif FrameClass is SettingsFrame:
+                frame = SettingsFrame(self, app=self)  # Pass self to SettingsFrame
+            elif FrameClass is WorkspaceFrame:
+                frame = WorkspaceFrame(self, switch_to_export_frame=self.switch_to_export_frame)
+            else:
+                frame = FrameClass(self)
+            self.frames[FrameClass] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
+        # Configure the grid to expand with the window
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
+
         self.show_frame(ImportFrame)
-
-    def load_theme(self):
-        theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
-        azure_tcl_path = os.path.join(theme_dir, 'azure.tcl')
-        if os.path.exists(azure_tcl_path):
-            self.tk.call('source', azure_tcl_path)
-            self.tk.call('set_theme', 'dark')
-        else:
-            print(f"Theme file {azure_tcl_path} not found.")
-
-    def show_frame(self, cont):
-        frame = self.frames[cont]
-        frame.tkraise()
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
@@ -102,6 +94,11 @@ class MainApplication(TkinterDnD.Tk):
     def switch_to_settings_frame(self):
         """Switch to the settings frame."""
         self.show_frame(SettingsFrame)
+
+    def show_frame(self, cont):
+        """Raise the given frame to the top for viewing."""
+        frame = self.frames[cont]
+        frame.tkraise()
 
     def open_file(self):
         print("open_file called")  # Debug statement

@@ -90,6 +90,7 @@ class WorkspaceFrameLogic:
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
+        self.running_process = None  # Store the running process
 
     def update_loaded_file_label(self):
         full_path = self.parent.loaded_file
@@ -205,15 +206,25 @@ class WorkspaceFrameLogic:
 
         full_command = f"python {vol_path} -f {file_path} {command}"
         print(f"Running command: {full_command}")
-        result = subprocess.run(full_command, capture_output=True, text=True, shell=True)
-        findings = result.stdout if result.stdout else "No output received."
-        if result.stderr:
-            findings += "\nError:\n" + result.stderr
+        self.running_process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        stdout, stderr = self.running_process.communicate()
+        findings = stdout if stdout else "No output received."
+        if stderr:
+            findings += "\nError:\n" + stderr
+        self.running_process = None
         return command, findings
 
     def command_finished(self, future):
         command, findings = future.result()
         self.parent.after(0, self.add_tab, command.split()[-1], findings)
+
+    def kill_command(self):
+        if self.running_process:
+            self.running_process.terminate()
+            self.running_process = None
+            messagebox.showinfo("Info", "Command has been terminated.")
+        else:
+            messagebox.showinfo("Info", "No running command to kill.")
 
     def parse_output(self, output, command):
         findings = []
@@ -370,3 +381,44 @@ class WorkspaceFrameLogic:
                 text_widget.tag_add(color, start, end)
                 text_widget.tag_config(color, background=color)
                 start = end
+
+class kill_process (ttk.Frame):
+    def __init__(self, parent, switch_to_export_frame):
+        super().__init__(parent)
+        self.logic = WorkspaceFrameLogic(parent)
+        self.switch_to_export_frame = switch_to_export_frame
+
+        self.grid(row=0, column=0, sticky="nsew")
+
+        # Command selection and execution UI
+        command_frame = ttk.Frame(self)
+        command_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
+
+        self.logic.file_label = ttk.Label(command_frame, text="Loaded file: No file loaded")
+        self.logic.file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+
+        ttk.Label(command_frame, text="Choose command:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        self.logic.command_var = tk.StringVar(value="-choose command-")
+        self.logic.command_dropdown = ttk.Combobox(command_frame, textvariable=self.logic.command_var, state="readonly")
+        self.logic.command_dropdown['values'] = ["-choose command-", "Custom"] + [cmd['name'] for cmd in self.logic.commands]
+        self.logic.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+        self.logic.command_dropdown.bind("<<ComboboxSelected>>", self.logic.update_command_info)
+
+        self.logic.custom_command_label = ttk.Label(command_frame, text="Custom command:")
+        self.logic.custom_command_entry = ttk.Entry(command_frame)
+
+        self.logic.run_command_button = ttk.Button(command_frame, text="Execute Command", command=self.logic.run_command)
+        self.logic.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="we")
+
+        self.logic.command_info_label = ttk.Label(command_frame, text="Select a command to see the description and type.")
+        self.logic.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
+
+        self.kill_button = ttk.Button(command_frame, text="Kill", command=self.logic.kill_command)
+        self.kill_button.grid(row=1, column=4, padx=10, pady=5, sticky="we")
+
+        # Text output and search UI
+        text_frame = ttk.Frame(self)
+        text_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
+
+        self.logic.tab_control = ttk.Notebook(text_frame)
+        self.logic.tab_control.pack(fill=tk.BOTH, expand=True)
