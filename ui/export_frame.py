@@ -1,7 +1,11 @@
-#located at ui/export_frame.py
+# located at ui/export_frame.py
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox, filedialog  # Import filedialog
 from logic.export_frame import ExportFrameLogic
+from PIL import Image, ImageTk, ImageSequence
+import os
+import threading
+from ui.workspace_frame import WorkspaceFrame  # Import WorkspaceFrame
 
 class ExportFrame(ttk.Frame, ExportFrameLogic):
     def __init__(self, parent, switch_frame_callback, scan_result, commands_used, highlights):
@@ -11,42 +15,74 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         self.init_ui()
 
     def init_ui(self):
-        # This method should set up the UI components
         self.grid_rowconfigure(0, weight=1)
         self.grid_columnconfigure(0, weight=1)
 
         frame = ttk.Frame(self)
         frame.grid(row=0, column=0, sticky="nsew")
 
-        # Create a label
-        label = ttk.Label(frame, text="Export Options", font=('Arial', 14))
-        label.grid(row=0, column=0, pady=10, padx=20)
+        # Create a label for the title
+        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 16, 'bold'))
+        title_label.grid(row=0, column=0, pady=10, padx=20, columnspan=2)
 
         # Create checkboxes for export options
-        self.include_image_var = tk.BooleanVar(value=True)
-        self.include_image_check = ttk.Checkbutton(frame, text="Include memory dump file", variable=self.include_image_var)
-        self.include_image_check.grid(row=1, column=0, pady=5)
+        self.include_memory_dump_check = ttk.Checkbutton(frame, text="Include memory dump file", variable=self.include_memory_dump)
+        self.include_memory_dump_check.grid(row=1, column=0, pady=5, sticky="w", padx=20)
 
-        self.include_commands_var = tk.BooleanVar(value=True)
-        self.include_commands_check = ttk.Checkbutton(frame, text="Include all command outputs", variable=self.include_commands_var)
-        self.include_commands_check.grid(row=2, column=0, pady=5)
-
-        self.include_formatting_var = tk.BooleanVar(value=True)
-        self.include_formatting_check = ttk.Checkbutton(frame, text="Include text formatting", variable=self.include_formatting_var)
-        self.include_formatting_check.grid(row=3, column=0, pady=5)
+        self.include_highlighting_check = ttk.Checkbutton(frame, text="Include text formatting", variable=self.include_highlighting)
+        self.include_highlighting_check.grid(row=2, column=0, pady=5, sticky="w", padx=20)
 
         # Buttons for exporting and cancelling
-        export_button = ttk.Button(frame, text="Export", command=self.export_package)
-        export_button.grid(row=4, column=0, padx=10, pady=10)
+        export_button = ttk.Button(frame, text="Export zip as...", command=self.choose_save_location)
+        export_button.grid(row=3, column=0, padx=10, pady=20)
 
         cancel_button = ttk.Button(frame, text="Cancel", command=self.cancel)
-        cancel_button.grid(row=4, column=1, padx=10, pady=10)
+        cancel_button.grid(row=3, column=1, padx=10, pady=20)
 
-    def export_package(self):
-        # Override this method if needed or use the logic layer's method directly
-        super().export_package()
+        # Loading GIF and message label (initially hidden)
+        self.loading_frame = ttk.Frame(frame)
+        self.loading_frame.grid(row=4, column=0, columnspan=2, pady=20)
+        self.loading_frame.grid_remove()
+
+        self.loading_label = ttk.Label(self.loading_frame, text="Exporting... please wait!", font=('Arial', 12))
+        self.loading_label.pack(side=tk.TOP, pady=10)
+
+        # Resize the GIF to an appropriate size
+        self.loading_gif = Image.open("img/loading.gif")
+        self.loading_frames = [ImageTk.PhotoImage(frame.resize((50, 50), Image.ANTIALIAS)) for frame in ImageSequence.Iterator(self.loading_gif)]
+        
+        self.loading_image_label = ttk.Label(self.loading_frame)  # Initialize loading_image_label
+        self.loading_image_label.pack(side=tk.TOP)
+
+        self.loading_frame_index = 0
+        self.loading_animation = None
+
+    def choose_save_location(self):
+        zip_path = filedialog.asksaveasfilename(title="Export zip as...", filetypes=[("Zip files", "*.zip")], defaultextension=".zip")
+        if zip_path:
+            self.show_loading()
+            threading.Thread(target=self.create_zip_file, args=(zip_path, self.parent.frames[WorkspaceFrame].get_export_data())).start()
+
+    def show_loading(self):
+        self.loading_frame.grid()
+        self.loading_animation = self.loading_image_label.after(100, self.animate_loading)
+
+    def hide_loading(self):
+        self.loading_frame.grid_remove()
+        if self.loading_animation:
+            self.loading_image_label.after_cancel(self.loading_animation)
+            self.loading_animation = None
+
+    def animate_loading(self):
+        frame = self.loading_frames[self.loading_frame_index]
+        self.loading_image_label.configure(image=frame)
+        self.loading_frame_index = (self.loading_frame_index + 1) % len(self.loading_frames)
+        self.loading_animation = self.loading_image_label.after(100, self.animate_loading)
+
+    def export_complete(self):
+        self.hide_loading()
+        messagebox.showinfo("Export Complete", "Exported package saved successfully.")
+        os.startfile(self.export_dir)
 
     def cancel(self):
-        # Call the switch frame callback or perform any necessary cleanup
         self.switch_frame_callback()
-

@@ -1,3 +1,4 @@
+
 import concurrent.futures
 import json
 import os
@@ -9,6 +10,7 @@ import time
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
+import concurrent.futures
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -92,6 +94,7 @@ class WorkspaceFrameLogic:
         self.command_details = {}
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
         self.running_process = None  # Store the running process
+        self.futures = []  # Initialize the futures list
 
     def update_loaded_file_label(self):
         full_path = self.parent.loaded_file
@@ -374,19 +377,28 @@ class WorkspaceFrameLogic:
             end = text_widget.index("sel.last")
             text_widget.tag_add(color, start, end)
             text_widget.tag_config(color, background=color)
-            self.parent.highlights.append((text_widget.get(start, end), color))  # Store the highlight
+            self.parent.highlights.append((color, start, end))  # Store the highlight without text
 
             # Store the highlight details for export
-            start_index = text_widget.index("sel.first")
-            end_index = text_widget.index("sel.last")
-            self.command_details[title]["highlights"].append({
-                "text": text_widget.get(start_index, end_index),
-                "color": color,
-                "start": start_index,
-                "end": end_index
-            })
+            title = self.tab_control.tab(selected_tab, "text")
+            if title in self.command_details:
+                self.command_details[title]["highlights"].append({
+                    "color": color,
+                    "start": start,
+                    "end": end
+                })
+            else:
+                self.command_details[title] = {
+                    "command": title,
+                    "highlights": [{
+                        "color": color,
+                        "start": start,
+                        "end": end
+                    }]
+                }
         except tk.TclError:
             print("No text selected")
+
 
     def remove_highlight(self):
         try:
@@ -430,22 +442,25 @@ class WorkspaceFrameLogic:
         print("Preparing export data...")
         if self.parent.loaded_file:
             export_data = {
-                "memory_dump_file": self.parent.loaded_file,
-                "commands": [cmd for cmd in self.command_details.values() if cmd.get('output')],
-                "highlights": self.parent.highlights
+                "memory_dump_file": self.parent.loaded_file,  # Use the full path here
+                "commands": [
+                    {
+                        "command": cmd["command"],
+                        "highlights": cmd.get("highlights", []),
+                        "output_file": f"{cmd['command'].replace('.', '_')}.txt"  # Ensure output_file is included
+                    }
+                    for cmd in self.command_details.values()
+                ]
             }
             print(f"Export data collected: {export_data}")
             return export_data
         else:
             print("No loaded file or command data found.")
             return {}
-        
+
     def get_export_data(self):
-        return {
-            "memory_dump_file": self.parent.loaded_file,
-            "commands": list(self.command_details.values()),
-            "highlights": self.parent.highlights
-        }
+        return self.prepare_export_data()
+
 
 class kill_process (ttk.Frame):
     def __init__(self, parent, switch_to_export_frame):
