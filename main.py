@@ -6,6 +6,7 @@ from ui.import_frame import ImportFrame
 from ui.workspace_frame import WorkspaceFrame
 from ui.export_frame import ExportFrame
 from ui.settings_frame import SettingsFrame
+from ui.command_frame import CommandFrame
 import os
 
 class MainApplication(TkinterDnD.Tk):
@@ -36,6 +37,7 @@ class MainApplication(TkinterDnD.Tk):
         # Edit Menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label="Settings", command=self.switch_to_settings_frame)
+        edit_menu.add_command(label="Command Management", command=self.switch_to_command_frame)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
 
         self.frames = {}
@@ -45,6 +47,7 @@ class MainApplication(TkinterDnD.Tk):
         self.frames[WorkspaceFrame] = WorkspaceFrame(self, switch_to_export_frame=self.switch_to_export_frame)
         self.frames[ExportFrame] = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
         self.frames[SettingsFrame] = SettingsFrame(self, app=self)  # Pass `app=self` to SettingsFrame
+        self.frames[CommandFrame] = CommandFrame(self, app=self)  # Initialize CommandFrame
 
         # Grid all frames
         for frame in self.frames.values():
@@ -102,6 +105,9 @@ class MainApplication(TkinterDnD.Tk):
     def switch_to_settings_frame(self):
         """Switch to the settings frame."""
         self.show_frame(SettingsFrame)
+
+    def switch_to_command_frame(self):
+        self.show_frame(CommandFrame)
 
     def open_file(self):
         print("open_file called")  # Debug statement
