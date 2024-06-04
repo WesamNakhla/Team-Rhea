@@ -89,6 +89,7 @@ class WorkspaceFrameLogic:
         self.parent = parent
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
+        self.command_details = {}
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
         self.running_process = None  # Store the running process
 
@@ -175,19 +176,17 @@ class WorkspaceFrameLogic:
             return
 
         selected_index = self.command_dropdown.current()
-        if selected_index <= 1:  # 'Choose command...' or 'Custom'
-            if selected_index == 1 and self.custom_command_entry.get().strip():
-                command = self.custom_command_entry.get().strip()
-            else:
-                messagebox.showerror("Error", "Please select a command or enter a custom command.")
-                return
-        else:
+        command = None
+        if selected_index == 1:  # Custom command
+            command = self.custom_command_entry.get().strip()
+        elif selected_index > 1:  # Predefined command selected
             command_index = selected_index - 2  # Adjust index for 'Choose command...' and 'Custom'
             if command_index < len(self.commands):
                 command = self.commands[command_index]['command']
-            else:
-                messagebox.showerror("Error", "Selected command index is out of range.")
-                return
+        
+        if not command:
+            messagebox.showerror("Error", "Please select a command or enter a custom command.")
+            return
 
         # Check if the command has already been run (tab exists)
         if command in self.command_tabs:
@@ -195,9 +194,29 @@ class WorkspaceFrameLogic:
             messagebox.showinfo("Info", f"The command '{command}' has already been run.")
             return
 
-        # Run the command in a separate thread using ThreadPoolExecutor
+        # Execute the command in a separate thread using ThreadPoolExecutor
         future = self.executor.submit(self.execute_command, file_path, command)
-        future.add_done_callback(self.command_finished)
+        future.add_done_callback(lambda f, cmd=command: self.command_finished(f, cmd))
+
+
+
+    def command_finished(self, future, command):
+        try:
+            if future.done():
+                command_result, findings = future.result()
+                self.parent.after(0, self.add_tab, command_result, findings)
+                self.command_details[command_result] = {
+                    "command": command_result,
+                    "output": findings,
+                    "highlights": []  # Placeholder for any highlights data
+                }
+                self.check_all_commands_finished()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error executing command {command}: {str(e)}")
+            print(f"Exception when processing command result: {e}")
+
+
+
 
     def execute_command(self, file_path, command):
         vol_path = self.get_volatility_path()
@@ -214,17 +233,31 @@ class WorkspaceFrameLogic:
         self.running_process = None
         return command, findings
 
-    def command_finished(self, future):
-        command, findings = future.result()
-        self.parent.after(0, self.add_tab, command.split()[-1], findings)
 
-    def kill_command(self):
-        if self.running_process:
-            self.running_process.terminate()
-            self.running_process = None
-            messagebox.showinfo("Info", "Command has been terminated.")
-        else:
-            messagebox.showinfo("Info", "No running command to kill.")
+    def check_all_commands_finished(self):
+        if all(f.done() for f in self.futures):  # Check if all futures are done
+            print("All commands have finished executing.")
+            self.prepare_export_data()  # Now prepare export data
+
+    def run_volatility(self, command):
+        print(f"Running command: {command}")
+        try:
+            result = subprocess.run(command, capture_output=True, text=True, shell=True)
+            findings = result.stdout if result.stdout else "No output received."
+            if result.stderr:
+                findings += "\nError:\n" + result.stderr
+
+            command_key = command.split()[-1]  # Simple command name extraction
+            self.command_details[command_key] = {
+                "command": command,
+                "output": findings,
+                "highlights": []  # Make sure to populate highlights elsewhere
+            }
+            print(f"Command details updated: {self.command_details[command_key]}")
+            self.add_tab(command_key, findings)
+        except Exception as e:
+            messagebox.showerror("Error", str(e))
+            print(f"Exception when running command: {e}")
 
     def parse_output(self, output, command):
         findings = []
@@ -332,6 +365,7 @@ class WorkspaceFrameLogic:
         if color_code:
             self.highlight_text(color_code[1])
 
+
     def highlight_text(self, color):
         try:
             selected_tab = self.tab_control.nametowidget(self.tab_control.select())
@@ -341,6 +375,16 @@ class WorkspaceFrameLogic:
             text_widget.tag_add(color, start, end)
             text_widget.tag_config(color, background=color)
             self.parent.highlights.append((text_widget.get(start, end), color))  # Store the highlight
+
+            # Store the highlight details for export
+            start_index = text_widget.index("sel.first")
+            end_index = text_widget.index("sel.last")
+            self.command_details[title]["highlights"].append({
+                "text": text_widget.get(start_index, end_index),
+                "color": color,
+                "start": start_index,
+                "end": end_index
+            })
         except tk.TclError:
             print("No text selected")
 
@@ -381,6 +425,27 @@ class WorkspaceFrameLogic:
                 text_widget.tag_add(color, start, end)
                 text_widget.tag_config(color, background=color)
                 start = end
+
+    def prepare_export_data(self):
+        print("Preparing export data...")
+        if self.parent.loaded_file:
+            export_data = {
+                "memory_dump_file": self.parent.loaded_file,
+                "commands": [cmd for cmd in self.command_details.values() if cmd.get('output')],
+                "highlights": self.parent.highlights
+            }
+            print(f"Export data collected: {export_data}")
+            return export_data
+        else:
+            print("No loaded file or command data found.")
+            return {}
+        
+    def get_export_data(self):
+        return {
+            "memory_dump_file": self.parent.loaded_file,
+            "commands": list(self.command_details.values()),
+            "highlights": self.parent.highlights
+        }
 
 class kill_process (ttk.Frame):
     def __init__(self, parent, switch_to_export_frame):
