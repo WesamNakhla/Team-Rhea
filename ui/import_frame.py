@@ -1,7 +1,8 @@
-#located at ui/import_frame.py
+# located at ui/import_frame.py
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import ttk, filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
+from PIL import Image, ImageTk
 from logic.import_frame import ImportFrameLogic, ALLOWED_FILE_TYPES
 
 class ImportFrame(ttk.Frame, ImportFrameLogic):
@@ -10,28 +11,47 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         ImportFrameLogic.__init__(self, app)
         self.app = app
 
-        content_frame = ttk.Frame(self)
-        content_frame.pack(expand=True)
+        # Main content frame
+        self.main_frame = ttk.Frame(self)
+        self.main_frame.pack(expand=True, fill="both")
+        self.main_frame.grid_columnconfigure(0, weight=1)
 
-        ascii_logo = """
-       ____   ____________  .____     ________ ____ ___.___ 
-       \\   \\ /   /\\_____  \\ |    |   /  _____/|    |   \\   |
-        \\   Y   /  /   |   \\|    |  /   \\  ___|    |   /   |
-         \\     /  /    |    \\    |__\\    \\_\\  \\    |  /|   |
-          \\___/   \\_______  /_______ \\______  /______/ |___|
-                          \\/        \\/      \\/                      
-        """
-        self.logo_label = tk.Label(content_frame, text=ascii_logo, font=("Courier", 12), fg="#4a90e2", justify="left", padx=10, pady=20)
-        self.logo_label.pack()
+        # Load images
+        logo_image = Image.open("img/Logo.png")
+        logo_image = logo_image.resize((300, 100), Image.LANCZOS)
+        self.logo_image = ImageTk.PhotoImage(logo_image)
 
-        self.drag_area = tk.Label(content_frame, text="Drag and Drop File Here", font=("Arial", 20), bg="#d9d9d9", fg="#4a90e2", width=60, height=10, relief="sunken")
-        self.drag_area.pack(pady=10)
+        drag_image = Image.open("img/Drag3.png")
+        drag_image = drag_image.resize((80, 80), Image.LANCZOS)
+        self.drag_image = ImageTk.PhotoImage(drag_image)
 
-        self.browse_label = ttk.Label(content_frame, text="Or manually browse for a file", font=("Arial", 14), padding=20)
-        self.browse_label.pack()
+        # Top logo
+        self.logo_label = tk.Label(self.main_frame, image=self.logo_image, bg="#333333")
+        self.logo_label.grid(row=0, column=0, pady=(30, 20), padx=20, sticky="n")
 
-        self.browse_button = ttk.Button(content_frame, text="Browse", command=self.browse_file)
-        self.browse_button.pack(pady=10)
+        # Version text below logo
+        self.version_label = tk.Label(self.main_frame, text="VolGUI 1.0.0 and Volatility 3 Framework 2.7.0", font=('Arial', 12), bg="#333333", fg="white")
+        self.version_label.grid(row=1, column=0, pady=(5, 20), padx=10, sticky="n")
+
+        # Import your file text
+        self.import_label = tk.Label(self.main_frame, text="Import your file", font=('Arial', 22), bg="#333333", fg="white")
+        self.import_label.grid(row=2, column=0, pady=(10, 10), padx=10, sticky="n")
+
+        # Drag and drop area frame
+        self.drag_area_frame = tk.Frame(self.main_frame, bd=0, relief="solid", bg="#333333", highlightbackground="#a3a3a3", highlightcolor="#a3a3a3", highlightthickness=2)
+        self.drag_area_frame.grid(row=3, column=0, pady=(5, 5), padx=20, sticky="n")
+
+        # Drag and drop area
+        self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 2 + "Drag and drop your file...", font=("Arial", 20), bg="#333333", fg="white", width=60, height=13, relief="flat")
+        self.drag_area.pack()
+
+        # Drag image
+        self.drag_label = tk.Label(self.drag_area, image=self.drag_image, bg="#333333")
+        self.drag_label.place(relx=0.5, rely=0.3, anchor="center")
+
+        # Browse manually button
+        self.browse_button = ttk.Button(self.main_frame, text="or browse manually...", command=self.browse_file)
+        self.browse_button.grid(row=4, column=0, pady=10, padx=10, sticky="n")
 
         self.drag_area.drop_target_register(DND_FILES)
         self.drag_area.dnd_bind('<<DropEnter>>', self.on_enter)
@@ -42,4 +62,4 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.drag_area.config(bg="#a3a3a3")
 
     def on_leave(self, event):
-        self.drag_area.config(bg="#d9d9d9")
+        self.drag_area.config(bg="#333333")
