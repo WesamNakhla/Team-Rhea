@@ -24,6 +24,7 @@ class MainApplication(TkinterDnD.Tk):
         self.commands_used = []
         self.highlights = []
         self.loaded_files = []  # List to hold multiple loaded files
+        self.selected_file = None  # Track the selected file
 
         # File Menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -70,15 +71,6 @@ class MainApplication(TkinterDnD.Tk):
         frame = self.frames[cont]
         frame.tkraise()
 
-    def load_theme(self):
-        theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
-        azure_tcl_path = os.path.join(theme_dir, 'azure.tcl')
-        if os.path.exists(azure_tcl_path):
-            self.tk.call('source', azure_tcl_path)
-            self.tk.call('set_theme', 'dark')
-        else:
-            print(f"Theme file {azure_tcl_path} not found.")
-
     def new_session(self):
         """Ask to export changes if any, then reset to the initial drag and drop page."""
         response = messagebox.askyesnocancel("Save Changes", "Do you want to export changes before starting a new session?")
@@ -90,6 +82,7 @@ class MainApplication(TkinterDnD.Tk):
     def reset_to_import(self):
         """Reset the application state and go back to the drag and drop page."""
         self.loaded_files = []  # Reset loaded files list
+        self.selected_file = None  # Reset selected file
         self.update_loaded_file_label()  # Update label
         self.show_frame(ImportFrame)
 
@@ -131,6 +124,11 @@ class MainApplication(TkinterDnD.Tk):
     def hide_sidebar(self):
         frame = self.frames[WorkspaceFrame]
         frame.hide_sidebar()
+
+    def set_selected_file(self, file):
+        self.selected_file = file
+        frame = self.frames[WorkspaceFrame]
+        frame.update_selected_file_label(file)
 
 if __name__ == "__main__":
     app = MainApplication()

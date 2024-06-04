@@ -84,14 +84,21 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
 
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self)
-        self.sidebar_title = ttk.Label(self.sidebar_frame, text="Selected File:", font=('Arial', 12, 'bold'))
-        self.sidebar_title.pack(side=tk.TOP, pady=5)
+        self.sidebar_title = ttk.Label(self.sidebar_frame, text="Selected Files:", font=('Arial', 12, 'bold'))
+        self.sidebar_title.grid(row=0, column=0, sticky="w", pady=5)
+        self.close_sidebar_button = ttk.Button(self.sidebar_frame, text="Close", command=self.hide_sidebar)
+        self.close_sidebar_button.grid(row=0, column=1, sticky="e", pady=5)
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
-        self.sidebar_listbox.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="we")
+        self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
         self.select_all_button = ttk.Button(self.sidebar_frame, text="Select All", command=self.select_all_files)
-        self.select_all_button.pack(side=tk.TOP, pady=5)
+        self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
+
+        # Label to display the selected file
+        self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w")
+        self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
 
     def show_sidebar(self, files):
         self.sidebar_listbox.delete(0, tk.END)
@@ -104,3 +111,12 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
+
+    def on_file_select(self, event):
+        selected_indices = self.sidebar_listbox.curselection()
+        if selected_indices:
+            selected_file = self.sidebar_listbox.get(selected_indices[0])
+            self.parent.set_selected_file(selected_file)
+
+    def update_selected_file_label(self, file):
+        self.selected_file_label.config(text=f"Selected file: {file}")

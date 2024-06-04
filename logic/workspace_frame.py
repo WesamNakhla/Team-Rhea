@@ -175,8 +175,8 @@ class WorkspaceFrameLogic:
                 self.run_command_button.config(state=tk.NORMAL)
 
     def run_command(self):
-        if not self.parent.loaded_files:
-            messagebox.showerror("Error", "No file loaded.")
+        if not self.parent.selected_file:
+            messagebox.showerror("Error", "No file selected.")
             return
 
         selected_index = self.command_dropdown.current()
@@ -192,17 +192,17 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
             return
 
-        for file_path in self.parent.loaded_files:
-            # Check if the command has already been run (tab exists)
-            tab_title = f"{os.path.basename(file_path)} {command}"
-            if tab_title in self.command_tabs:
-                self.tab_control.select(self.command_tabs[tab_title])  # Focus the existing tab
-                messagebox.showinfo("Info", f"The command '{command}' has already been run on '{os.path.basename(file_path)}'.")
-                continue
+        file_path = self.parent.selected_file
+        # Check if the command has already been run (tab exists)
+        tab_title = f"{os.path.basename(file_path)} {command}"
+        if tab_title in self.command_tabs:
+            self.tab_control.select(self.command_tabs[tab_title])  # Focus the existing tab
+            messagebox.showinfo("Info", f"The command '{command}' has already been run on '{os.path.basename(file_path)}'.")
+            return
 
-            # Execute the command in a separate thread using ThreadPoolExecutor
-            future = self.executor.submit(self.execute_command, file_path, command)
-            future.add_done_callback(lambda f, cmd=command, fp=file_path: self.command_finished(f, cmd, fp))
+        # Execute the command in a separate thread using ThreadPoolExecutor
+        future = self.executor.submit(self.execute_command, file_path, command)
+        future.add_done_callback(lambda f, cmd=command, fp=file_path: self.command_finished(f, cmd, fp))
 
     def command_finished(self, future, command, file_path):
         try:
@@ -458,9 +458,9 @@ class WorkspaceFrameLogic:
 
     def prepare_export_data(self):
         print("Preparing export data...")
-        if self.parent.loaded_files:
+        if self.parent.selected_file:
             export_data = {
-                "memory_dump_file": self.parent.loaded_files[0],  # Use the first loaded file
+                "memory_dump_file": self.parent.selected_file,  # Use the selected file
                 "commands": [
                     {
                         "command": cmd["command"],
