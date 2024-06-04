@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 #located at logic/workspace_frame.py
+=======
+import concurrent.futures
+>>>>>>> Stashed changes
 import json
 import os
 import re
@@ -89,14 +93,17 @@ class WorkspaceFrameLogic:
         self.parent = parent
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
+<<<<<<< Updated upstream
         self.command_details = {}
+=======
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
+>>>>>>> Stashed changes
 
     def update_loaded_file_label(self):
         full_path = self.parent.loaded_file
         filename_only = os.path.basename(full_path) if full_path else "No file loaded"
         print(f"Setting file label to: {filename_only}")  # Debug statement
         self.file_label.config(text=f"Loaded file: {filename_only}")
-
 
     def load_commands(self):
         try:
@@ -195,18 +202,24 @@ class WorkspaceFrameLogic:
             messagebox.showinfo("Info", f"The command '{command}' has already been run.")
             return
 
-        # Continue running the command if not already executed
-        self.execute_command(file_path, command)
+        # Run the command in a separate thread using ThreadPoolExecutor
+        future = self.executor.submit(self.execute_command, file_path, command)
+        future.add_done_callback(self.command_finished)
 
     def execute_command(self, file_path, command):
         vol_path = self.get_volatility_path()
         if not os.path.isfile(vol_path):
-            messagebox.showerror("Error", f"Volatility script not found at: {vol_path}")
-            return
+            raise FileNotFoundError(f"Volatility script not found at: {vol_path}")
 
         full_command = f"python {vol_path} -f {file_path} {command}"
-        self.run_volatility(full_command)
+        print(f"Running command: {full_command}")
+        result = subprocess.run(full_command, capture_output=True, text=True, shell=True)
+        findings = result.stdout if result.stdout else "No output received."
+        if result.stderr:
+            findings += "\nError:\n" + result.stderr
+        return command, findings
 
+<<<<<<< Updated upstream
     def run_volatility(self, command):
         print(f"Running command: {command}")
         try:
@@ -226,6 +239,11 @@ class WorkspaceFrameLogic:
         except Exception as e:
             messagebox.showerror("Error", str(e))
             print(f"Exception when running command: {e}")
+=======
+    def command_finished(self, future):
+        command, findings = future.result()
+        self.parent.after(0, self.add_tab, command.split()[-1], findings)
+>>>>>>> Stashed changes
 
     def parse_output(self, output, command):
         findings = []
@@ -373,8 +391,6 @@ class WorkspaceFrameLogic:
         self.command_info_label.config(font=('Arial', font_size))
         for tab in self.tab_control.tabs():
             text_widget = self.tab_control.nametowidget(tab).winfo_children()[0]
-           
-
 
     def load_previous_commands(self):
         for command in self.parent.commands_used:
@@ -393,6 +409,7 @@ class WorkspaceFrameLogic:
                 end = f"{start}+{len(text)}c"
                 text_widget.tag_add(color, start, end)
                 text_widget.tag_config(color, background=color)
+<<<<<<< Updated upstream
                 start = end
 
     def prepare_export_data(self):
@@ -415,3 +432,6 @@ class WorkspaceFrameLogic:
             "commands": list(self.command_details.values()),
             "highlights": self.parent.highlights
         }
+=======
+                start = end
+>>>>>>> Stashed changes
