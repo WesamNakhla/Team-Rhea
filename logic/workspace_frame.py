@@ -1,8 +1,4 @@
-<<<<<<< Updated upstream
-#located at logic/workspace_frame.py
-=======
 import concurrent.futures
->>>>>>> Stashed changes
 import json
 import os
 import re
@@ -93,11 +89,7 @@ class WorkspaceFrameLogic:
         self.parent = parent
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
-<<<<<<< Updated upstream
-        self.command_details = {}
-=======
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
->>>>>>> Stashed changes
 
     def update_loaded_file_label(self):
         full_path = self.parent.loaded_file
@@ -219,31 +211,9 @@ class WorkspaceFrameLogic:
             findings += "\nError:\n" + result.stderr
         return command, findings
 
-<<<<<<< Updated upstream
-    def run_volatility(self, command):
-        print(f"Running command: {command}")
-        try:
-            result = subprocess.run(command, capture_output=True, text=True, shell=True)
-            findings = result.stdout if result.stdout else "No output received."
-            if result.stderr:
-                findings += "\nError:\n" + result.stderr
-
-            command_key = command.split()[-1]  # Simple command name extraction
-            self.command_details[command_key] = {
-                "command": command,
-                "output": findings,
-                "highlights": []  # Make sure to populate highlights elsewhere
-            }
-            print(f"Command details updated: {self.command_details[command_key]}")
-            self.add_tab(command_key, findings)
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-            print(f"Exception when running command: {e}")
-=======
     def command_finished(self, future):
         command, findings = future.result()
         self.parent.after(0, self.add_tab, command.split()[-1], findings)
->>>>>>> Stashed changes
 
     def parse_output(self, output, command):
         findings = []
@@ -360,16 +330,6 @@ class WorkspaceFrameLogic:
             text_widget.tag_add(color, start, end)
             text_widget.tag_config(color, background=color)
             self.parent.highlights.append((text_widget.get(start, end), color))  # Store the highlight
-
-            # Store the highlight details for export
-            start_index = text_widget.index("sel.first")
-            end_index = text_widget.index("sel.last")
-            self.command_details[title]["highlights"].append({
-                "text": text_widget.get(start_index, end_index),
-                "color": color,
-                "start": start_index,
-                "end": end_index
-            })
         except tk.TclError:
             print("No text selected")
 
@@ -409,29 +369,4 @@ class WorkspaceFrameLogic:
                 end = f"{start}+{len(text)}c"
                 text_widget.tag_add(color, start, end)
                 text_widget.tag_config(color, background=color)
-<<<<<<< Updated upstream
                 start = end
-
-    def prepare_export_data(self):
-        print("Preparing export data...")
-        if self.parent.loaded_file:
-            export_data = {
-                "memory_dump_file": self.parent.loaded_file,
-                "commands": [cmd for cmd in self.command_details.values() if cmd.get('output')],
-                "highlights": self.parent.highlights
-            }
-            print(f"Export data collected: {export_data}")
-            return export_data
-        else:
-            print("No loaded file or command data found.")
-            return {}
-        
-    def get_export_data(self):
-        return {
-            "memory_dump_file": self.parent.loaded_file,
-            "commands": list(self.command_details.values()),
-            "highlights": self.parent.highlights
-        }
-=======
-                start = end
->>>>>>> Stashed changes
