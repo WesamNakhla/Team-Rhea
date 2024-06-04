@@ -1,4 +1,3 @@
-
 import concurrent.futures
 import json
 import os
@@ -10,7 +9,6 @@ import time
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
-import concurrent.futures
 
 class CustomText(tk.Text):
     def __init__(self, *args, **kwargs):
@@ -96,11 +94,15 @@ class WorkspaceFrameLogic:
         self.running_process = None  # Store the running process
         self.futures = []  # Initialize the futures list
 
-    def update_loaded_file_label(self):
-        full_path = self.parent.loaded_file
-        filename_only = os.path.basename(full_path) if full_path else "No file loaded"
-        print(f"Setting file label to: {filename_only}")  # Debug statement
-        self.file_label.config(text=f"Loaded file: {filename_only}")
+    def update_loaded_file_label(self, loaded_files):
+        full_paths = loaded_files
+        filenames_only = [os.path.basename(full_path) for full_path in full_paths]
+        if len(filenames_only) > 1:
+            self.parent.show_sidebar(filenames_only)
+        else:
+            self.parent.hide_sidebar()
+        for filename in filenames_only:
+            print(f"Setting file label to: {filename}")  # Debug statement
 
     def load_commands(self):
         try:
@@ -173,8 +175,7 @@ class WorkspaceFrameLogic:
                 self.run_command_button.config(state=tk.NORMAL)
 
     def run_command(self):
-        file_path = self.parent.loaded_file
-        if not file_path:
+        if not self.parent.loaded_files:
             messagebox.showerror("Error", "No file loaded.")
             return
 
@@ -191,24 +192,25 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
             return
 
-        # Check if the command has already been run (tab exists)
-        if command in self.command_tabs:
-            self.tab_control.select(self.command_tabs[command])  # Focus the existing tab
-            messagebox.showinfo("Info", f"The command '{command}' has already been run.")
-            return
+        for file_path in self.parent.loaded_files:
+            # Check if the command has already been run (tab exists)
+            tab_title = f"{os.path.basename(file_path)} {command}"
+            if tab_title in self.command_tabs:
+                self.tab_control.select(self.command_tabs[tab_title])  # Focus the existing tab
+                messagebox.showinfo("Info", f"The command '{command}' has already been run on '{os.path.basename(file_path)}'.")
+                continue
 
-        # Execute the command in a separate thread using ThreadPoolExecutor
-        future = self.executor.submit(self.execute_command, file_path, command)
-        future.add_done_callback(lambda f, cmd=command: self.command_finished(f, cmd))
+            # Execute the command in a separate thread using ThreadPoolExecutor
+            future = self.executor.submit(self.execute_command, file_path, command)
+            future.add_done_callback(lambda f, cmd=command, fp=file_path: self.command_finished(f, cmd, fp))
 
-
-
-    def command_finished(self, future, command):
+    def command_finished(self, future, command, file_path):
         try:
             if future.done():
                 command_result, findings = future.result()
-                self.parent.after(0, self.add_tab, command_result, findings)
-                self.command_details[command_result] = {
+                self.parent.after(0, self.add_tab, file_path, command_result, findings)
+                tab_title = f"{os.path.basename(file_path)} {command_result}"
+                self.command_details[tab_title] = {
                     "command": command_result,
                     "output": findings,
                     "highlights": []  # Placeholder for any highlights data
@@ -217,9 +219,6 @@ class WorkspaceFrameLogic:
         except Exception as e:
             messagebox.showerror("Error", f"Error executing command {command}: {str(e)}")
             print(f"Exception when processing command result: {e}")
-
-
-
 
     def execute_command(self, file_path, command):
         vol_path = self.get_volatility_path()
@@ -235,7 +234,6 @@ class WorkspaceFrameLogic:
             findings += "\nError:\n" + stderr
         self.running_process = None
         return command, findings
-
 
     def check_all_commands_finished(self):
         if all(f.done() for f in self.futures):  # Check if all futures are done
@@ -273,6 +271,14 @@ class WorkspaceFrameLogic:
         return findings
 
     def parse_pslist(self, output):
+        findings = []
+        lines = output.splitlines()
+        for line in lines:
+            if "System" not in line and re.search(r"\b\d+\b", line):
+                findings.append(line)
+        return findings
+
+    def parse_pstree(self, output):
         findings = []
         lines = output.splitlines()
         for line in lines:
@@ -327,10 +333,11 @@ class WorkspaceFrameLogic:
         self.progress['value'] = 0
         self.update_idletasks()
 
-    def add_tab(self, title, output):
-        if title in self.command_tabs:
+    def add_tab(self, file_path, command, output):
+        tab_title = f"{os.path.basename(file_path)} {command}"
+        if tab_title in self.command_tabs:
             # Focus the existing tab if it's already open
-            self.tab_control.select(self.command_tabs[title])
+            self.tab_control.select(self.command_tabs[tab_title])
         else:
             # If the tab does not exist, create a new one
             new_tab = ttk.Frame(self.tab_control)
@@ -360,14 +367,26 @@ class WorkspaceFrameLogic:
             text_output.event_generate("<<Change>>")
             
             # Add the new tab to the notebook with the command as its title
-            self.tab_control.add(new_tab, text=title)
-            self.command_tabs[title] = new_tab  # Store the reference to the new tab
+            self.tab_control.add(new_tab, text=tab_title)
+            self.command_tabs[tab_title] = new_tab  # Store the reference to the new tab
+
+            # Add a close button if more than one tab is open
+            if len(self.command_tabs) > 1:
+                self.show_close_button(new_tab)
+
+    def show_close_button(self, tab):
+        close_button = ttk.Button(tab, text="Close Tab", command=lambda: self.close_tab(tab))
+        close_button.pack(side="top", anchor="ne", pady=5, padx=5)
+
+    def close_tab(self, tab):
+        tab_title = self.tab_control.tab(tab, "text")
+        self.tab_control.forget(tab)
+        del self.command_tabs[tab_title]
 
     def choose_highlight_color(self):
         color_code = colorchooser.askcolor(title="Choose highlight color")
         if color_code:
             self.highlight_text(color_code[1])
-
 
     def highlight_text(self, color):
         try:
@@ -398,7 +417,6 @@ class WorkspaceFrameLogic:
                 }
         except tk.TclError:
             print("No text selected")
-
 
     def remove_highlight(self):
         try:
@@ -440,9 +458,9 @@ class WorkspaceFrameLogic:
 
     def prepare_export_data(self):
         print("Preparing export data...")
-        if self.parent.loaded_file:
+        if self.parent.loaded_files:
             export_data = {
-                "memory_dump_file": self.parent.loaded_file,  # Use the full path here
+                "memory_dump_file": self.parent.loaded_files[0],  # Use the first loaded file
                 "commands": [
                     {
                         "command": cmd["command"],
@@ -460,45 +478,3 @@ class WorkspaceFrameLogic:
 
     def get_export_data(self):
         return self.prepare_export_data()
-
-
-class kill_process (ttk.Frame):
-    def __init__(self, parent, switch_to_export_frame):
-        super().__init__(parent)
-        self.logic = WorkspaceFrameLogic(parent)
-        self.switch_to_export_frame = switch_to_export_frame
-
-        self.grid(row=0, column=0, sticky="nsew")
-
-        # Command selection and execution UI
-        command_frame = ttk.Frame(self)
-        command_frame.pack(side=tk.TOP, fill=tk.X, padx=5, pady=5)
-
-        self.logic.file_label = ttk.Label(command_frame, text="Loaded file: No file loaded")
-        self.logic.file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
-
-        ttk.Label(command_frame, text="Choose command:").grid(row=1, column=0, padx=10, pady=5, sticky="w")
-        self.logic.command_var = tk.StringVar(value="-choose command-")
-        self.logic.command_dropdown = ttk.Combobox(command_frame, textvariable=self.logic.command_var, state="readonly")
-        self.logic.command_dropdown['values'] = ["-choose command-", "Custom"] + [cmd['name'] for cmd in self.logic.commands]
-        self.logic.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
-        self.logic.command_dropdown.bind("<<ComboboxSelected>>", self.logic.update_command_info)
-
-        self.logic.custom_command_label = ttk.Label(command_frame, text="Custom command:")
-        self.logic.custom_command_entry = ttk.Entry(command_frame)
-
-        self.logic.run_command_button = ttk.Button(command_frame, text="Execute Command", command=self.logic.run_command)
-        self.logic.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="we")
-
-        self.logic.command_info_label = ttk.Label(command_frame, text="Select a command to see the description and type.")
-        self.logic.command_info_label.grid(row=1, column=3, padx=10, pady=5, sticky="w")
-
-        self.kill_button = ttk.Button(command_frame, text="Kill", command=self.logic.kill_command)
-        self.kill_button.grid(row=1, column=4, padx=10, pady=5, sticky="we")
-
-        # Text output and search UI
-        text_frame = ttk.Frame(self)
-        text_frame.pack(side=tk.TOP, fill=tk.BOTH, expand=True, padx=5, pady=5)
-
-        self.logic.tab_control = ttk.Notebook(text_frame)
-        self.logic.tab_control.pack(fill=tk.BOTH, expand=True)

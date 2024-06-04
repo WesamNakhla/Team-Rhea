@@ -1,4 +1,3 @@
-#located at main.py
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD
@@ -24,6 +23,7 @@ class MainApplication(TkinterDnD.Tk):
         self.scan_result = None
         self.commands_used = []
         self.highlights = []
+        self.loaded_files = []  # List to hold multiple loaded files
 
         # File Menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -46,8 +46,8 @@ class MainApplication(TkinterDnD.Tk):
         self.frames[ImportFrame] = ImportFrame(self, app=self)
         self.frames[WorkspaceFrame] = WorkspaceFrame(self, switch_to_export_frame=self.switch_to_export_frame)
         self.frames[ExportFrame] = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
-        self.frames[SettingsFrame] = SettingsFrame(self, app=self)  # Pass `app=self` to SettingsFrame
-        self.frames[CommandFrame] = CommandFrame(self, app=self)  # Initialize CommandFrame
+        self.frames[SettingsFrame] = SettingsFrame(self, app=self)
+        self.frames[CommandFrame] = CommandFrame(self, app=self)
 
         # Grid all frames
         for frame in self.frames.values():
@@ -89,7 +89,7 @@ class MainApplication(TkinterDnD.Tk):
 
     def reset_to_import(self):
         """Reset the application state and go back to the drag and drop page."""
-        self.loaded_file = None  # Reset loaded file
+        self.loaded_files = []  # Reset loaded files list
         self.update_loaded_file_label()  # Update label
         self.show_frame(ImportFrame)
 
@@ -110,11 +110,9 @@ class MainApplication(TkinterDnD.Tk):
         self.show_frame(CommandFrame)
 
     def open_file(self):
-        print("open_file called")  # Debug statement
-        file_path = filedialog.askopenfilename()
-        if file_path:
-            print(f"Loaded file: {file_path}")  # Debug statement
-            self.loaded_file = file_path
+        file_paths = filedialog.askopenfilenames()
+        if file_paths:
+            self.loaded_files.extend(file_paths)
             self.update_loaded_file_label()
             self.show_frame(WorkspaceFrame)
 
@@ -123,10 +121,16 @@ class MainApplication(TkinterDnD.Tk):
         print("File saved")
 
     def update_loaded_file_label(self):
-        if self.loaded_file:
-            frame = self.frames[WorkspaceFrame]
-            print(f"Updating label with file: {self.loaded_file}")  # Debug statement
-            frame.update_loaded_file_label()
+        frame = self.frames[WorkspaceFrame]
+        frame.update_loaded_file_label(self.loaded_files)  # Pass the list of loaded files
+
+    def show_sidebar(self, files):
+        frame = self.frames[WorkspaceFrame]
+        frame.show_sidebar(files)
+
+    def hide_sidebar(self):
+        frame = self.frames[WorkspaceFrame]
+        frame.hide_sidebar()
 
 if __name__ == "__main__":
     app = MainApplication()

@@ -1,4 +1,3 @@
-#located at ui/workspace_frame.py
 import tkinter as tk
 from tkinter import ttk
 import os
@@ -33,10 +32,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Execute command button
         self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
         self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
-
-        # Kill command button
-        self.kill_command_button = ttk.Button(self, text="\u25A0 Kill", command=self.run_command)
-        self.kill_command_button.grid(row=1, column=4, padx=(10, 10), pady=5, sticky="w")
 
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.", width=50, anchor="w", wraplength=400)
@@ -87,3 +82,25 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
         self.search_button.pack(side="left", padx=5, pady=5)
 
+        # Sidebar to display loaded files (initially hidden)
+        self.sidebar_frame = ttk.Frame(self)
+        self.sidebar_title = ttk.Label(self.sidebar_frame, text="Selected File:", font=('Arial', 12, 'bold'))
+        self.sidebar_title.pack(side=tk.TOP, pady=5)
+        self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
+        self.sidebar_listbox.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.select_all_button = ttk.Button(self.sidebar_frame, text="Select All", command=self.select_all_files)
+        self.select_all_button.pack(side=tk.TOP, pady=5)
+        self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
+        self.sidebar_frame.grid_remove()
+
+    def show_sidebar(self, files):
+        self.sidebar_listbox.delete(0, tk.END)
+        for file in files:
+            self.sidebar_listbox.insert(tk.END, file)
+        self.sidebar_frame.grid()
+
+    def hide_sidebar(self):
+        self.sidebar_frame.grid_remove()
+
+    def select_all_files(self):
+        self.sidebar_listbox.select_set(0, tk.END)

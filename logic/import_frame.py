@@ -1,4 +1,3 @@
-#located at logic/import_frame.py
 import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
@@ -23,28 +22,28 @@ class ImportFrameLogic:
     def drop(self, event):
         files = self.parse_file_drop(event.data)
         if files:
-            self.handle_file(files[0])
+            self.handle_file(files)
             self.on_leave(event)  # Reset color after file drop
 
     def import_file(self):
-        filename = filedialog.askopenfilename()
-        if filename:
-            self.handle_file(filename)
-            
+        filenames = filedialog.askopenfilenames()
+        if filenames:
+            self.handle_file(filenames)
 
     def browse_file(self):
-        filename = filedialog.askopenfilename()
-        if filename:
-            self.handle_file(filename)
+        filenames = filedialog.askopenfilenames()
+        if filenames:
+            self.handle_file(filenames)
 
-    def handle_file(self, filename):
-        result = load_memory_file(filename)
-        if result.startswith("Error"):
-            messagebox.showerror("File Error", result)
-        else:
-            self.drag_area.config(text=result)
-            self.app.loaded_file = filename
-            self.app.switch_to_workspace_frame()
+    def handle_file(self, filenames):
+        for filename in filenames:
+            result = load_memory_file(filename)
+            if result.startswith("Error"):
+                messagebox.showerror("File Error", result)
+            else:
+                self.app.loaded_files.append(filename)
+        self.app.update_loaded_file_label()
+        self.app.switch_to_workspace_frame()
 
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)

@@ -1,11 +1,10 @@
-# located at ui/export_frame.py
 import tkinter as tk
-from tkinter import ttk, messagebox, filedialog  # Import filedialog
+from tkinter import ttk, messagebox, filedialog
 from logic.export_frame import ExportFrameLogic
 from PIL import Image, ImageTk, ImageSequence
 import os
 import threading
-from ui.workspace_frame import WorkspaceFrame  # Import WorkspaceFrame
+from ui.workspace_frame import WorkspaceFrame
 
 class ExportFrame(ttk.Frame, ExportFrameLogic):
     def __init__(self, parent, switch_frame_callback, scan_result, commands_used, highlights):
@@ -49,7 +48,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
 
         # Resize the GIF to an appropriate size
         self.loading_gif = Image.open("img/loading.gif")
-        self.loading_frames = [ImageTk.PhotoImage(frame.resize((50, 50), Image.ANTIALIAS)) for frame in ImageSequence.Iterator(self.loading_gif)]
+        self.loading_frames = [ImageTk.PhotoImage(frame.resize((50, 50), Image.Resampling.LANCZOS)) for frame in ImageSequence.Iterator(self.loading_gif)]
         
         self.loading_image_label = ttk.Label(self.loading_frame)  # Initialize loading_image_label
         self.loading_image_label.pack(side=tk.TOP)
