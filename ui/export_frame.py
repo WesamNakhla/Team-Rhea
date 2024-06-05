@@ -32,7 +32,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         self.include_highlighting_check.grid(row=2, column=0, pady=5, sticky="w", padx=20)
 
         # Buttons for exporting and cancelling
-        export_button = ttk.Button(frame, text="Export zip as...", command=self.choose_save_location)
+        export_button = ttk.Button(frame, text="Export zip to...", command=self.choose_save_location)
         export_button.grid(row=3, column=0, padx=10, pady=20)
 
         cancel_button = ttk.Button(frame, text="Cancel", command=self.cancel)
@@ -57,7 +57,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         self.loading_animation = None
 
     def choose_save_location(self):
-        zip_path = filedialog.asksaveasfilename(title="Export zip as...", filetypes=[("Zip files", "*.zip")], defaultextension=".zip")
+        zip_path = filedialog.asksaveasfilename(title="Export zip to...", filetypes=[("Zip files", "*.zip")], defaultextension=".zip")
         if zip_path:
             self.show_loading()
             threading.Thread(target=self.create_zip_file, args=(zip_path, self.parent.frames[WorkspaceFrame].get_export_data())).start()
