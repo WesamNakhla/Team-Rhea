@@ -6,7 +6,7 @@ from logic.workspace_frame import WorkspaceFrameLogic
 class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def __init__(self, parent, switch_to_export_frame):
         tk.Frame.__init__(self, parent)
-        WorkspaceFrameLogic.__init__(self, parent)
+        WorkspaceFrameLogic.__init__(self, self)  #change to parent if wrong?
         self.switch_to_export_frame = switch_to_export_frame
         self.init_ui()
 
@@ -44,6 +44,10 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Initially hide the custom command entry
         self.custom_command_label.grid_forget()
         self.custom_command_entry.grid_forget()
+
+        # Add Custom Plugin button
+        self.add_custom_plugin_button = ttk.Button(self, text="Add Custom Plugin", command=self.add_custom_plugin)
+        self.add_custom_plugin_button.grid(row=1, column=5, padx=10, pady=5, sticky="we")
 
         # OutputFrame UI elements
         self.tab_control = ttk.Notebook(self)
@@ -100,6 +104,13 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w")
         self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
 
+    def set_selected_file(self, file):
+        self.selected_file = file
+        self.update_selected_file_label(file)
+
+    def update_command_dropdown(self, command_options):
+        self.command_dropdown['values'] = command_options
+
     def show_sidebar(self, files):
         self.sidebar_listbox.delete(0, tk.END)
         for file in files:
@@ -116,7 +127,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         selected_indices = self.sidebar_listbox.curselection()
         if selected_indices:
             selected_file = self.sidebar_listbox.get(selected_indices[0])
-            self.parent.set_selected_file(selected_file)
+            self.set_selected_file(selected_file)
 
     def update_selected_file_label(self, file):
         self.selected_file_label.config(text=f"Selected file: {file}")
