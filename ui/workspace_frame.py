@@ -89,8 +89,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
         self.sidebar_frame.grid_propagate(False)
-        self.sidebar_title = ttk.Label(self.sidebar_frame, text="Selected Files:", font=('Arial', 12, 'bold'))
-        self.sidebar_title.grid(row=0, column=0, sticky="w", pady=5)
+        # Label to display the selected file
+        self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
+        self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
         self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab", command=self.close_current_tab)
         self.close_tab_button.grid(row=0, column=1, sticky="e", pady=5)
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
@@ -106,7 +107,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid_remove()
 
         # Label to display the selected file
-        self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 10, 'bold'))
+        self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
         self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
 
     def set_selected_file(self, file):
