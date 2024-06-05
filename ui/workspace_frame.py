@@ -106,10 +106,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
-        # Label to display the selected file
-        self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
-        self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
-
     def set_selected_file(self, file):
         self.selected_file = file
         self.update_selected_file_label(file)
