@@ -65,7 +65,7 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         # Save and Exit Buttons
         self.save_button = ttk.Button(self.main_frame, text="Save", command=self.save_settings)
         self.save_button.grid(row=6, column=1, pady=20, padx=10, sticky="e")
-        self.exit_button = ttk.Button(self.main_frame, text="Exit", command=self.exit_settings)
+        self.exit_button = ttk.Button(self.main_frame, text="Back", command=self.exit_settings)
         self.exit_button.grid(row=6, column=2, pady=20, padx=10, sticky="w")
 
         # Version Label at Bottom Left corner
