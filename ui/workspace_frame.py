@@ -91,7 +91,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid_propagate(False)
         # Label to display the selected file
         self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
-        self.selected_file_label.grid(row=6, column=0, sticky="wew", padx=10, pady=5)
+        self.selected_file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
         self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab", command=self.close_current_tab)
         self.close_tab_button.grid(row=0, column=1, sticky="e", pady=5)
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
