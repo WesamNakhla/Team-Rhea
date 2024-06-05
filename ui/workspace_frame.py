@@ -29,6 +29,12 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
         self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
 
+        # Parameter input label and entry
+        self.parameter_label = ttk.Label(self, text="Input Parameters:")
+        self.parameter_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
+        self.parameter_entry = ttk.Entry(self)
+        self.parameter_entry.grid(row=2, column=1, padx=10, pady=5, sticky="we")
+
         # Execute command button
         self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
         self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")

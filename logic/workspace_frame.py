@@ -211,16 +211,16 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
             return
 
+        command_parameters = self.parent.parameter_entry.get().strip()  # Retrieve parameters from the user input
         file_path = self.parent.selected_file
-        # Check if the command has already been run (tab exists)
-        tab_title = f"{os.path.basename(file_path)} {command}"
-        if tab_title in self.command_tabs:
-            self.parent.tab_control.select(self.command_tabs[tab_title])  # Focus the existing tab
-            messagebox.showinfo("Info", f"The command '{command}' has already been run on '{os.path.basename(file_path)}'.")
-            return
+        vol_path = self.get_volatility_path()
+
+        # Combine the volatility script, file path, command, and user-entered parameters
+        full_command = f"python {vol_path} -f {file_path} {command} {command_parameters}"
+        print(f"Running command: {full_command}")
 
         # Execute the command in a separate thread using ThreadPoolExecutor
-        future = self.executor.submit(self.execute_command, file_path, command)
+        future = self.executor.submit(self.execute_command, full_command)  # Pass the full command to execution
         future.add_done_callback(lambda f, cmd=command, fp=file_path: self.command_finished(f, cmd, fp))
 
     def command_finished(self, future, command, file_path):
@@ -239,20 +239,17 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", f"Error executing command {command}: {str(e)}")
             print(f"Exception when processing command result: {e}")
 
-    def execute_command(self, file_path, command):
-        vol_path = self.get_volatility_path()
-        if not os.path.isfile(vol_path):
-            raise FileNotFoundError(f"Volatility script not found at: {vol_path}")
+    def execute_command(self, full_command):
+        # Run the command using subprocess
+        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        stdout, stderr = process.communicate()
 
-        full_command = f"python {vol_path} -f {file_path} {command}"
-        print(f"Running command: {full_command}")
-        self.running_process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-        stdout, stderr = self.running_process.communicate()
+        # Handle output and errors
         findings = stdout if stdout else "No output received."
         if stderr:
             findings += "\nError:\n" + stderr
-        self.running_process = None
-        return command, findings
+
+        return full_command, findings
 
     def check_all_commands_finished(self):
         if all(f.done() for f in self.futures):  # Check if all futures are done
