@@ -104,6 +104,26 @@ class WorkspaceFrameLogic:
         for filename in filenames_only:
             print(f"Setting file label to: {filename}")  # Debug statement
 
+    def add_custom_plugin(self):
+        file_path = filedialog.askopenfilename(title="Select Custom Plugin", filetypes=[("Python Files", "*.py")])
+        if file_path:
+            plugin_name = os.path.basename(file_path)
+            if plugin_name.endswith('.py'):
+                plugin_name = plugin_name[:-3]  # Remove the .py extension
+            custom_plugin_details = {
+                "type": "Custom Plugin",
+                "command": plugin_name,
+                "description": f"This is your custom plugin {plugin_name}"
+            }
+            self.commands.append(custom_plugin_details)
+            command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
+            self.parent.update_command_dropdown(command_options)  # Pass command_options to parent method
+
+    def update_command_dropdown(self):
+        command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
+        self.parent.update_command_dropdown(command_options)
+
+
     def load_commands(self):
         try:
             with open('commands.json', 'r') as file:
