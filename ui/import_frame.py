@@ -18,36 +18,36 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
 
         # Load images
         logo_image = Image.open("img/Logo.png")
-        logo_image = logo_image.resize((300, 100), Image.LANCZOS)
+        logo_image = logo_image.resize((495, 174), Image.LANCZOS)
         self.logo_image = ImageTk.PhotoImage(logo_image)
 
         drag_image = Image.open("img/Drag3.png")
-        drag_image = drag_image.resize((80, 80), Image.LANCZOS)
+        drag_image = drag_image.resize((120, 120), Image.LANCZOS)
         self.drag_image = ImageTk.PhotoImage(drag_image)
 
         # Top logo
         self.logo_label = tk.Label(self.main_frame, image=self.logo_image, bg="#333333")
-        self.logo_label.grid(row=0, column=0, pady=(30, 20), padx=20, sticky="n")
+        self.logo_label.grid(row=0, column=0, pady=(10, 0), padx=(0, 60), sticky="n")
 
         # Version text below logo
-        self.version_label = tk.Label(self.main_frame, text="VolGUI 1.0.0 and Volatility 3 Framework 2.7.0", font=('Arial', 12), bg="#333333", fg="white")
-        self.version_label.grid(row=1, column=0, pady=(5, 20), padx=10, sticky="n")
+        self.version_label = tk.Label(self.main_frame, text="VolGUI 1.0.0 and Volatility 3 Framework 2.7.0", font=('Arial', 11), bg="#333333", fg="white")
+        self.version_label.grid(row=1, column=0, pady=(0, 20), padx=10, sticky="n")
 
         # Import your file text
         self.import_label = tk.Label(self.main_frame, text="Import your file", font=('Arial', 22), bg="#333333", fg="white")
-        self.import_label.grid(row=2, column=0, pady=(10, 10), padx=10, sticky="n")
+        self.import_label.grid(row=2, column=0, pady=(10, 5), padx=10, sticky="n")
 
         # Drag and drop area frame
         self.drag_area_frame = tk.Frame(self.main_frame, bd=0, relief="solid", bg="#333333", highlightbackground="#a3a3a3", highlightcolor="#a3a3a3", highlightthickness=2)
-        self.drag_area_frame.grid(row=3, column=0, pady=(5, 5), padx=20, sticky="n")
+        self.drag_area_frame.grid(row=3, column=0, pady=(1, 1), padx=20, sticky="n")
 
         # Drag and drop area
-        self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 2 + "Drag and drop your file...", font=("Arial", 20), bg="#333333", fg="white", width=60, height=13, relief="flat")
+        self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 9 + "Drag and drop your file...", font=("Arial", 20), bg="#333333", fg="white", width=60, height=13, relief="flat")
         self.drag_area.pack()
 
         # Drag image
         self.drag_label = tk.Label(self.drag_area, image=self.drag_image, bg="#333333")
-        self.drag_label.place(relx=0.5, rely=0.3, anchor="center")
+        self.drag_label.place(relx=0.5, rely=0.6, anchor="center")
 
         # Browse manually button
         self.browse_button = ttk.Button(self.main_frame, text="or browse manually...", command=self.browse_file)
