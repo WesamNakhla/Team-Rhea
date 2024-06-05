@@ -1,4 +1,4 @@
-# located at logic/command_frame.py
+# logic/command_frame.py
 import json
 from tkinter import messagebox
 
@@ -19,19 +19,18 @@ class CommandFrameLogic:
             return []
 
     def save_commands(self):
+        commands_to_save = []
+        for command_entry, type_entry, description_entry in zip(self.parent.command_entries, self.parent.type_entries, self.parent.description_entries):
+            command = {
+                "command": command_entry.get(),
+                "type": type_entry.get(),
+                "description": description_entry.get()
+            }
+            commands_to_save.append(command)
         with open('commands.json', 'w') as file:
-            json.dump(self.commands, file, indent=4)
-
-    def add_command(self, command):
-        self.commands.append(command)
-        self.save_commands()
-
-    def delete_command(self, index):
-        if index < len(self.commands):
-            del self.commands[index]
-            self.save_commands()
-
-    def update_command(self, index, command):
-        if index < len(self.commands):
-            self.commands[index] = command
-            self.save_commands()
+            json.dump(commands_to_save, file, indent=4)
+        
+        if len(commands_to_save) == 1:
+            messagebox.showinfo("Success", "The command has been saved.")
+        else:
+            messagebox.showinfo("Success", "The commands have been saved.")
