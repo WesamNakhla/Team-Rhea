@@ -1,3 +1,4 @@
+# located at ui/export_frame.py
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from logic.export_frame import ExportFrameLogic
@@ -7,7 +8,7 @@ import threading
 from ui.workspace_frame import WorkspaceFrame
 
 class ExportFrame(ttk.Frame, ExportFrameLogic):
-    def __init__(self, parent, switch_frame_callback, scan_result, commands_used, highlights):
+    def __init__(self, parent, switch_frame_callback=None, scan_result=None, commands_used=None, highlights=None):
         ttk.Frame.__init__(self, parent)
         ExportFrameLogic.__init__(self, parent, scan_result, commands_used, highlights)
         self.switch_frame_callback = switch_frame_callback
@@ -19,28 +20,32 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
 
         frame = ttk.Frame(self)
         frame.grid(row=0, column=0, sticky="nsew")
+        frame.grid_columnconfigure(0, weight=1)
 
         # Create a label for the title
-        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 16, 'bold'))
-        title_label.grid(row=0, column=0, pady=10, padx=20, columnspan=2)
+        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 20, 'bold'))
+        title_label.grid(row=0, column=0, pady=(200, 30), padx=20)
 
         # Create checkboxes for export options
         self.include_memory_dump_check = ttk.Checkbutton(frame, text="Include memory dump file", variable=self.include_memory_dump)
-        self.include_memory_dump_check.grid(row=1, column=0, pady=5, sticky="w", padx=20)
+        self.include_memory_dump_check.grid(row=1, column=0, pady=(10), sticky="n", padx=20)
 
         self.include_highlighting_check = ttk.Checkbutton(frame, text="Include text formatting", variable=self.include_highlighting)
-        self.include_highlighting_check.grid(row=2, column=0, pady=5, sticky="w", padx=20)
+        self.include_highlighting_check.grid(row=2, column=0, pady=(10, 30), sticky="n", padx=20)
 
         # Buttons for exporting and cancelling
-        export_button = ttk.Button(frame, text="Export zip to...", command=self.choose_save_location)
-        export_button.grid(row=3, column=0, padx=10, pady=20)
+        button_frame = ttk.Frame(frame)
+        button_frame.grid(row=3, column=0, pady=(20), padx=20)
 
-        cancel_button = ttk.Button(frame, text="Cancel", command=self.cancel)
-        cancel_button.grid(row=3, column=1, padx=10, pady=20)
+        export_button = ttk.Button(button_frame, text="Export", command=self.choose_save_location)
+        export_button.grid(row=0, column=0, padx=(10))
+
+        cancel_button = ttk.Button(button_frame, text="Back", command=self.cancel)
+        cancel_button.grid(row=0, column=1, padx=(10))
 
         # Loading GIF and message label (initially hidden)
         self.loading_frame = ttk.Frame(frame)
-        self.loading_frame.grid(row=4, column=0, columnspan=2, pady=20)
+        self.loading_frame.grid(row=4, column=0, pady=(10, 20), padx=20)
         self.loading_frame.grid_remove()
 
         self.loading_label = ttk.Label(self.loading_frame, text="Exporting... please wait!", font=('Arial', 12))
