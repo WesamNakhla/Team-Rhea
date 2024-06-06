@@ -23,7 +23,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         frame.grid_columnconfigure(0, weight=1)
 
         # Create a label for the title
-        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 20, 'bold'))
+        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 28))
         title_label.grid(row=0, column=0, pady=(200, 30), padx=20)
 
         # Create checkboxes for export options
@@ -48,7 +48,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         self.loading_frame.grid(row=4, column=0, pady=(10, 20), padx=20)
         self.loading_frame.grid_remove()
 
-        self.loading_label = ttk.Label(self.loading_frame, text="Exporting... please wait!", font=('Arial', 12))
+        self.loading_label = ttk.Label(self.loading_frame, text="Exporting... Please wait!", font=('Arial', 12))
         self.loading_label.pack(side=tk.TOP, pady=10)
 
         # Resize the GIF to an appropriate size
@@ -62,7 +62,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         self.loading_animation = None
 
     def choose_save_location(self):
-        zip_path = filedialog.asksaveasfilename(title="Export zip to...", filetypes=[("Zip files", "*.zip")], defaultextension=".zip")
+        zip_path = filedialog.asksaveasfilename(title="Export Zip to...", filetypes=[("Zip files", "*.zip")], defaultextension=".zip")
         if zip_path:
             self.show_loading()
             threading.Thread(target=self.create_zip_file, args=(zip_path, self.parent.frames[WorkspaceFrame].get_export_data())).start()
