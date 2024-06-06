@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import os
-from logic.workspace_frame import WorkspaceFrameLogic
+from logic.workspace_frame import WorkspaceFrameLogic , ToolTip
 
 class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def __init__(self, parent, switch_to_export_frame):
@@ -28,6 +28,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="readonly")
         self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
         self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
+        ToolTip(self.command_dropdown, "Select a command to run.")
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
@@ -38,10 +39,12 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Execute command button
         self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
         self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
 
         # Add Custom Plugin button
         self.add_custom_plugin_button = ttk.Button(self, text="Add Custom Plugin", command=self.add_custom_plugin)
         self.add_custom_plugin_button.grid(row=2, column=2, padx=10, pady=5, sticky="we")
+        ToolTip(self.add_custom_plugin_button, "Add a custom plugin to the application.")
 
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.", width=50, anchor="w", wraplength=400)
@@ -66,13 +69,16 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Single highlight button with color chooser
         self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
         self.highlight_button.pack(side="left", padx=5, pady=5)
+        ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
 
         self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
+        ToolTip(self.remove_highlight_button, "Remove selected highlight")
 
         # Export button with unicode icon
         self.export_button = ttk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
         self.export_button.pack(side="right", padx=5, pady=5)
+        ToolTip(self.export_button, "Export the results and data to a file.")
 
         # Progress bar
         self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
@@ -91,6 +97,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.search_entry.pack(side="left", padx=5, pady=5, fill="x", expand=True)
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
         self.search_button.pack(side="left", padx=5, pady=5)
+        ToolTip(self.search_button, "Search for spesific strings in the output.")
 
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
