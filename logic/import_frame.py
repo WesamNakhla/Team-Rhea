@@ -42,8 +42,10 @@ class ImportFrameLogic:
                 messagebox.showerror("File Error", result)
             else:
                 self.app.loaded_files.append(filename)
-        self.app.update_loaded_file_label()
+                self.app.update_loaded_file_label()  # Triggers UI update for loaded files list
+                self.app.set_selected_file(os.path.basename(filename))  # Updates the selected file label with the new file name
         self.app.switch_to_workspace_frame()
+
 
     def parse_file_drop(self, drop_data):
         return self.tk.splitlist(drop_data)

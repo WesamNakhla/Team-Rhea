@@ -17,11 +17,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def init_ui(self):
         # Using grid layout for better control
 
-        # Update file_label text to show the loaded file
-        self.file_label = ttk.Label(self, text="Loaded file: No file loaded", anchor="w", font=('Arial', 10, 'bold'))
-        self.file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
-        self.grid_columnconfigure(0, weight=1)  # Make column expandable
-
         # Choose command label
         self.command_label = ttk.Label(self, text="Choose command:")
         self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -62,7 +57,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.custom_command_label.grid_forget()
         self.custom_command_entry.grid_forget()
 
-        # OutputFrame UI elements
+        # OutputFrame OUTPUT REAL STUFF HERE from vol <--------
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
@@ -112,31 +107,54 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Label to display the selected file
         self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
         self.selected_file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
+
         self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab", command=self.close_current_tab)
         self.close_tab_button.grid(row=0, column=1, sticky="e", pady=5)
+
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
         self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="we")
         self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
+
         self.select_all_button = ttk.Button(self.sidebar_frame, text="Select All", command=self.select_all_files)
         self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
         self.close_file_button = ttk.Button(self.sidebar_frame, text="Close File", command=self.close_file)
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
         self.add_file_button = ttk.Button(self.sidebar_frame, text="Add File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
+        
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
 
-         # Terminal Frame
-        self.terminal_frame = tk.Frame(self, height=150, width=200)
-        self.terminal_frame.grid_propagate(False)
+        self.grid_rowconfigure(3, weight=1)  # Makes the row where terminal_frame will be placed expandable
+        self.grid_columnconfigure(4, weight=1)  # Makes the column where terminal_frame will be placed expandable
+
+        # Terminal Frame
+        self.terminal_frame = tk.Frame(self, height=350, width=200)
+        self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
         self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
         self.terminal_output.pack(expand=True, fill='both')
-        self.terminal_frame.place(x=800, y=500)  # Adjust the x and y values based on your layout
-        self.terminal_frame.place_forget()
-
+        
         sys.stdout = RedirectOutput(self.terminal_output)
         sys.stderr = RedirectOutput(self.terminal_output)
+
+        self.hide_terminal_button = ttk.Button(self, text="Hide Terminal", command=self.toggle_terminal)
+        self.hide_terminal_button.grid(row=5, column=4, padx=10, pady=5, sticky="w")
+
+    def select_first_file_in_sidebar(self):
+        if self.sidebar_listbox.size() > 0:  # Check if the listbox is not empty
+            self.sidebar_listbox.selection_set(0)  # Select the first item
+            self.sidebar_listbox.event_generate("<<ListboxSelect>>")  # Trigger the listbox select event
+
+
+    def toggle_terminal(self):
+        if self.terminal_frame.winfo_viewable():
+            self.terminal_frame.grid_remove()
+            self.hide_terminal_button.configure(text="Show Terminal")  # Change the button text to indicate action
+        else:
+            self.terminal_frame.grid()
+            self.hide_terminal_button.configure(text="Hide Terminal")  # Change back the button text
+
 
     def set_selected_file(self, file):
         self.selected_file = file
@@ -150,11 +168,14 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         for file in files:
             self.sidebar_listbox.insert(tk.END, file)
         self.sidebar_frame.grid()
-        self.terminal_frame.place(x=800, y=500)  # Show terminal when sidebar is shown
+
+         # Ensure terminal_frame is managed by grid and placed consistently
+        self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=15, sticky="nsew")  # Adjust row and column if different
+
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
-        self.terminal_frame.place_forget()  # Hide terminal when sidebar is hidden
+        self.terminal_frame.grid_remove()  # Hide terminal when sidebar is hidden
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
