@@ -10,6 +10,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.switch_to_export_frame = switch_to_export_frame
         self.init_ui()
 
+        #hide search bar
+        self.search_frame.grid_remove()
+
     def init_ui(self):
         # Using grid layout for better control
 
@@ -88,6 +91,8 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
+        
+
         # Search bar
         self.search_frame = tk.Frame(self)
         self.search_frame.grid(row=5, column=3, columnspan=1, pady=5, sticky="we")
@@ -161,3 +166,34 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
             self.show_sidebar(self.parent.loaded_files)
             self.update_selected_file_label("No file selected")
             self.selected_file = None
+
+    def show_search_box(self):
+        self.search_frame.grid()
+        self.search_entry.focus_set()
+        print("Search box displayed")  # Debug print statement
+
+    def search_text(self):
+    # Show the search box if it is not already displayed
+        if not self.search_frame.winfo_ismapped():
+            self.show_search_box()
+            return
+
+        search_term = self.search_entry.get().strip()
+        if not search_term:
+            return
+
+    # Clear previous highlights
+        self.text_widget.tag_remove('search_highlight', '1.0', tk.END)
+
+        start_pos = '1.0'
+        while True:
+            start_pos = self.text_widget.search(search_term, start_pos, stopindex=tk.END, nocase=True)
+            if not start_pos:
+               break
+            end_pos = f'{start_pos}+{len(search_term)}c'
+            self.text_widget.tag_add('search_highlight', start_pos, end_pos)
+            start_pos = end_pos
+
+    # Configure the tag for highlight
+        self.text_widget.tag_config('search_highlight', background='yellow')
+        print(f"Search completed for term: {search_term}")  # Debug print statement

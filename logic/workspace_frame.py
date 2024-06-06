@@ -147,6 +147,12 @@ class WorkspaceFrameLogic:
         for filename in filenames_only:
             print(f"Setting file label to: {filename}")  # Debug statement
 
+
+    def show_search_box(self):
+        self.search_entry.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
+        self.search_entry.focus_set()
+
+
     def add_custom_plugin(self):
         file_path = filedialog.askopenfilename(title="Select Custom Plugin", filetypes=[("Python Files", "*.py")])
         if file_path:
@@ -177,23 +183,9 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "Error decoding the commands file.")
             return []
 
-    def search_text(self):
-        search_term = self.parent.search_entry.get()
-        if not search_term:
-            return
 
-        selected_tab = self.parent.tab_control.nametowidget(self.parent.tab_control.select())
-        text_widget = selected_tab.winfo_children()[0]
 
-        start = "1.0"
-        while True:
-            start = text_widget.search(search_term, start, stopindex=tk.END)
-            if not start:
-                break
-            end = f"{start}+{len(search_term)}c"
-            text_widget.tag_add('search_highlight', start, end)
-            text_widget.tag_config('search_highlight', background='yellow')
-            start = end
+    
 
     def export_results(self):
         self.parent.switch_to_export_frame()  # Call the function to switch frames

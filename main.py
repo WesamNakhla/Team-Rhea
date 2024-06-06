@@ -58,6 +58,9 @@ class MainApplication(TkinterDnD.Tk):
         self.grid_columnconfigure(0, weight=1)
         self.show_frame(ImportFrame)
 
+        self.bind('<Control-q>', self.quit_app)
+        self.bind('<Control-f>', self.search_text)
+
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
         azure_tcl_path = os.path.join(theme_dir, 'azure.tcl')
@@ -129,6 +132,15 @@ class MainApplication(TkinterDnD.Tk):
         self.selected_file = file
         frame = self.frames[WorkspaceFrame]
         frame.update_selected_file_label(file)
+    
+    def quit_app(self, event=None):
+        self.quit()
+
+    def search_text(self, event=None):
+        current_frame = self.frames.get(WorkspaceFrame)
+        if current_frame:
+            current_frame.search_text()
+            print("CTRL + F pressed: Initiating search in WorkspaceFrame")  # Debug print statement
 
 if __name__ == "__main__":
     app = MainApplication()
