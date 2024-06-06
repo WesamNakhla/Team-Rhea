@@ -1,3 +1,5 @@
+import json
+import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from logic.settings_frame import SettingsFrameLogic
@@ -69,6 +71,13 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.exit_button.grid(row=6, column=2, pady=20, padx=10, sticky="w")
 
         # Version Label at Bottom Left corner
-        version_text = "VolGUI 1.0.0 and Volatility 3 Framework 2.7.0"
+        settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
+        with open(settings_file_path, 'r') as f:
+            settings = json.load(f)
+
+        # Extract the version information
+        volatility_version = settings.get('volatility_version', 'Unknown')
+        version_text = f"VolGUI 1.0.0 and Volatility 3 Framework {volatility_version}"
+
         self.version_label = tk.Label(self.bottom_frame, text=version_text)
         self.version_label.grid(row=0, column=0, sticky="w", padx=10, pady=10)
