@@ -150,15 +150,14 @@ class WorkspaceFrameLogic:
         self.running_process = None  # Store the running process
         self.futures = []  # Initialize the futures list
 
-    def update_loaded_file_label(self, loaded_files):
-        full_paths = loaded_files
-        filenames_only = [os.path.basename(full_path) for full_path in full_paths]
-        if len(filenames_only) > 1:
-            self.parent.show_sidebar(filenames_only)
+    def update_loaded_file_label(self, loaded_files=None):
+        if loaded_files is None:
+            loaded_files = self.parent.loaded_files  # Ensure loaded_files is always up-to-date
+        filenames_only = [os.path.basename(full_path) for full_path in loaded_files]
+        if filenames_only:
+            self.parent.show_sidebar(filenames_only)  # Show sidebar if files exist
         else:
-            self.parent.hide_sidebar()
-        for filename in filenames_only:
-            print(f"Setting file label to: {filename}")  # Debug statement
+            self.parent.hide_sidebar()  # Hide sidebar if no files
 
 
     def show_search_box(self):

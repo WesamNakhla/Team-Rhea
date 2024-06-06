@@ -42,7 +42,7 @@ class ImportFrameLogic:
                 messagebox.showerror("File Error", result)
             else:
                 self.app.loaded_files.append(filename)
-        self.app.update_loaded_file_label()
+                self.app.update_loaded_file_label()  # Make sure this method triggers UI update in WorkspaceFrame
         self.app.switch_to_workspace_frame()
 
     def parse_file_drop(self, drop_data):
