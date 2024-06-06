@@ -156,8 +156,10 @@ class WorkspaceFrameLogic:
         filenames_only = [os.path.basename(full_path) for full_path in loaded_files]
         if filenames_only:
             self.parent.show_sidebar(filenames_only)  # Show sidebar if files exist
+            self.parent.select_first_file_in_sidebar()  # Select the first file in the sidebar
         else:
             self.parent.hide_sidebar()  # Hide sidebar if no files
+
 
 
     def show_search_box(self):

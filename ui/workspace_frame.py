@@ -141,6 +141,12 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.hide_terminal_button = ttk.Button(self, text="Hide Terminal", command=self.toggle_terminal)
         self.hide_terminal_button.grid(row=5, column=4, padx=10, pady=5, sticky="w")
 
+    def select_first_file_in_sidebar(self):
+        if self.sidebar_listbox.size() > 0:  # Check if the listbox is not empty
+            self.sidebar_listbox.selection_set(0)  # Select the first item
+            self.sidebar_listbox.event_generate("<<ListboxSelect>>")  # Trigger the listbox select event
+
+
     def toggle_terminal(self):
         if self.terminal_frame.winfo_viewable():
             self.terminal_frame.grid_remove()
