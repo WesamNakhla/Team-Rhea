@@ -62,7 +62,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.custom_command_label.grid_forget()
         self.custom_command_entry.grid_forget()
 
-        # OutputFrame UI elements
+        # OutputFrame OUTPUT REAL STUFF HERE from vol <--------
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=3, column=0, columnspan=4, padx=10, pady=10, sticky="nsew")
 
@@ -127,16 +127,29 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid_remove()
 
 
-         # Terminal Frame
-        self.terminal_frame = tk.Frame(self, height=150, width=200)
-        self.terminal_frame.grid_propagate(False)
+        self.grid_rowconfigure(3, weight=1)  # Makes the row where terminal_frame will be placed expandable
+        self.grid_columnconfigure(4, weight=1)  # Makes the column where terminal_frame will be placed expandable
+
+        # Terminal Frame
+        self.terminal_frame = tk.Frame(self, height=350, width=200)
+        self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
         self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
         self.terminal_output.pack(expand=True, fill='both')
-        self.terminal_frame.place(x=800, y=500)  # Adjust the x and y values based on your layout
-        self.terminal_frame.place_forget()
-
+        
         sys.stdout = RedirectOutput(self.terminal_output)
         sys.stderr = RedirectOutput(self.terminal_output)
+
+        self.hide_terminal_button = ttk.Button(self, text="Hide Terminal", command=self.toggle_terminal)
+        self.hide_terminal_button.grid(row=5, column=4, padx=10, pady=5, sticky="w")
+
+    def toggle_terminal(self):
+        if self.terminal_frame.winfo_viewable():
+            self.terminal_frame.grid_remove()
+            self.hide_terminal_button.configure(text="Show Terminal")  # Change the button text to indicate action
+        else:
+            self.terminal_frame.grid()
+            self.hide_terminal_button.configure(text="Hide Terminal")  # Change back the button text
+
 
     def set_selected_file(self, file):
         self.selected_file = file
@@ -150,11 +163,14 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         for file in files:
             self.sidebar_listbox.insert(tk.END, file)
         self.sidebar_frame.grid()
-        self.terminal_frame.place(x=800, y=500)  # Show terminal when sidebar is shown
+
+         # Ensure terminal_frame is managed by grid and placed consistently
+        self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=15, sticky="nsew")  # Adjust row and column if different
+
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
-        self.terminal_frame.place_forget()  # Hide terminal when sidebar is hidden
+        self.terminal_frame.grid_remove()  # Hide terminal when sidebar is hidden
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
