@@ -304,6 +304,7 @@ class WorkspaceFrameLogic:
             print("All commands have finished executing.")
             self.prepare_export_data()  # Now prepare export data
 
+    
     def run_volatility(self, command):
         print(f"Running command: {command}")
         try:
@@ -324,78 +325,9 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", str(e))
             print(f"Exception when running command: {e}")
 
-    def parse_output(self, output, command):
-        findings = []
-        if "pslist" in command:
-            findings = self.parse_pslist(output)
-        elif "pstree" in command:
-            findings = self.parse_pstree(output)
-        elif "cmdline" in command:  # Handle cmdline output
-            findings = self.parse_cmdline(output)
-        return findings
-
-    def parse_pslist(self, output):
-        findings = []
-        lines = output.splitlines()
-        for line in lines:
-            if "System" not in line and re.search(r"\b\d+\b", line):
-                findings.append(line)
-        return findings
-
-    def parse_pstree(self, output):
-        findings = []
-        lines = output.splitlines()
-        for line in lines:
-            if "System" not in line and re.search(r"\b\d+\b", line):
-                findings.append(line)
-        return findings
-
-    def parse_pstree(self, output):
-        findings = []
-        lines = output.splitlines()
-        for line in lines:
-            if "System" not in line and re.search(r"\b\d+\b", line):
-                findings.append(line)
-        return findings
-
-    def parse_cmdline(self, output):
-        findings = []
-        lines = output.splitlines()
-        for line in lines:
-            if line.strip():  # Add any non-empty line
-                findings.append(line)
-        return findings
-
-    def display_findings(self, findings):
-        if findings:
-            self.parent.output_text.insert(tk.END, "Findings:\n")
-            for finding in findings:
-                self.parent.output_text.insert(tk.END, finding + "\n")
-            self.parent.output_text.insert(tk.END, "\nSuggestions:\n")
-            self.parent.output_text.insert(tk.END, "1. Investigate the processes listed above for suspicious activity.\n")
-            self.parent.output_text.insert(tk.END, "2. Use additional plugins for more detailed analysis.\n")
-        else:
-            self.parent.output_text.insert(tk.END, "No suspicious findings detected.\n")
-
     def show_alert(self, command):
         tk.messagebox.showinfo("Alert", f"The command '{command}' has already been run.")
-
-    def start_loading(self, command):
-        self.parent.progress['value'] = 0
-        self.parent.update_idletasks()
-        threading.Thread(target=self.simulate_long_running_task, args=(command,)).start()
-
-    def simulate_long_running_task(self, command):
-        for i in range(30):
-            time.sleep(0.1)
-            self.parent.progress['value'] += 3.33
-            self.parent.update_idletasks()
-        self.parent.progress['value'] = 100
-        self.parent.update_idletasks()
-        self.parent.after(0, self.add_tab, command)
-        time.sleep(0.5)  # Brief pause before resetting the progress bar
-        self.parent.progress['value'] = 0
-        self.parent.update_idletasks()
+    
 
     def add_tab(self, file_path, command, output):
         tab_title = f"{os.path.basename(file_path)} {command}"
