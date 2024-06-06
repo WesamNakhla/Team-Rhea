@@ -1,3 +1,5 @@
+import json
+import os
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinterdnd2 import TkinterDnD, DND_FILES
@@ -28,8 +30,16 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.logo_label = tk.Label(self.main_frame, image=self.logo_image, bg="#333333")
         self.logo_label.grid(row=0, column=0, pady=(10, 0), padx=(0, 60), sticky="n")
 
+        settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
+        with open(settings_file_path, 'r') as f:
+            settings = json.load(f)
+
+        # Extract the version information
+        volatility_version = settings.get('volatility_version', 'Unknown')
+        version_text = f"VolGUI 1.0.0 and Volatility 3 Framework {volatility_version}"
+
         # Version text below logo
-        self.version_label = tk.Label(self.main_frame, text="VolGUI 1.0.0 and Volatility 3 Framework 2.7.0", font=('Arial', 11), bg="#333333", fg="white")
+        self.version_label = tk.Label(self.main_frame, text=version_text, font=('Arial', 11), bg="#333333", fg="white")
         self.version_label.grid(row=1, column=0, pady=(0, 20), padx=10, sticky="n")
 
         # Import your file text
