@@ -1,7 +1,8 @@
+import sys
 import tkinter as tk
 from tkinter import ttk
 import os
-from logic.workspace_frame import WorkspaceFrameLogic , ToolTip
+from logic.workspace_frame import RedirectOutput, WorkspaceFrameLogic , ToolTip
 
 class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def __init__(self, parent, switch_to_export_frame):
@@ -125,6 +126,18 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
+
+         # Terminal Frame
+        self.terminal_frame = tk.Frame(self, height=150, width=200)
+        self.terminal_frame.grid_propagate(False)
+        self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
+        self.terminal_output.pack(expand=True, fill='both')
+        self.terminal_frame.place(x=800, y=500)  # Adjust the x and y values based on your layout
+        self.terminal_frame.place_forget()
+
+        sys.stdout = RedirectOutput(self.terminal_output)
+        sys.stderr = RedirectOutput(self.terminal_output)
+
     def set_selected_file(self, file):
         self.selected_file = file
         self.update_selected_file_label(file)
@@ -137,9 +150,11 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         for file in files:
             self.sidebar_listbox.insert(tk.END, file)
         self.sidebar_frame.grid()
+        self.terminal_frame.place(x=800, y=500)  # Show terminal when sidebar is shown
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
+        self.terminal_frame.place_forget()  # Hide terminal when sidebar is hidden
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)

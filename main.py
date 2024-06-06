@@ -120,14 +120,6 @@ class MainApplication(TkinterDnD.Tk):
         frame = self.frames[WorkspaceFrame]
         frame.update_loaded_file_label(self.loaded_files)  # Pass the list of loaded files
 
-    def show_sidebar(self, files):
-        frame = self.frames[WorkspaceFrame]
-        frame.show_sidebar(files)
-
-    def hide_sidebar(self):
-        frame = self.frames[WorkspaceFrame]
-        frame.hide_sidebar()
-
     def set_selected_file(self, file):
         self.selected_file = file
         frame = self.frames[WorkspaceFrame]
