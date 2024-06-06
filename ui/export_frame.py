@@ -23,7 +23,7 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         frame.grid_columnconfigure(0, weight=1)
 
         # Create a label for the title
-        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 20, 'bold'))
+        title_label = ttk.Label(frame, text="Export Zipped Package", font=('Arial', 28))
         title_label.grid(row=0, column=0, pady=(200, 30), padx=20)
 
         # Create checkboxes for export options
