@@ -17,11 +17,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def init_ui(self):
         # Using grid layout for better control
 
-        # Update file_label text to show the loaded file
-        self.file_label = ttk.Label(self, text="Loaded file: No file loaded", anchor="w", font=('Arial', 10, 'bold'))
-        self.file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
-        self.grid_columnconfigure(0, weight=1)  # Make column expandable
-
         # Choose command label
         self.command_label = ttk.Label(self, text="Choose command:")
         self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -112,17 +107,21 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Label to display the selected file
         self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
         self.selected_file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
+
         self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab", command=self.close_current_tab)
         self.close_tab_button.grid(row=0, column=1, sticky="e", pady=5)
+
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
         self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="we")
         self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
+
         self.select_all_button = ttk.Button(self.sidebar_frame, text="Select All", command=self.select_all_files)
         self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
         self.close_file_button = ttk.Button(self.sidebar_frame, text="Close File", command=self.close_file)
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
         self.add_file_button = ttk.Button(self.sidebar_frame, text="Add File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
+        
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
