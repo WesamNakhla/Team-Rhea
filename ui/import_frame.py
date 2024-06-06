@@ -16,7 +16,7 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.main_frame.grid_columnconfigure(0, weight=1)
 
         # Load images
-        logo_image = Image.open("img/Logo.png")
+        logo_image = Image.open("img/Logo2.png")
         logo_image = logo_image.resize((495, 174), Image.LANCZOS)
         self.logo_image = ImageTk.PhotoImage(logo_image)
 
@@ -33,7 +33,7 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.version_label.grid(row=1, column=0, pady=(0, 20), padx=10, sticky="n")
 
         # Import your file text
-        self.import_label = tk.Label(self.main_frame, text="Import your file", font=('Arial', 22), bg="#333333", fg="white")
+        self.import_label = tk.Label(self.main_frame, text="Import your file", font=('Arial', 28), bg="#333333", fg="white")
         self.import_label.grid(row=2, column=0, pady=(10, 5), padx=10, sticky="n")
 
         # Drag and drop area frame
@@ -41,7 +41,7 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.drag_area_frame.grid(row=3, column=0, pady=(1, 1), padx=20, sticky="n")
 
         # Drag and drop area
-        self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 9 + "Drag and drop your file...", font=("Arial", 20), bg="#333333", fg="white", width=60, height=13, relief="flat")
+        self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 9 + "Drag and drop here", font=("Arial", 18), bg="#333333", fg="white", width=60, height=13, relief="flat")
         self.drag_area.pack()
 
         # Drag image
@@ -49,7 +49,7 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
         self.drag_label.place(relx=0.5, rely=0.6, anchor="center")
 
         # Browse manually button
-        self.browse_button = ttk.Button(self.main_frame, text="or browse manually...", command=self.browse_file)
+        self.browse_button = ttk.Button(self.main_frame, text="or Browse Manually", command=self.browse_file)
         self.browse_button.grid(row=4, column=0, pady=10, padx=10, sticky="n")
 
         self.drag_area.drop_target_register(DND_FILES)
