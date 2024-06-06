@@ -92,8 +92,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.grid_columnconfigure(3, weight=1)
 
         
-
-        # Search bar
+        #Search bar
         self.search_frame = tk.Frame(self)
         self.search_frame.grid(row=5, column=3, columnspan=1, pady=5, sticky="we")
         self.search_label = ttk.Label(self.search_frame, text="Search:")
@@ -102,7 +101,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.search_entry.pack(side="left", padx=5, pady=5, fill="x", expand=True)
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
         self.search_button.pack(side="left", padx=5, pady=5)
-        ToolTip(self.search_button, "Search for spesific strings in the output.")
+        ToolTip(self.search_button, "Search for specific strings in the output.")
+
+        
 
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
@@ -173,7 +174,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         print("Search box displayed")  # Debug print statement
 
     def search_text(self):
-    # Show the search box if it is not already displayed
+        # Show the search box if it is not already displayed
         if not self.search_frame.winfo_ismapped():
             self.show_search_box()
             return
@@ -182,18 +183,27 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         if not search_term:
             return
 
-    # Clear previous highlights
-        self.text_widget.tag_remove('search_highlight', '1.0', tk.END)
+    # Iterate over all tabs and search within each CustomText widget
+        for tab_id in self.parent.tab_control.tabs():
+            tab = self.parent.tab_control.nametowidget(tab_id)
+            text_widget = tab.winfo_children()[0]
 
-        start_pos = '1.0'
-        while True:
-            start_pos = self.text_widget.search(search_term, start_pos, stopindex=tk.END, nocase=True)
-            if not start_pos:
-               break
-            end_pos = f'{start_pos}+{len(search_term)}c'
-            self.text_widget.tag_add('search_highlight', start_pos, end_pos)
-            start_pos = end_pos
+        # Clear previous highlights in this text widget
+            text_widget.tag_remove('search_highlight', '1.0', tk.END)
 
-    # Configure the tag for highlight
-        self.text_widget.tag_config('search_highlight', background='yellow')
+            start_pos = '1.0'
+            while True:
+                start_pos = text_widget.search(search_term, start_pos, stopindex=tk.END, nocase=True)
+                if not start_pos:
+                    break
+                end_pos = f'{start_pos}+{len(search_term)}c'
+                text_widget.tag_add('search_highlight', start_pos, end_pos)
+                start_pos = end_pos
+
+        # Configure the tag for highlight
+            text_widget.tag_config('search_highlight', background='yellow')
+
         print(f"Search completed for term: {search_term}")  # Debug print statement
+
+
+    
