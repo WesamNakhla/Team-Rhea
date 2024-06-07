@@ -84,10 +84,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.export_button.pack(side="right", padx=5, pady=5)
         ToolTip(self.export_button, "Export the results and data to a file.")
 
-        # Progress bar
-        self.progress = ttk.Progressbar(self, orient="horizontal", length=100, mode="determinate")
-        self.progress.grid(row=4, column=0, columnspan=4, padx=10, pady=5, sticky="we")
-
         # Configure grid to expand correctly
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
