@@ -140,10 +140,13 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
         self.terminal_output.pack(expand=True, fill='both')
         
+        
         sys.stdout = RedirectOutput(self.terminal_output)
         sys.stderr = RedirectOutput(self.terminal_output)
 
-        self.hide_terminal_button = ttk.Button(self, text="Hide Terminal", command=self.toggle_terminal)
+        self.terminal_frame.grid_remove()  # Hide the terminal frame after redirection
+
+        self.hide_terminal_button = ttk.Button(self, text="Show Terminal", command=self.toggle_terminal)
         self.hide_terminal_button.grid(row=5, column=4, padx=10, pady=5, sticky="w")
 
     def select_first_file_in_sidebar(self):
@@ -175,12 +178,12 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.sidebar_frame.grid()
 
          # Ensure terminal_frame is managed by grid and placed consistently
-        self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=15, sticky="nsew")  # Adjust row and column if different
+        
 
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
-        self.terminal_frame.grid_remove()  # Hide terminal when sidebar is hidden
+        
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
