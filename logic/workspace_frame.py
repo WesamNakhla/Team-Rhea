@@ -369,8 +369,15 @@ class WorkspaceFrameLogic:
             # Attach the line number canvas to the text widget
             line_number_canvas.attach(text_output)
 
-            # Insert the output text
-            text_output.insert(tk.END, output)
+            # Filters some unwanted output like progress and error, maybe show this in terminal??
+            filtered_output = "\n".join(
+                line for line in output.split("\n")
+                if not line.startswith("Progress:") and "Scanning" not in line and "Error" not in line
+                and line.strip()  # This ensures the line is not empty or whitespace
+            )
+
+            # Insert the filtered output into the text widget
+            text_output.insert(tk.END, filtered_output)
 
             # Ensure line numbers update immediately
             text_output.event_generate("<<Change>>")
