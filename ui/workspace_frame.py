@@ -207,7 +207,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def show_search_box(self):
         self.search_frame.grid()
         self.search_entry.focus_set()
-        print("Search box displayed")  # Debug print statement
+        #print("Search box displayed")  # Debug print statement
 
     def search_text(self):
         # Show the search box if it is not already displayed
@@ -239,7 +239,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Configure the tag for highlight
             text_widget.tag_config('search_highlight', background='yellow')
 
-        print(f"Search completed for term: {search_term}")  # Debug print statement
+        #print(f"Search completed for term: {search_term}")  # Debug print statement
 
 
     

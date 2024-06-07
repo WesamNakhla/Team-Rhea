@@ -132,7 +132,7 @@ class MainApplication(TkinterDnD.Tk):
         current_frame = self.frames.get(WorkspaceFrame)
         if current_frame:
             current_frame.search_text()
-            print("CTRL + F pressed: Initiating search in WorkspaceFrame")  # Debug print statement
+            #print("CTRL + F pressed: Initiating search in WorkspaceFrame")  # Debug print statement
 
 if __name__ == "__main__":
     app = MainApplication()
