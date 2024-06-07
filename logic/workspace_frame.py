@@ -373,7 +373,10 @@ class WorkspaceFrameLogic:
             filtered_output = "\n".join(
                 line for line in output.split("\n")
                 if not line.startswith("Progress:") and "Scanning" not in line and "Error" not in line
+                and line.strip()  # This ensures the line is not empty or whitespace
             )
+
+            # Insert the filtered output into the text widget
             text_output.insert(tk.END, filtered_output)
 
             # Ensure line numbers update immediately
