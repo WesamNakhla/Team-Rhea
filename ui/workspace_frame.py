@@ -141,8 +141,8 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.terminal_output.pack(expand=True, fill='both')
         
         
-        sys.stdout = RedirectOutput(self.terminal_output)
-        sys.stderr = RedirectOutput(self.terminal_output)
+        #sys.stdout = RedirectOutput(self.terminal_output)    <---!!! DONT REMOVE, ikke fjern
+        # sys.stderr = RedirectOutput(self.terminal_output)   <------------- dette er terminal outputu fra vscode.
 
         self.terminal_frame.grid_remove()  # Hide the terminal frame after redirection
 
