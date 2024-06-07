@@ -122,5 +122,4 @@ class CommandFrame(tk.Frame, CommandFrameLogic):
         self.command_canvas.after(100, lambda: self.command_canvas.yview_moveto(1))  # Scroll to the bottom after adding a new command
 
     def delete_command_ui(self, index):
-        del self.commands[index]
-        self.load_commands_ui()
+        self.delete_command(index)
