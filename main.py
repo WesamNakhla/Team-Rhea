@@ -60,6 +60,15 @@ class MainApplication(TkinterDnD.Tk):
 
         self.bind('<Control-q>', self.quit_app)
         self.bind('<Control-f>', self.search_text)
+        self.bind('<Control-o>', self.open_file)
+        #self.bind('<Control-e>', self.export_file)
+        #self.bind('<Control-w>', self.close_tab)
+
+
+        #CTRL O to open file?
+        #CTRL E to export file?
+        #CTRL W to close tab?
+
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
@@ -105,12 +114,13 @@ class MainApplication(TkinterDnD.Tk):
     def switch_to_command_frame(self):
         self.show_frame(CommandFrame)
 
-    def open_file(self):
+    def open_file(self, event=None):
         file_paths = filedialog.askopenfilenames()
         if file_paths:
             self.loaded_files.extend(file_paths)
             self.update_loaded_file_label()
             self.show_frame(WorkspaceFrame)
+
 
     def save_file(self):
         # Placeholder function to save a file
