@@ -249,12 +249,15 @@ class WorkspaceFrameLogic:
 
         selected_index = self.parent.command_dropdown.current()
         command = None
+        command_name = None
         if selected_index == 1:  # Custom command
             command = self.parent.custom_command_entry.get().strip()
+            command_name = "Custom"
         elif selected_index > 1:  # Predefined command selected
             command_index = selected_index - 2  # Adjust index for 'Choose command...' and 'Custom'
             if command_index < len(self.commands):
                 command = self.commands[command_index]['command']
+                command_name = self.commands[command_index]['command']  # Use the command from the list
 
         if not command:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
@@ -270,23 +273,26 @@ class WorkspaceFrameLogic:
 
         # Execute the command in a separate thread using ThreadPoolExecutor
         future = self.executor.submit(self.execute_command, full_command)  # Pass the full command to execution
-        future.add_done_callback(lambda f, cmd=command, fp=file_path: self.command_finished(f, cmd, fp))
+        future.add_done_callback(lambda f, cmd=command_name, fp=file_path: self.command_finished(f, cmd, fp))
 
-    def command_finished(self, future, command, file_path):
+
+
+    def command_finished(self, future, command_name, file_path):
         try:
             if future.done():
                 command_result, findings = future.result()
-                self.parent.after(0, self.add_tab, file_path, command_result, findings)
-                tab_title = f"{os.path.basename(file_path)} {command_result}"
+                self.parent.after(0, self.add_tab, file_path, command_name, findings)
+                tab_title = f"{os.path.basename(file_path)} - {command_name}"
                 self.command_details[tab_title] = {
-                    "command": command_result,
+                    "command": command_name,
                     "output": findings,
                     "highlights": []  # Placeholder for any highlights data
                 }
                 self.check_all_commands_finished()
         except Exception as e:
-            messagebox.showerror("Error", f"Error executing command {command}: {str(e)}")
+            messagebox.showerror("Error", f"Error executing command {command_name}: {str(e)}")
             print(f"Exception when processing command result: {e}")
+
 
     def execute_command(self, full_command):
         # Run the command using subprocess
@@ -330,8 +336,14 @@ class WorkspaceFrameLogic:
         tk.messagebox.showinfo("Alert", f"The command '{command}' has already been run.")
     
 
-    def add_tab(self, file_path, command, output):
-        tab_title = f"{os.path.basename(file_path)} {command}"
+    def add_tab(self, file_path, command_name, output):
+        # Extract the filename without the path and extension
+        file_name = os.path.basename(file_path)
+        file_name_without_ext = os.path.splitext(file_name)[0]
+        
+        # Create the tab title
+        tab_title = f"{command_name} ({file_name_without_ext})"
+        
         if tab_title in self.command_tabs:
             # Focus the existing tab if it's already open
             self.parent.tab_control.select(self.command_tabs[tab_title])
