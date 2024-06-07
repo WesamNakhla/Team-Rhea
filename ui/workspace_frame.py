@@ -21,6 +21,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.command_label = ttk.Label(self, text="Choose command:")
         self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
+        self.command_button = ttk.Button(self, text="Choose command", command=self.show_combobox)
+        self.command_button.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+
         # Command dropdown
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
         self.command_var = tk.StringVar()
@@ -29,6 +32,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.command_dropdown.bind("<KeyRelease>", self.search_command)
         self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
         ToolTip(self.command_dropdown, "Select or search a command to run.")
+        self.command_dropdown.grid_remove()  # Initially hide the combobox
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
@@ -258,4 +262,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
 
 
 
-
+    def show_combobox(self):
+        self.command_button.grid_remove()  # Hide the button
+        self.command_dropdown.grid()  # Show the combobox
+        self.command_dropdown.focus_set()  # Set focus to the combobox
+        self.command_dropdown.event_generate('<Button-1>')  # Simulate mouse click
+        
