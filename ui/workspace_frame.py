@@ -24,10 +24,11 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         # Command dropdown
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
         self.command_var = tk.StringVar()
-        self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="readonly")
+        self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="normal")
         self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+        self.command_dropdown.bind("<KeyRelease>", self.search_command)
         self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
-        ToolTip(self.command_dropdown, "Select a command to run.")
+        ToolTip(self.command_dropdown, "Select or search a command to run.")
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
@@ -242,4 +243,19 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         #print(f"Search completed for term: {search_term}")  # Debug print statement
 
 
+    def search_command(self, event=None):
+        search_term = self.command_var.get().strip().lower()
     
+    # Filter the command options based on the search term
+        filtered_options = [option for option in self.command_options if search_term in option.lower()]
+    
+    # Update the combobox values with the filtered options
+        self.command_dropdown['values'] = filtered_options
+    
+    # Open the dropdown list to show the filtered options
+        if filtered_options:
+            self.command_dropdown.event_generate('<Down>')  # Ensure the dropdown is open
+
+
+
+
