@@ -240,7 +240,7 @@ class WorkspaceFrameLogic:
             if future.done():
                 command_result, findings = future.result()
                 self.parent.after(0, self.add_tab, file_path, command_name, findings)
-                tab_title = f"{os.path.basename(file_path)} - {command_name}"
+                tab_title = f"{command_name} ({os.path.basename(file_path)})"
                 self.command_details[tab_title] = {
                     "command": command_name,
                     "output": findings,
