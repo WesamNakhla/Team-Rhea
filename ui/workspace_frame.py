@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
-from logic.workspace_logic import WorkspaceFrameLogic, ToolTip
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
@@ -20,18 +20,16 @@ class WorkspaceFrame(tk.Frame):
         self.command_label = ttk.Label(self, text="Choose command:")
         self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
 
-        self.command_button = ttk.Button(self, text="Choose command", command=self.show_combobox)
-        self.command_button.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+        
 
         # Command dropdown
-        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
+        # Command dropdown and input
         self.command_var = tk.StringVar()
-        self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="normal")
-        self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
-        self.command_dropdown.bind("<KeyRelease>", self.search_command)
-        self.command_dropdown.bind("<<ComboboxSelected>>", self.update_command_info)
-        ToolTip(self.command_dropdown, "Select or search a command to run.")
-        self.command_dropdown.grid_remove()  # Initially hide the combobox
+        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
+        self.dropdown = CustomDropdown(self, self.command_options, self.command_var)
+        self.dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
+        self.bind('<<MenuSelect>>', self.update_command_info)
+
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
@@ -244,3 +242,9 @@ class WorkspaceFrame(tk.Frame):
 
     def update_loaded_file_label(self):
         self.logic.update_loaded_file_label()
+
+    def update_command_info(self, event=None):
+        # Update based on selected command
+        selected_command = self.command_var.get()
+        print(f"Command selected: {selected_command}")
+        # Logic to update UI or perform actions based on the selected command    
