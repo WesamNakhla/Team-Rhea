@@ -2,7 +2,7 @@ import json
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
-from logic.settings_frame import SettingsFrameLogic
+from logic.settings_logic import SettingsFrameLogic
 
 class SettingsFrame(tk.Frame, SettingsFrameLogic):
     def __init__(self, parent, app):

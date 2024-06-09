@@ -1,11 +1,8 @@
 import concurrent.futures
 import json
 import os
-import re
 import subprocess
 import textwrap
-import threading
-import time
 from tkinter import ttk
 import tkinter as tk
 from tkinter import filedialog, messagebox, colorchooser
@@ -141,8 +138,9 @@ class RedirectOutput:
         pass
 
 class WorkspaceFrameLogic:
-    def __init__(self, parent):
+    def __init__(self, parent, file_handler):
         self.parent = parent
+        self.file_handler = file_handler
         self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
         self.commands = self.load_commands()  # Load commands from JSON
         self.command_details = {}
@@ -152,20 +150,20 @@ class WorkspaceFrameLogic:
 
     def update_loaded_file_label(self, loaded_files=None):
         if loaded_files is None:
-            loaded_files = self.parent.loaded_files  # Ensure loaded_files is always up-to-date
-        filenames_only = [os.path.basename(full_path) for full_path in loaded_files]
+            loaded_files = self.file_handler.get_loaded_files()
+        
+        # Remove paths from the loaded files
+        filenames_only = [self.file_handler.remove_path(full_path) for full_path in loaded_files]
+        
         if filenames_only:
             self.parent.show_sidebar(filenames_only)  # Show sidebar if files exist
             self.parent.select_first_file_in_sidebar()  # Select the first file in the sidebar
         else:
-            self.parent.hide_sidebar()  # Hide sidebar if no files
-
-
+            self.parent.hide_sidebar()  # Hide sidebar if no files exist
 
     def show_search_box(self):
         self.search_entry.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
         self.search_entry.focus_set()
-
 
     def add_custom_plugin(self):
         file_path = filedialog.askopenfilename(title="Select Custom Plugin", filetypes=[("Python Files", "*.py")])
@@ -179,8 +177,7 @@ class WorkspaceFrameLogic:
                 "description": f"This is your custom plugin {plugin_name}"
             }
             self.commands.append(custom_plugin_details)
-            command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
-            self.parent.update_command_dropdown(command_options)  # Pass command_options to parent method
+            self.update_command_dropdown()
 
     def update_command_dropdown(self):
         command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
@@ -196,10 +193,6 @@ class WorkspaceFrameLogic:
         except json.JSONDecodeError:
             messagebox.showerror("Error", "Error decoding the commands file.")
             return []
-
-
-
-    
 
     def export_results(self):
         self.parent.switch_to_export_frame()  # Call the function to switch frames
@@ -242,8 +235,58 @@ class WorkspaceFrameLogic:
                 self.parent.command_info_label.config(text=wrapped_text)
                 self.parent.run_command_button.config(state=tk.NORMAL)
 
+    def command_finished(self, future, command_name, file_path):
+        try:
+            if future.done():
+                command_result, findings = future.result()
+                self.parent.after(0, self.add_tab, file_path, command_name, findings)
+                tab_title = f"{os.path.basename(file_path)} - {command_name}"
+                self.command_details[tab_title] = {
+                    "command": command_name,
+                    "output": findings,
+                    "highlights": []  # Placeholder for any highlights data
+                }
+                self.check_all_commands_finished()
+        except Exception as e:
+            messagebox.showerror("Error", f"Error executing command {command_name}: {str(e)}")
+            print(f"Exception when processing command result: {e}")
+
+    def add_tab(self, file_path, command_name, findings):
+        tab_title = f"{os.path.basename(file_path)} - {command_name}"
+        new_tab = ttk.Frame(self.parent.tab_control)
+        self.parent.tab_control.add(new_tab, text=tab_title)
+        self.command_tabs[tab_title] = new_tab
+
+        text_widget = CustomText(new_tab, wrap='word')
+        text_widget.insert('1.0', findings)
+        text_widget.config(state='disabled')
+        text_widget.pack(expand=True, fill='both')
+
+        self.show_close_button(new_tab)
+
+    def execute_command(self, full_command):
+        # Run the command using subprocess
+        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        stdout, stderr = process.communicate()
+
+        # Handle output and errors
+        findings = stdout if stdout else "No output received."
+        if stderr:
+            findings += "\nError:\n" + stderr
+
+        return full_command, findings
+
+    def check_all_commands_finished(self):
+        if all(f.done() for f in self.futures):  # Check if all futures are done
+            print("All commands have finished executing.")
+            self.prepare_export_data()  # Now prepare export data
+
     def run_command(self):
-        if not self.parent.selected_file:
+        # print the content
+        print("Running command")
+        selected_file = self.file_handler.get_selected_file()
+        print(f"Selected file: {selected_file}")
+        if not selected_file:
             messagebox.showerror("Error", "No file selected.")
             return
 
@@ -264,131 +307,15 @@ class WorkspaceFrameLogic:
             return
 
         command_parameters = self.parent.parameter_entry.get().strip()  # Retrieve parameters from the user input
-        file_path = self.parent.selected_file
         vol_path = self.get_volatility_path()
 
         # Combine the volatility script, file path, command, and user-entered parameters
-        full_command = f"python {vol_path} -f {file_path} {command} {command_parameters}"
+        full_command = f"python {vol_path} -f {selected_file} {command} {command_parameters}"
         print(f"Running command: {full_command}")
 
         # Execute the command in a separate thread using ThreadPoolExecutor
         future = self.executor.submit(self.execute_command, full_command)  # Pass the full command to execution
-        future.add_done_callback(lambda f, cmd=command_name, fp=file_path: self.command_finished(f, cmd, fp))
-
-
-
-    def command_finished(self, future, command_name, file_path):
-        try:
-            if future.done():
-                command_result, findings = future.result()
-                self.parent.after(0, self.add_tab, file_path, command_name, findings)
-                tab_title = f"{os.path.basename(file_path)} - {command_name}"
-                self.command_details[tab_title] = {
-                    "command": command_name,
-                    "output": findings,
-                    "highlights": []  # Placeholder for any highlights data
-                }
-                self.check_all_commands_finished()
-        except Exception as e:
-            messagebox.showerror("Error", f"Error executing command {command_name}: {str(e)}")
-            print(f"Exception when processing command result: {e}")
-
-
-    def execute_command(self, full_command):
-        # Run the command using subprocess
-        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
-        stdout, stderr = process.communicate()
-
-        # Handle output and errors
-        findings = stdout if stdout else "No output received."
-        if stderr:
-            findings += "\nError:\n" + stderr
-
-        return full_command, findings
-
-    def check_all_commands_finished(self):
-        if all(f.done() for f in self.futures):  # Check if all futures are done
-            print("All commands have finished executing.")
-            self.prepare_export_data()  # Now prepare export data
-
-    
-    def run_volatility(self, command):
-        print(f"Running command: {command}")
-        try:
-            result = subprocess.run(command, capture_output=True, text=True, shell=True)
-            findings = result.stdout if result.stdout else "No output received."
-            if result.stderr:
-                findings += "\nError:\n" + result.stderr
-
-            command_key = command.split()[-1]  # Simple command name extraction
-            self.command_details[command_key] = {
-                "command": command,
-                "output": findings,
-                "highlights": []  # Make sure to populate highlights elsewhere
-            }
-            print(f"Command details updated: {self.command_details[command_key]}")
-            self.add_tab(command_key, findings)
-        except Exception as e:
-            messagebox.showerror("Error", str(e))
-            print(f"Exception when running command: {e}")
-
-    def show_alert(self, command):
-        tk.messagebox.showinfo("Alert", f"The command '{command}' has already been run.")
-    
-
-    def add_tab(self, file_path, command_name, output):
-        # Extract the filename without the path and extension
-        file_name = os.path.basename(file_path)
-        file_name_without_ext = os.path.splitext(file_name)[0]
-        
-        # Create the tab title
-        tab_title = f"{command_name} ({file_name_without_ext})"
-        
-        if tab_title in self.command_tabs:
-            # Focus the existing tab if it's already open
-            self.parent.tab_control.select(self.command_tabs[tab_title])
-        else:
-            # If the tab does not exist, create a new one
-            new_tab = ttk.Frame(self.parent.tab_control)
-
-            # Create the Text widget
-            text_output = CustomText(new_tab, height=15, width=50, selectbackground="yellow", selectforeground="black")
-
-            # Add a vertical scrollbar
-            v_scrollbar = tk.Scrollbar(new_tab, orient="vertical", command=text_output.yview)
-            v_scrollbar.pack(side="right", fill="y")
-            text_output.config(yscrollcommand=v_scrollbar.set)
-
-            # Pack the Text widget
-            text_output.pack(side="right", fill="both", expand=True)
-
-            # Add line number canvas
-            line_number_canvas = LineNumberCanvas(new_tab, text_output, start_line=5, width=30)
-            line_number_canvas.pack(side="left", fill="y")
-
-            # Attach the line number canvas to the text widget
-            line_number_canvas.attach(text_output)
-
-            # Filters some unwanted output like progress and error, maybe show this in terminal??
-            filtered_output = "\n".join(
-                line for line in output.split("\n")
-                if not line.startswith("Progress:") and "Scanning" not in line and "Error" not in line
-                and line.strip()  # This ensures the line is not empty or whitespace
-            )
-
-            # Insert the filtered output into the text widget
-            text_output.insert(tk.END, filtered_output)
-
-            # Ensure line numbers update immediately
-            text_output.event_generate("<<Change>>")
-
-            # Add the new tab to the notebook with the command as its title
-            self.parent.tab_control.add(new_tab, text=tab_title)
-            self.command_tabs[tab_title] = new_tab  # Store the reference to the new tab
-
-            # Bind tab movement
-            self.parent.tab_control.bind("<ButtonPress-1>", self.on_tab_click)
-            self.parent.tab_control.bind("<B1-Motion>", self.on_tab_drag)
+        future.add_done_callback(lambda f, cmd=command_name, fp=selected_file: self.command_finished(f, cmd, fp))
 
     def show_close_button(self, tab):
         close_button = ttk.Button(tab, text="Close Tab", command=lambda: self.close_tab(tab))
@@ -458,30 +385,12 @@ class WorkspaceFrameLogic:
         for tab in self.parent.tab_control.tabs():
             text_widget = self.parent.tab_control.nametowidget(tab).winfo_children()[0]
 
-    def load_previous_commands(self):
-        for command in self.parent.commands_used:
-            self.add_tab(self.unique_tab_title(command.split()[-1]), "Loaded from session: " + command)
-        for text, color in self.parent.highlights:
-            self.highlight_text_from_session(text, color)
-
-    def highlight_text_from_session(self, text, color):
-        for tab in self.command_tabs.values():
-            text_widget = tab.winfo_children()[0]
-            start = "1.0"
-            while True:
-                start = text_widget.search(text, start, stopindex=tk.END)
-                if not start:
-                    break
-                end = f"{start}+{len(text)}c"
-                text_widget.tag_add(color, start, end)
-                text_widget.tag_config(color, background=color)
-                start = end
-
     def prepare_export_data(self):
         print("Preparing export data...")
-        if self.parent.selected_file:
+        selected_file = self.file_handler.get_selected_file()
+        if selected_file:
             export_data = {
-                "memory_dump_file": self.parent.selected_file,  # Use the selected file
+                "memory_dump_file": selected_file,  # Use the selected file
                 "commands": [
                     {
                         "command": cmd["command"],

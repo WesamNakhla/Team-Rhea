@@ -2,15 +2,17 @@ import json
 import os
 import tkinter as tk
 from tkinter import ttk, filedialog
-from tkinterdnd2 import TkinterDnD, DND_FILES
+from tkinterdnd2 import DND_FILES
 from PIL import Image, ImageTk
-from logic.import_frame import ImportFrameLogic, ALLOWED_FILE_TYPES
+from logic.import_logic import ImportFrameLogic, ALLOWED_FILE_TYPES
 
-class ImportFrame(ttk.Frame, ImportFrameLogic):
-    def __init__(self, parent, app):
-        ttk.Frame.__init__(self, parent)
-        ImportFrameLogic.__init__(self, app)
+class ImportFrame(tk.Frame):
+    def __init__(self, parent, app, file_handler, switch_to_workspace_frame):
+        super().__init__(parent)
+        self.parent = parent
         self.app = app
+        self.file_handler = file_handler
+        self.logic = ImportFrameLogic(app=self, file_handler=self.file_handler, switch_to_workspace_frame=switch_to_workspace_frame)
 
         # Main content frame
         self.main_frame = ttk.Frame(self)
@@ -72,3 +74,12 @@ class ImportFrame(ttk.Frame, ImportFrameLogic):
 
     def on_leave(self, event):
         self.drag_area.config(bg="#333333")
+
+    def drop(self, event):
+        self.logic.drop(event)
+
+    def browse_file(self):
+        self.logic.browse_file()
+
+    def handle_file(self, file_paths):
+        self.logic.handle_file(file_paths)

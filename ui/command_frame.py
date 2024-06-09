@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, Scrollbar, VERTICAL
-from logic.command_frame import CommandFrameLogic
+from logic.command_logic import CommandFrameLogic
 
 class CommandFrame(tk.Frame, CommandFrameLogic):
     def __init__(self, parent, app):

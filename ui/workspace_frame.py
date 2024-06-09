@@ -1,22 +1,21 @@
-import sys
 import tkinter as tk
 from tkinter import ttk
-import os
-from logic.workspace_frame import RedirectOutput, WorkspaceFrameLogic , ToolTip
+from logic.workspace_logic import WorkspaceFrameLogic, ToolTip
 
-class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
-    def __init__(self, parent, switch_to_export_frame):
-        tk.Frame.__init__(self, parent)
-        WorkspaceFrameLogic.__init__(self, self)
+class WorkspaceFrame(tk.Frame):
+    def __init__(self, parent, app, file_handler, switch_to_export_frame):
+        super().__init__(parent)
+        self.parent = parent
+        self.app = app
+        self.file_handler = file_handler
         self.switch_to_export_frame = switch_to_export_frame
-        self.init_ui()
 
-        #hide search bar
-        self.search_frame.grid_remove()
+        self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
+
+        self.init_ui()
 
     def init_ui(self):
         # Using grid layout for better control
-
         # Choose command label
         self.command_label = ttk.Label(self, text="Choose command:")
         self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
@@ -25,7 +24,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.command_button.grid(row=1, column=1, padx=10, pady=5, sticky="we")
 
         # Command dropdown
-        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
+        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
         self.command_var = tk.StringVar()
         self.command_dropdown = ttk.Combobox(self, values=self.command_options, textvariable=self.command_var, state="normal")
         self.command_dropdown.grid(row=1, column=1, padx=10, pady=5, sticky="we")
@@ -46,7 +45,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
 
         # Add Custom Plugin button
-        self.add_custom_plugin_button = ttk.Button(self, text="Add Custom Plugin", command=self.add_custom_plugin)
+        self.add_custom_plugin_button = ttk.Button(self, text="Add Custom Plugin", command=self.logic.add_custom_plugin)
         self.add_custom_plugin_button.grid(row=2, column=2, padx=10, pady=5, sticky="we")
         ToolTip(self.add_custom_plugin_button, "Add a custom plugin to the application.")
 
@@ -71,16 +70,16 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.highlight_frame.grid(row=5, column=0, columnspan=4, pady=5, sticky="we")
 
         # Single highlight button with color chooser
-        self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.choose_highlight_color)
+        self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
 
-        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.remove_highlight)
+        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.logic.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
 
         # Export button with unicode icon
-        self.export_button = ttk.Button(self.highlight_frame, text="\u23CF Export", command=self.export_results)
+        self.export_button = ttk.Button(self.highlight_frame, text="\u23CF Export", command=self.logic.export_results)
         self.export_button.pack(side="right", padx=5, pady=5)
         ToolTip(self.export_button, "Export the results and data to a file.")
 
@@ -88,8 +87,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.grid_rowconfigure(3, weight=1)
         self.grid_columnconfigure(3, weight=1)
 
-        
-        #Search bar
+        # Search bar
         self.search_frame = tk.Frame(self)
         self.search_frame.grid(row=5, column=3, columnspan=1, pady=5, sticky="we")
         self.search_label = ttk.Label(self.search_frame, text="Search:")
@@ -100,8 +98,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.search_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.search_button, "Search for specific strings in the output.")
 
-        
-
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
         self.sidebar_frame.grid_propagate(False)
@@ -109,7 +105,7 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.selected_file_label = ttk.Label(self, text="No file selected", anchor="w", font=('Arial', 12, 'bold'))
         self.selected_file_label.grid(row=0, column=0, sticky="wew", padx=10, pady=5)
 
-        self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab", command=self.close_current_tab)
+        self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab")
         self.close_tab_button.grid(row=0, column=1, sticky="e", pady=5)
 
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
@@ -122,10 +118,9 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
         self.add_file_button = ttk.Button(self.sidebar_frame, text="Add File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
-        
+
         self.sidebar_frame.grid(row=0, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
-
 
         self.grid_rowconfigure(3, weight=1)  # Makes the row where terminal_frame will be placed expandable
         self.grid_columnconfigure(4, weight=1)  # Makes the column where terminal_frame will be placed expandable
@@ -135,10 +130,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         self.terminal_frame.grid(row=6, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
         self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
         self.terminal_output.pack(expand=True, fill='both')
-        
-        
-        #sys.stdout = RedirectOutput(self.terminal_output)    <---!!! DONT REMOVE, ikke fjern
-        # sys.stderr = RedirectOutput(self.terminal_output)   <------------- dette er terminal outputu fra vscode.
 
         self.terminal_frame.grid_remove()  # Hide the terminal frame after redirection
 
@@ -150,7 +141,6 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
             self.sidebar_listbox.selection_set(0)  # Select the first item
             self.sidebar_listbox.event_generate("<<ListboxSelect>>")  # Trigger the listbox select event
 
-
     def toggle_terminal(self):
         if self.terminal_frame.winfo_viewable():
             self.terminal_frame.grid_remove()
@@ -159,9 +149,8 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
             self.terminal_frame.grid()
             self.hide_terminal_button.configure(text="Hide Terminal")  # Change back the button text
 
-
     def set_selected_file(self, file):
-        self.selected_file = file
+        self.file_handler.selected_file = file
         self.update_selected_file_label(file)
 
     def update_command_dropdown(self, command_options):
@@ -173,13 +162,8 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
             self.sidebar_listbox.insert(tk.END, file)
         self.sidebar_frame.grid()
 
-         # Ensure terminal_frame is managed by grid and placed consistently
-        
-
-
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
-        
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
@@ -187,34 +171,36 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
     def on_file_select(self, event):
         selected_indices = self.sidebar_listbox.curselection()
         if selected_indices:
-            selected_file = self.sidebar_listbox.get(selected_indices[0])
-            self.set_selected_file(selected_file)
+            selected_file_index = selected_indices[0]
+            self.file_handler.selected_file = selected_file_index
+            selected_file = self.file_handler.get_selected_file()
+            self.update_selected_file_label(selected_file)
 
     def update_selected_file_label(self, file):
-        self.selected_file_label.config(text=f"Selected file: {file}")
+        # Use the remove_path method from file_handler to get the file name without the path
+        filename_only = self.file_handler.remove_path(file)
+        self.selected_file_label.config(text=f"Selected file: {filename_only}")
+
 
     def add_file(self):
         file_paths = filedialog.askopenfilenames()
         if file_paths:
-            self.parent.loaded_files.extend(file_paths)
-            self.show_sidebar(self.parent.loaded_files)
+            self.file_handler.loaded_files.extend(file_paths)
+            self.show_sidebar(self.file_handler.loaded_files)
 
     def close_file(self):
         selected_indices = self.sidebar_listbox.curselection()
         if selected_indices:
             selected_file = self.sidebar_listbox.get(selected_indices[0])
-            self.parent.loaded_files.remove(selected_file)
-            self.show_sidebar(self.parent.loaded_files)
+            self.file_handler.loaded_files.remove(selected_file)
+            self.show_sidebar(self.file_handler.loaded_files)
             self.update_selected_file_label("No file selected")
-            self.selected_file = None
 
     def show_search_box(self):
         self.search_frame.grid()
         self.search_entry.focus_set()
-        #print("Search box displayed")  # Debug print statement
 
     def search_text(self):
-        # Show the search box if it is not already displayed
         if not self.search_frame.winfo_ismapped():
             self.show_search_box()
             return
@@ -223,14 +209,10 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
         if not search_term:
             return
 
-    # Iterate over all tabs and search within each CustomText widget
-        for tab_id in self.parent.tab_control.tabs():
-            tab = self.parent.tab_control.nametowidget(tab_id)
+        for tab_id in self.tab_control.tabs():
+            tab = self.tab_control.nametowidget(tab_id)
             text_widget = tab.winfo_children()[0]
-
-        # Clear previous highlights in this text widget
             text_widget.tag_remove('search_highlight', '1.0', tk.END)
-
             start_pos = '1.0'
             while True:
                 start_pos = text_widget.search(search_term, start_pos, stopindex=tk.END, nocase=True)
@@ -239,31 +221,26 @@ class WorkspaceFrame(tk.Frame, WorkspaceFrameLogic):
                 end_pos = f'{start_pos}+{len(search_term)}c'
                 text_widget.tag_add('search_highlight', start_pos, end_pos)
                 start_pos = end_pos
-
-        # Configure the tag for highlight
             text_widget.tag_config('search_highlight', background='yellow')
-
-        #print(f"Search completed for term: {search_term}")  # Debug print statement
-
 
     def search_command(self, event=None):
         search_term = self.command_var.get().strip().lower()
-    
-    # Filter the command options based on the search term
         filtered_options = [option for option in self.command_options if search_term in option.lower()]
-    
-    # Update the combobox values with the filtered options
         self.command_dropdown['values'] = filtered_options
-    
-    # Open the dropdown list to show the filtered options
         if filtered_options:
-            self.command_dropdown.event_generate('<Down>')  # Ensure the dropdown is open
-
-
+            self.command_dropdown.event_generate('<Down>')
 
     def show_combobox(self):
-        self.command_button.grid_remove()  # Hide the button
-        self.command_dropdown.grid()  # Show the combobox
-        self.command_dropdown.focus_set()  # Set focus to the combobox
-        self.command_dropdown.event_generate('<Button-1>')  # Simulate mouse click
-        
+        self.command_button.grid_remove()
+        self.command_dropdown.grid()
+        self.command_dropdown.focus_set()
+        self.command_dropdown.event_generate('<Button-1>')
+
+    def run_command(self):
+        self.logic.run_command()
+
+    def update_command_info(self, event):
+        self.logic.update_command_info(event)
+
+    def update_loaded_file_label(self):
+        self.logic.update_loaded_file_label()

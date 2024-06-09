@@ -1,3 +1,4 @@
+import os
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from tkinterdnd2 import TkinterDnD
@@ -6,13 +7,15 @@ from ui.workspace_frame import WorkspaceFrame
 from ui.export_frame import ExportFrame
 from ui.settings_frame import SettingsFrame
 from ui.command_frame import CommandFrame
-import os
+from logic.src.file_handler import FileHandler
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         self.title('Mnemonic Volatility3 GUI')
         self.geometry('1024x768')
+
+        self.file_handler = FileHandler()  # Initialize FileHandler
 
         self.load_theme()
 
@@ -23,8 +26,6 @@ class MainApplication(TkinterDnD.Tk):
         self.scan_result = None
         self.commands_used = []
         self.highlights = []
-        self.loaded_files = []  # List to hold multiple loaded files
-        self.selected_file = None  # Track the selected file
 
         # File Menu
         file_menu = tk.Menu(self.menu_bar, tearoff=0)
@@ -44,8 +45,8 @@ class MainApplication(TkinterDnD.Tk):
         self.frames = {}
 
         # Initialize all frames properly
-        self.frames[ImportFrame] = ImportFrame(self, app=self)
-        self.frames[WorkspaceFrame] = WorkspaceFrame(self, switch_to_export_frame=self.switch_to_export_frame)
+        self.frames[ImportFrame] = ImportFrame(self, app=self, file_handler=self.file_handler, switch_to_workspace_frame=self.switch_to_workspace_frame)
+        self.frames[WorkspaceFrame] = WorkspaceFrame(self, app=self, file_handler=self.file_handler, switch_to_export_frame=self.switch_to_export_frame)
         self.frames[ExportFrame] = ExportFrame(self, switch_frame_callback=self.switch_to_workspace_frame, scan_result=self.scan_result, commands_used=self.commands_used, highlights=self.highlights)
         self.frames[SettingsFrame] = SettingsFrame(self, app=self)
         self.frames[CommandFrame] = CommandFrame(self, app=self)
@@ -61,14 +62,6 @@ class MainApplication(TkinterDnD.Tk):
         self.bind('<Control-q>', self.quit_app)
         self.bind('<Control-f>', self.search_text)
         self.bind('<Control-o>', self.open_file)
-        #self.bind('<Control-e>', self.export_file)
-        #self.bind('<Control-w>', self.close_tab)
-
-
-        #CTRL O to open file?
-        #CTRL E to export file?
-        #CTRL W to close tab?
-
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
@@ -93,8 +86,9 @@ class MainApplication(TkinterDnD.Tk):
 
     def reset_to_import(self):
         """Reset the application state and go back to the drag and drop page."""
-        self.loaded_files = []  # Reset loaded files list
-        self.selected_file = None  # Reset selected file
+        self.file_handler = FileHandler()  # Reset the file handler
+        self.frames[ImportFrame].file_handler = self.file_handler
+        self.frames[WorkspaceFrame].file_handler = self.file_handler
         self.update_loaded_file_label()  # Update label
         self.show_frame(ImportFrame)
 
@@ -117,10 +111,7 @@ class MainApplication(TkinterDnD.Tk):
     def open_file(self, event=None):
         file_paths = filedialog.askopenfilenames()
         if file_paths:
-            self.loaded_files.extend(file_paths)
-            self.update_loaded_file_label()
-            self.show_frame(WorkspaceFrame)
-
+            self.frames[ImportFrame].handle_file(file_paths)
 
     def save_file(self):
         # Placeholder function to save a file
@@ -128,10 +119,10 @@ class MainApplication(TkinterDnD.Tk):
 
     def update_loaded_file_label(self):
         frame = self.frames[WorkspaceFrame]
-        frame.update_loaded_file_label(self.loaded_files)  # Pass the list of loaded files
+        frame.update_loaded_file_label()  # Update label using file handler
 
     def set_selected_file(self, file):
-        self.selected_file = file
+        self.file_handler.selected_file = file
         frame = self.frames[WorkspaceFrame]
         frame.update_selected_file_label(file)
     
@@ -142,7 +133,6 @@ class MainApplication(TkinterDnD.Tk):
         current_frame = self.frames.get(WorkspaceFrame)
         if current_frame:
             current_frame.search_text()
-            #print("CTRL + F pressed: Initiating search in WorkspaceFrame")  # Debug print statement
 
 if __name__ == "__main__":
     app = MainApplication()

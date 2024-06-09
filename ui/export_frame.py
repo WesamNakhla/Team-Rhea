@@ -1,7 +1,7 @@
 # located at ui/export_frame.py
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
-from logic.export_frame import ExportFrameLogic
+from logic.export_logic import ExportFrameLogic
 from PIL import Image, ImageTk, ImageSequence
 import os
 import threading
