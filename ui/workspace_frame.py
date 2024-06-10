@@ -85,8 +85,17 @@ class WorkspaceFrame(tk.Frame):
         self.selected_file_label.grid_propagate(False)
         self.sidebar_frame.grid_remove()
 
-        self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
-        self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="w")
+        self.sidebar_frame = ttk.Frame(self, width=200)
+        self.sidebar_frame.grid_propagate(False)
+        self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
+        self.sidebar_frame.grid_remove()
+
+        self.centered_frame = ttk.Frame(self.sidebar_frame)
+        self.centered_frame.grid(row=1, column=0, padx=(20, 20), pady=5)  # Add padding to center
+        self.centered_frame.grid_columnconfigure(0, weight=1)  # Center within the frame
+
+        self.sidebar_listbox = tk.Listbox(self.centered_frame, selectmode=tk.SINGLE)
+        self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
 
         self.select_all_button = ttk.Button(self.sidebar_frame, text="\U0001F5F9 Select All", command=self.select_all_files)
