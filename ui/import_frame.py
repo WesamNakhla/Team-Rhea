@@ -36,31 +36,24 @@ class ImportFrame(tk.Frame):
         with open(settings_file_path, 'r') as f:
             settings = json.load(f)
 
-        # Extract the version information
         volatility_version = settings.get('volatility_version', 'Unknown')
         version_text = f"VolGUI 1.0.0 and Volatility 3 Framework {volatility_version}"
 
-        # Version text below logo
         self.version_label = tk.Label(self.main_frame, text=version_text, font=('Arial', 11), bg="#333333", fg="white")
         self.version_label.grid(row=1, column=0, pady=(0, 20), padx=10, sticky="n")
 
-        # Import your file text
         self.import_label = tk.Label(self.main_frame, text="Import your file", font=('Arial', 28), bg="#333333", fg="white")
         self.import_label.grid(row=2, column=0, pady=(10, 5), padx=10, sticky="n")
 
-        # Drag and drop area frame
         self.drag_area_frame = tk.Frame(self.main_frame, bd=0, relief="solid", bg="#333333", highlightbackground="#a3a3a3", highlightcolor="#a3a3a3", highlightthickness=2)
         self.drag_area_frame.grid(row=3, column=0, pady=(1, 1), padx=20, sticky="n")
 
-        # Drag and drop area
         self.drag_area = tk.Label(self.drag_area_frame, text="\n" * 9 + "Drag and drop here", font=("Arial", 18), bg="#333333", fg="white", width=60, height=13, relief="flat")
         self.drag_area.pack()
 
-        # Drag image
         self.drag_label = tk.Label(self.drag_area, image=self.drag_image, bg="#333333")
         self.drag_label.place(relx=0.5, rely=0.6, anchor="center")
 
-        # Browse manually button
         self.browse_button = ttk.Button(self.main_frame, text="or Browse Manually", command=self.browse_file)
         self.browse_button.grid(row=4, column=0, pady=10, padx=10, sticky="n")
 

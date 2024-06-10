@@ -148,5 +148,11 @@
         "type": "Custom Plugin",
         "command": "customplugin123",
         "description": "This is your custom plugin customplugin123"
+    }, 
+    {
+        "type": "windows.filescan",
+        "command": "filescan",
+        "description": "This is your custom plugin filescan"
     }
+
 ]

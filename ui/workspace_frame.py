@@ -1,5 +1,5 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, filedialog
 from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
@@ -11,12 +11,10 @@ class WorkspaceFrame(tk.Frame):
         self.app = app
         self.file_handler = file_handler
         self.switch_to_export_frame = switch_to_export_frame
-    
+
         self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
 
         self.init_ui()
-
-    
 
         # Choose command label
         self.command_label = ttk.Label(self, text="Choose command:")
@@ -28,13 +26,9 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown = CustomDropdown(self, self.command_options, self.command_var, width=30)
         self.command_dropdown.grid(row=2, column=0, padx=10, pady=5, sticky="we")
         self.command_dropdown.grid_propagate(False)
-        self.bind('<<MenuSelect>>', self.update_command_info)
-
-        
-
+        self.command_dropdown.bind('<<MenuSelect>>', self.update_command_info)
 
         # Parameter input label and entry
-        
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
         self.parameter_label.grid(row=1, column=1, padx=10, pady=5, sticky="w")
         self.parameter_entry = ttk.Entry(self)
@@ -50,18 +44,15 @@ class WorkspaceFrame(tk.Frame):
         self.run_command_button.image = icon_image  # Keep a reference to avoid garbage collection
         self.run_command_button.grid(row=2, column=2, padx=10, pady=5, sticky="w")
         ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
-       
-        self.grid_rowconfigure(3, weight=1) 
-        # OutputFrame OUTPUT REAL STUFF HERE from vol <--------
+
+        self.grid_rowconfigure(3, weight=1)
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=3, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
-
 
         # Highlight buttons
         self.highlight_frame = ttk.Frame(self)
         self.highlight_frame.grid(row=2, column=3, columnspan=1, padx=10, pady=5, sticky="we")
 
-        # Single highlight button with color chooser
         self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="right", padx=5, pady=5)
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
@@ -70,19 +61,15 @@ class WorkspaceFrame(tk.Frame):
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
 
-        
-
-        
-
         # Search bar
-        self.search_frame = ttk.Frame(self, width=10) 
+        self.search_frame = ttk.Frame(self, width=10)
         self.search_frame.grid_propagate(True)
         self.search_frame.grid(row=1, column=2, padx=10, pady=5, sticky="w")
 
         self.search_label = ttk.Label(self.search_frame, text="Search:")
         self.search_label.pack(side="left", padx=5, pady=5)
 
-        self.search_entry = ttk.Entry(self.search_frame, width=20)  # Set the desired width
+        self.search_entry = ttk.Entry(self.search_frame, width=20)
         self.search_entry.pack(side="left", padx=5, pady=5)
 
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
@@ -94,14 +81,10 @@ class WorkspaceFrame(tk.Frame):
         self.sidebar_frame = ttk.Frame(self, width=200)
         self.sidebar_frame.grid_propagate(False)
 
-        # Label to display the selected file
         self.selected_file_label = ScrollingText(self, text="No file selected", width=150, height=30)
         self.selected_file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
         self.selected_file_label.grid_propagate(False)
-        self.sidebar_frame.grid_remove()  # Hide sidebar
-
-        self.close_tab_button = ttk.Button(self.sidebar_frame, text="Close Tab")
-        self.close_tab_button.grid(row=1, column=1, sticky="e", pady=5)
+        self.sidebar_frame.grid_remove()
 
         self.sidebar_listbox = tk.Listbox(self.sidebar_frame, selectmode=tk.SINGLE)
         self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="w")
@@ -114,34 +97,34 @@ class WorkspaceFrame(tk.Frame):
         self.add_file_button = ttk.Button(self.sidebar_frame, text="Add File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
 
+        self.toggle_terminal_button = ttk.Button(self.sidebar_frame, text="Show Terminal", command=self.toggle_terminal)
+        self.toggle_terminal_button.grid(row=5, column=0, columnspan=2, pady=5)
+
         self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
-       
-        # Terminal Frame
-        self.terminal_frame = tk.Frame(self, height=350, width=200)
-        self.terminal_frame.grid(row=5, column=0, columnspan=4, padx=10, pady=5, sticky="nsew")
+        self.terminal_frame = tk.Frame(self.sidebar_frame, height=200, width=200)
+        self.terminal_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
         self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
         self.terminal_output.pack(expand=True, fill='both')
 
-        self.terminal_frame.grid_remove()  # Hide the terminal frame after redirection
+        self.terminal_frame.grid_remove()
 
-        self.hide_terminal_button = ttk.Button(self, text="Show Terminal", command=self.toggle_terminal)
-        self.hide_terminal_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
-        
+        self.toggle_sidebar_button = ttk.Button(self, text="Toggle Sidebar", command=self.toggle_sidebar)
+        self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
 
     def select_first_file_in_sidebar(self):
-        if self.sidebar_listbox.size() > 0:  # Check if the listbox is not empty
-            self.sidebar_listbox.selection_set(0)  # Select the first item
-            self.sidebar_listbox.event_generate("<<ListboxSelect>>")  # Trigger the listbox select event
+        if self.sidebar_listbox.size() > 0:
+            self.sidebar_listbox.selection_set(0)
+            self.sidebar_listbox.event_generate("<<ListboxSelect>>")
 
     def toggle_terminal(self):
         if self.terminal_frame.winfo_viewable():
             self.terminal_frame.grid_remove()
-            self.hide_terminal_button.configure(text="Show Terminal")  # Change the button text to indicate action
+            self.toggle_terminal_button.configure(text="Show Terminal")
         else:
             self.terminal_frame.grid()
-            self.hide_terminal_button.configure(text="Hide Terminal")  # Change back the button text
+            self.toggle_terminal_button.configure(text="Hide Terminal")
 
     def set_selected_file(self, file):
         self.file_handler.selected_file = file
@@ -151,23 +134,22 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown['values'] = command_options
 
     def show_sidebar(self, files):
-    # Clear the existing entries in the listbox
         self.sidebar_listbox.delete(0, tk.END)
-    
-    # Add the new files to the listbox
         for file in files:
             self.sidebar_listbox.insert(tk.END, file)
-    
-    # Only show the sidebar if two or more files are selected
-        if len(files) >= 2:
+        if len(files) >= 1:
             self.sidebar_frame.grid()
         else:
-            self.sidebar_frame.grid_remove()  # Ensure the sidebar is h
-
-
+            self.sidebar_frame.grid_remove()
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()
+
+    def toggle_sidebar(self):
+        if self.sidebar_frame.winfo_viewable():
+            self.sidebar_frame.grid_remove()
+        else:
+            self.sidebar_frame.grid()
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
@@ -181,26 +163,27 @@ class WorkspaceFrame(tk.Frame):
             self.update_selected_file_label(selected_file)
 
     def update_selected_file_label(self, file):
-    # Use the remove_path method from file_handler to get the file name without the path
         filename_only = self.file_handler.remove_path(file)
         new_text = f"Selected file: {filename_only}"
         self.selected_file_label.update_text(new_text)
 
-
-
     def add_file(self):
         file_paths = filedialog.askopenfilenames()
         if file_paths:
-            self.file_handler.loaded_files.extend(file_paths)
+            self.file_handler.load_files(file_paths)
             self.show_sidebar(self.file_handler.loaded_files)
 
     def close_file(self):
         selected_indices = self.sidebar_listbox.curselection()
         if selected_indices:
-            selected_file = self.sidebar_listbox.get(selected_indices[0])
+            selected_file_index = selected_indices[0]
+            selected_file = self.file_handler.loaded_files[selected_file_index]
             self.file_handler.loaded_files.remove(selected_file)
             self.show_sidebar(self.file_handler.loaded_files)
-            self.update_selected_file_label("No file selected")
+            if self.file_handler.loaded_files:
+                self.update_selected_file_label(self.file_handler.loaded_files[0])
+            else:
+                self.update_selected_file_label("No file selected")
 
     def show_search_box(self):
         self.search_frame.grid()
@@ -213,7 +196,7 @@ class WorkspaceFrame(tk.Frame):
 
         search_term = self.search_entry.get().strip()
         if not search_term:
-           return
+            return
 
         for tab_id in self.tab_control.tabs():
             tab = self.tab_control.nametowidget(tab_id)
@@ -236,8 +219,6 @@ class WorkspaceFrame(tk.Frame):
         if filtered_options:
             self.command_dropdown.event_generate('<Down>')
 
-
-
     def show_combobox(self):
         self.command_button.grid_remove()
         self.command_dropdown.grid()
@@ -254,35 +235,20 @@ class WorkspaceFrame(tk.Frame):
         self.logic.update_loaded_file_label()
 
     def update_command_info(self, event=None):
-        # Update based on selected command
         selected_command = self.command_var.get()
         print(f"Command selected: {selected_command}")
-        # Logic to update UI or perform actions based on the selected command    
-
 
     def init_ui(self):
-        self.configure(bg="#ffffff")  # Background color for the main frame
-
-    # Create frames for each cell without setting a background color
-        for row in range(5):  # Assuming 5 rows
-            for col in range(4):  # Assuming 4 columns
-            # You can remove the bg parameter to make the cells colorless
+        self.configure(bg="#ffffff")
+        for row in range(5):
+            for col in range(4):
                 cell_frame = tk.Frame(self, width=100, height=30)
                 cell_frame.grid(row=row, column=col, padx=5, pady=5, sticky="nsew")
-
-            # Set a specific height for each cell to prevent vertical expansion
-                cell_frame.grid_propagate(False)  # Prevents the cell from resizing
-
-            # You can also adjust the height dynamically if needed
+                cell_frame.grid_propagate(False)
                 cell_frame.config(height=30)
 
-    # Adjust the row weights
-        for row in range(5):  # Assuming 5 rows
-            self.grid_rowconfigure(row, weight=0)  # Less weight for less vertical space
+        for row in range(5):
+            self.grid_rowconfigure(row, weight=0)
 
-    # Adjust the column weights
-        for col in range(4):  # Assuming 4 columns
-            self.grid_columnconfigure(col, weight=1)  # Higher weight to fill horizontal space
-
-    
-
+        for col in range(4):
+            self.grid_columnconfigure(col, weight=1)

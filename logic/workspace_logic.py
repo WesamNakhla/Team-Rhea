@@ -82,6 +82,32 @@ class LineNumberCanvas(tk.Canvas):
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
 
+
+class FileHandler:
+    def __init__(self):
+        self.loaded_files = []
+        self.selected_file = None
+
+    def load_files(self, file_paths):
+        self.loaded_files.extend(file_paths)
+        if not self.selected_file:
+            self.selected_file = self.loaded_files[0]
+        print(f"Loaded files: {self.loaded_files}. Selected file: {self.selected_file}")
+
+    def get_loaded_files(self):
+        return self.loaded_files
+
+    def get_selected_file(self):
+        if self.selected_file:
+            print(f"get_selected_file called. Result: {self.selected_file}")
+            return self.selected_file
+        print("get_selected_file called. No file selected.")
+        return None
+
+    def remove_path(self, file_path):
+        return os.path.basename(file_path)
+
+
 class ToolTip(object):
     def __init__(self, widget, text, delay=300):
         self.widget = widget
@@ -141,7 +167,7 @@ class RedirectOutput:
 class ScrollingText(tk.Canvas):
     def __init__(self, parent, text, **kwargs):
         super().__init__(parent, **kwargs)
-        self.text_id = self.create_text(0, 0, anchor="w", text=text, font=('Arial', 12, 'bold'))
+        self.text_id = self.create_text(0, 0, anchor="w", text=text, font=('Arial', 12, 'bold'), fill="red")
         self.bind("<Configure>", self.on_configure)
         self.start_scrolling()
 
@@ -285,7 +311,7 @@ class PslistOutputFrame(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         # Define column names
-        self.columns = ["PID", "PPID", "ImageFileName", "Offset", "Threads", "Handles",
+        self.columns = ["PPID", "ImageFileName", "Offset", "Threads", "Handles",
                         "SessionId", "Wow64", "CreateTime", "ExitTime", "FileOutput"]
 
         # Create Treeview widget
@@ -325,7 +351,7 @@ class PslistOutputFrame(tk.Frame):
         # Skip the first line and filter out unwanted lines
         filtered_lines = []
         for line in lines[1:]:
-            if not self.is_unwanted_line(line):
+            if line.strip() and not self.is_unwanted_line(line):  # Skip empty lines
                 filtered_lines.append(line)
 
         # Print filtered findings for debugging
@@ -351,7 +377,7 @@ class PslistOutputFrame(tk.Frame):
         """Filter lines to remove the header and unwanted content."""
         # Skip the first header line and the next few lines that may be unwanted
         filtered_lines = []
-        for line in lines[1:]:  # Start from the 6th line
+        for line in lines[4:]:  # Start from the 6th line
             if not self.is_unwanted_line(line) and self.contains_data(line):
                 filtered_lines.append(line)
         return filtered_lines
@@ -424,7 +450,7 @@ class PstreeOutputFrame(tk.Frame):
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         # Define column names
-        self.columns = ["PID", "PPID", "ImageFileName", "Offset", "Threads", "Handles",
+        self.columns = ["PPID", "ImageFileName", "Offset", "Threads", "Handles",
                         "SessionId", "Wow64", "CreateTime", "ExitTime", "FileOutput"]
 
         # Create Treeview widget
@@ -488,7 +514,7 @@ class PstreeOutputFrame(tk.Frame):
         # Skip the first two lines
         filtered_lines = []
         for line in lines[3:]:
-            if not self.is_unwanted_line(line) and self.contains_data(line):
+            if line.strip() and not self.is_unwanted_line(line):  # Skip empty lines
                 filtered_lines.append(line)
         return filtered_lines
     
@@ -558,33 +584,24 @@ class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
         self.file_handler = file_handler
-        self.command_tabs = {}  # Dictionary to store command titles and corresponding tabs
-        self.commands = self.load_commands()  # Load commands from JSON
+        self.command_tabs = {}
+        self.commands = self.load_commands()
         self.command_details = {}
-        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
-        self.running_process = None  # Store the running process
-        self.futures = []  # Initialize the futures list
-       
-        
-       
-
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)
+        self.running_process = None
+        self.futures = []
 
     def update_loaded_file_label(self, loaded_files=None):
         if loaded_files is None:
             loaded_files = self.file_handler.get_loaded_files()
         
-        # Remove paths from the loaded files
         filenames_only = [self.file_handler.remove_path(full_path) for full_path in loaded_files]
         
         if filenames_only:
-            self.parent.show_sidebar(filenames_only)  # Show sidebar if files exist
-            self.parent.select_first_file_in_sidebar()  # Select the first file in the sidebar
+            self.parent.show_sidebar(filenames_only)
+            self.parent.select_first_file_in_sidebar()
         else:
-            self.parent.hide_sidebar()  # Hide sidebar if no files exist
-
-    def show_search_box(self):
-        self.search_entry.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
-        self.search_entry.focus_set()
+            self.parent.hide_sidebar()
 
     def save_commands(self):
         try:
@@ -598,9 +615,8 @@ class WorkspaceFrameLogic:
         if file_path:
             plugin_name = os.path.basename(file_path)
             if plugin_name.endswith('.py'):
-                plugin_name = plugin_name[:-3]  # Remove the .py extension
+                plugin_name = plugin_name[:-3]
 
-            # Check for duplicates
             if any(cmd['command'] == plugin_name for cmd in self.commands):
                 messagebox.showerror("Error", "Plugin already exists.")
                 return
@@ -630,20 +646,14 @@ class WorkspaceFrameLogic:
             return []
 
     def export_results(self):
-        self.parent.switch_to_export_frame()  # Call the function to switch frames
+        self.parent.switch_to_export_frame()
 
     def get_volatility_path(self):
-        # Load the settings from the settings.json file
         with open('settings.json', 'r') as file:
             settings = json.load(file)
 
-        # Retrieve the base path for volatility from the settings
         base_path = settings.get('volatility_path', '')
-
-        # Construct the full path to the vol.py file
         full_path = os.path.join(base_path, 'vol.py')
-
-        # Convert path to a format suitable for Python scripts
         full_path = full_path.replace('/', os.sep)
 
         return full_path
@@ -663,7 +673,7 @@ class WorkspaceFrameLogic:
         else:
             self.parent.custom_command_label.grid_forget()
             self.parent.custom_command_entry.grid_forget()
-            index = self.parent.command_dropdown.current() - 2  # Adjust the index
+            index = self.parent.command_dropdown.current() - 2
             if index >= 0 and index < len(self.commands):
                 command_info = self.commands[index]
                 wrapped_text = textwrap.fill(f"Type: {command_info['type']}\nDescription: {command_info['description']}", width=50)
@@ -679,7 +689,7 @@ class WorkspaceFrameLogic:
                 self.command_details[tab_title] = {
                     "command": command_name,
                     "output": findings,
-                    "highlights": []  # Placeholder for any highlights data
+                    "highlights": []
                 }
                 self.check_all_commands_finished()
         except Exception as e:
@@ -693,19 +703,16 @@ class WorkspaceFrameLogic:
         self.command_tabs[tab_title] = new_tab
 
         if command_name == 'windows.pslist':
-        # Use PslistOutputFrame for pslist command
             pslist_frame = PslistOutputFrame(new_tab)
             pslist_frame.pack(expand=True, fill='both')
-            pslist_frame.populate(findings)  # Populate with findings data
+            pslist_frame.populate(findings)
 
         elif command_name == 'windows.pstree':
-        # Use PstreeOutputFrame for pstree command
             pstree_frame = PstreeOutputFrame(new_tab)
             pstree_frame.pack(expand=True, fill='both')
-            pstree_frame.populate(findings)  # Populate with findings data
+            pstree_frame.populate(findings)
 
         else:
-        # Use CustomText for other commands
             text_widget = CustomText(new_tab, wrap='word')
             text_widget.insert('1.0', findings)
             text_widget.config(state='disabled')
@@ -714,11 +721,9 @@ class WorkspaceFrameLogic:
         self.show_close_button(new_tab)
 
     def execute_command(self, full_command):
-        # Run the command using subprocess
         process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
         stdout, stderr = process.communicate()
 
-        # Handle output and errors
         findings = stdout if stdout else "No output received."
         if stderr:
             findings += "\nError:\n" + stderr
@@ -726,14 +731,12 @@ class WorkspaceFrameLogic:
         return full_command, findings
 
     def check_all_commands_finished(self):
-        if all(f.done() for f in self.futures):  # Check if all futures are done
+        if all(f.done() for f in self.futures):
             print("All commands have finished executing.")
-            self.prepare_export_data()  # Now prepare export data
+            self.prepare_export_data()
 
     def run_command(self):
-        print("Running command")
         selected_file = self.file_handler.get_selected_file()
-        print(f"Selected file: {selected_file}")
         if not selected_file:
             messagebox.showerror("Error", "No file selected.")
             return
@@ -741,28 +744,25 @@ class WorkspaceFrameLogic:
         selected_index = self.parent.command_dropdown.get_selected_index()
         command = None
         command_name = None
-        if selected_index == 1:  # Custom command
+        if selected_index == 1:
             command = self.parent.custom_command_entry.get().strip()
             command_name = "Custom"
-        elif selected_index > 1:  # Predefined command selected
-            command_index = selected_index - 2  # Adjust index for 'Choose command...' and 'Custom'
+        elif selected_index > 1:
+            command_index = selected_index - 2
             if command_index < len(self.commands):
                 command = self.commands[command_index]['command']
-                command_name = self.commands[command_index]['command']  # Use the command from the list
+                command_name = self.commands[command_index]['command']
 
         if not command:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
             return
 
-        command_parameters = self.parent.parameter_entry.get().strip()  # Retrieve parameters from the user input
+        command_parameters = self.parent.parameter_entry.get().strip()
         vol_path = self.get_volatility_path()
-
-        # Combine the volatility script, file path, command, and user-entered parameters
         full_command = f"python {vol_path} -f {selected_file} {command} {command_parameters}"
         print(f"Running command: {full_command}")
 
-        # Execute the command in a separate thread using ThreadPoolExecutor
-        future = self.executor.submit(self.execute_command, full_command)  # Pass the full command to execution
+        future = self.executor.submit(self.execute_command, full_command)
         future.add_done_callback(lambda f, cmd=command_name, fp=selected_file: self.command_finished(f, cmd, fp))
 
     def show_close_button(self, tab):
@@ -792,9 +792,8 @@ class WorkspaceFrameLogic:
             end = text_widget.index("sel.last")
             text_widget.tag_add(color, start, end)
             text_widget.tag_config(color, background=color)
-            self.parent.highlights.append((color, start, end))  # Store the highlight without text
+            self.parent.highlights.append((color, start, end))
 
-            # Store the highlight details for export
             title = self.parent.tab_control.tab(selected_tab, "text")
             if title in self.command_details:
                 self.command_details[title]["highlights"].append({
@@ -826,7 +825,6 @@ class WorkspaceFrameLogic:
             print("No text selected")
 
     def apply_font_settings(self, font_size):
-        # Apply font settings to relevant widgets
         self.parent.file_label.config(font=('Arial', font_size))
         self.parent.command_label.config(font=('Arial', font_size))
         self.parent.command_info_label.config(font=('Arial', font_size))
@@ -834,24 +832,21 @@ class WorkspaceFrameLogic:
             text_widget = self.parent.tab_control.nametowidget(tab).winfo_children()[0]
 
     def prepare_export_data(self):
-        print("Preparing export data...")
         selected_file = self.file_handler.get_selected_file()
         if selected_file:
             export_data = {
-                "memory_dump_file": selected_file,  # Use the selected file
+                "memory_dump_file": selected_file,
                 "commands": [
                     {
                         "command": cmd["command"],
                         "highlights": cmd.get("highlights", []),
-                        "output_file": f"{cmd['command'].replace('.', '_')}.txt"  # Ensure output_file is included
+                        "output_file": f"{cmd['command'].replace('.', '_')}.txt"
                     }
                     for cmd in self.command_details.values()
                 ]
             }
-            print(f"Export data collected: {export_data}")
             return export_data
         else:
-            print("No loaded file or command data found.")
             return {}
 
     def get_export_data(self):
@@ -864,3 +859,4 @@ class WorkspaceFrameLogic:
         new_index = self.parent.tab_control.index(f"@{event.x},{event.y}")
         if new_index != self.parent.tab_control.index("current"):
             self.parent.tab_control.insert(new_index, self.parent.tab_control.select())
+    

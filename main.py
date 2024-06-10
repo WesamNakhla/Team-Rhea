@@ -47,7 +47,6 @@ class MainApplication(TkinterDnD.Tk):
         commands_menu.add_command(label="Add Custom Plugins",  command=self.logic.add_custom_plugin)
         self.menu_bar.add_cascade(label="Commands", menu=commands_menu)
 
-
         self.frames = {}
 
         # Initialize all frames properly
@@ -66,7 +65,7 @@ class MainApplication(TkinterDnD.Tk):
         self.show_frame(ImportFrame)
 
         self.bind('<Control-q>', self.quit_app)
-        self.bind('<Control-f>', self.search_text,)
+        self.bind('<Control-f>', self.search_text)
         self.bind('<Control-o>', self.open_file)
 
     def load_theme(self):
@@ -83,15 +82,13 @@ class MainApplication(TkinterDnD.Tk):
         frame.tkraise()
 
     def new_session(self):
-        """Ask to export changes if any, then reset to the initial drag and drop page."""
         response = messagebox.askyesnocancel("Save Changes", "Do you want to export changes before starting a new session?")
-        if response:  # Yes, export changes
+        if response:
             self.show_frame(ExportFrame)
-        elif response is False:  # No or already exported
+        elif response is False:
             self.reset_to_import()
 
     def reset_to_import(self):
-        """Reset the application state and go back to the drag and drop page."""
         self.file_handler = FileHandler()  # Reset the file handler
         self.frames[ImportFrame].file_handler = self.file_handler
         self.frames[WorkspaceFrame].file_handler = self.file_handler
@@ -99,16 +96,13 @@ class MainApplication(TkinterDnD.Tk):
         self.show_frame(ImportFrame)
 
     def switch_to_export_frame(self):
-        """Switch to the export frame."""
         self.show_frame(ExportFrame)
 
     def switch_to_workspace_frame(self):
-        """Switch to the workspace frame."""
         self.update_loaded_file_label()  # Update the loaded file label
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
-        """Switch to the settings frame."""
         self.show_frame(SettingsFrame)
 
     def switch_to_command_frame(self):
@@ -120,7 +114,6 @@ class MainApplication(TkinterDnD.Tk):
             self.frames[ImportFrame].handle_file(file_paths)
 
     def save_file(self):
-        # Placeholder function to save a file
         print("File saved")
 
     def update_loaded_file_label(self):
@@ -144,3 +137,4 @@ class MainApplication(TkinterDnD.Tk):
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()
+
