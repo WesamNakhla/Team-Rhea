@@ -66,7 +66,7 @@ class MainApplication(TkinterDnD.Tk):
         self.show_frame(ImportFrame)
 
         self.bind('<Control-q>', self.quit_app)
-        self.bind('<Control-f>', self.search_text)
+        self.bind('<Control-f>', self.search_text,)
         self.bind('<Control-o>', self.open_file)
 
     def load_theme(self):
@@ -139,6 +139,7 @@ class MainApplication(TkinterDnD.Tk):
         current_frame = self.frames.get(WorkspaceFrame)
         if current_frame:
             current_frame.search_text()
+
 
 if __name__ == "__main__":
     app = MainApplication()
