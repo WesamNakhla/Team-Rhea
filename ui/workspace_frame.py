@@ -43,9 +43,7 @@ class WorkspaceFrame(tk.Frame):
         ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
 
         # Add Custom Plugin button
-        self.add_custom_plugin_button = ttk.Button(self, text="Add Custom Plugin", command=self.logic.add_custom_plugin)
-        self.add_custom_plugin_button.grid(row=2, column=2, padx=10, pady=5, sticky="we")
-        ToolTip(self.add_custom_plugin_button, "Add a custom plugin to the application.")
+        
 
         # Command description label
         self.command_info_label = ttk.Label(self, text="Select a command to see the description and type.", width=50, anchor="w", wraplength=400)

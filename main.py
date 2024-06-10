@@ -8,6 +8,7 @@ from ui.export_frame import ExportFrame
 from ui.settings_frame import SettingsFrame
 from ui.command_frame import CommandFrame
 from logic.src.file_handler import FileHandler
+from logic.workspace_logic import WorkspaceFrameLogic
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
@@ -18,7 +19,7 @@ class MainApplication(TkinterDnD.Tk):
         self.file_handler = FileHandler()  # Initialize FileHandler
 
         self.load_theme()
-
+        self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
         self.menu_bar = tk.Menu(self)
         self.config(menu=self.menu_bar)
 
@@ -39,8 +40,13 @@ class MainApplication(TkinterDnD.Tk):
         # Edit Menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label="Settings", command=self.switch_to_settings_frame)
-        edit_menu.add_command(label="Command Management", command=self.switch_to_command_frame)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
+
+        commands_menu = tk.Menu(self.menu_bar, tearoff=0)
+        commands_menu.add_command(label="Manage Commands", command=self.switch_to_command_frame)
+        commands_menu.add_command(label="Add Custom Plugins",  command=self.logic.add_custom_plugin)
+        self.menu_bar.add_cascade(label="Commands", menu=commands_menu)
+
 
         self.frames = {}
 
