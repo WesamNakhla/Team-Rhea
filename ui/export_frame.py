@@ -37,10 +37,10 @@ class ExportFrame(ttk.Frame, ExportFrameLogic):
         button_frame = ttk.Frame(frame)
         button_frame.grid(row=3, column=0, pady=(20), padx=20)
 
-        export_button = ttk.Button(button_frame, text="Export", command=self.choose_save_location)
+        export_button = ttk.Button(button_frame, text="\U0001F5BF Export", command=self.choose_save_location)
         export_button.grid(row=0, column=0, padx=(10))
 
-        cancel_button = ttk.Button(button_frame, text="Back", command=self.cancel)
+        cancel_button = ttk.Button(button_frame, text="\U000025C1 Back", command=self.cancel)
         cancel_button.grid(row=0, column=1, padx=(10))
 
         # Loading GIF and message label (initially hidden)

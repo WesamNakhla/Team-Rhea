@@ -39,7 +39,7 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.volatility_path_label.grid(row=1, column=0, sticky="w", padx=10, pady=5)
         self.volatility_path_entry = ttk.Entry(self.main_frame, width=50)
         self.volatility_path_entry.grid(row=1, column=1, sticky="ew", padx=10, pady=5)
-        self.browse_button = ttk.Button(self.main_frame, text="Browse", command=self.browse_folder)
+        self.browse_button = ttk.Button(self.main_frame, text="\U0001F5C1 Browse", command=self.browse_folder)
         self.browse_button.grid(row=1, column=2, sticky="w", padx=10, pady=5)
 
         # Result Window Options
@@ -65,9 +65,9 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
         self.letter_distance_spinbox.grid(row=5, column=1, sticky="ew", padx=10, pady=5)
 
         # Save and Exit Buttons
-        self.save_button = ttk.Button(self.main_frame, text="Save", command=self.save_settings)
+        self.save_button = ttk.Button(self.main_frame, text="\U0001F5AA Save", command=self.save_settings)
         self.save_button.grid(row=6, column=1, pady=20, padx=10, sticky="e")
-        self.exit_button = ttk.Button(self.main_frame, text="Back", command=self.exit_settings)
+        self.exit_button = ttk.Button(self.main_frame, text="\U000025C1 Back", command=self.exit_settings)
         self.exit_button.grid(row=6, column=2, pady=20, padx=10, sticky="w")
 
         # Version Label at Bottom Left corner

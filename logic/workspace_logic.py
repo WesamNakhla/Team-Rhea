@@ -594,9 +594,9 @@ class WorkspaceFrameLogic:
     def update_loaded_file_label(self, loaded_files=None):
         if loaded_files is None:
             loaded_files = self.file_handler.get_loaded_files()
-        
+
         filenames_only = [self.file_handler.remove_path(full_path) for full_path in loaded_files]
-        
+
         if filenames_only:
             self.parent.show_sidebar(filenames_only)
             self.parent.select_first_file_in_sidebar()
@@ -632,7 +632,7 @@ class WorkspaceFrameLogic:
 
     def update_command_dropdown(self):
         command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
-        self.update_command_dropdown(command_options)
+        self.parent.update_command_dropdown(command_options)
 
     def load_commands(self):
         try:
@@ -741,7 +741,7 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "No file selected.")
             return
 
-        selected_index = self.parent.command_dropdown.get_selected_index()
+        selected_index = self.parent.command_dropdown.current()
         command = None
         command_name = None
         if selected_index == 1:
@@ -859,4 +859,3 @@ class WorkspaceFrameLogic:
         new_index = self.parent.tab_control.index(f"@{event.x},{event.y}")
         if new_index != self.parent.tab_control.index("current"):
             self.parent.tab_control.insert(new_index, self.parent.tab_control.select())
-    

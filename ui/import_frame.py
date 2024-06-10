@@ -54,7 +54,7 @@ class ImportFrame(tk.Frame):
         self.drag_label = tk.Label(self.drag_area, image=self.drag_image, bg="#333333")
         self.drag_label.place(relx=0.5, rely=0.6, anchor="center")
 
-        self.browse_button = ttk.Button(self.main_frame, text="or Browse Manually", command=self.browse_file)
+        self.browse_button = ttk.Button(self.main_frame, text="\U0001F5C1 or Browse Manually", command=self.browse_file)
         self.browse_button.grid(row=4, column=0, pady=10, padx=10, sticky="n")
 
         self.drag_area.drop_target_register(DND_FILES)

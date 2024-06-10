@@ -18,53 +18,52 @@ class WorkspaceFrame(tk.Frame):
 
         # Choose command label
         self.command_label = ttk.Label(self, text="Choose command:")
-        self.command_label.grid(row=1, column=0, padx=10, pady=5, sticky="w")
+        self.command_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
 
         # Command dropdown and input
         self.command_var = tk.StringVar()
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
-        self.command_dropdown = CustomDropdown(self, self.command_options, self.command_var, width=30)
-        self.command_dropdown.grid(row=2, column=0, padx=10, pady=5, sticky="we")
-        self.command_dropdown.grid_propagate(False)
-        self.command_dropdown.bind('<<MenuSelect>>', self.update_command_info)
+        self.command_dropdown = ttk.Combobox(self, textvariable=self.command_var, values=self.command_options)
+        self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
+        self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
-        self.parameter_label.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        self.parameter_label.grid(row=0, column=1, padx=10, pady=5, sticky="w")
         self.parameter_entry = ttk.Entry(self)
-        self.parameter_entry.grid(row=2, column=1, padx=10, pady=5, sticky="w")
+        self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
 
-        image_path = "img/run_arrow.png"  # Adjust path as necessary
+        image_path = "img/run_arrow.png"
         img = Image.open(image_path)
-        img = img.resize((20, 20), Image.LANCZOS)  # Resize image if needed
+        img = img.resize((20, 20), Image.LANCZOS)
         icon_image = ImageTk.PhotoImage(img)
 
         # Execute command button with icon
         self.run_command_button = ttk.Button(self, text="Run Command", command=self.run_command, image=icon_image, compound=tk.LEFT)
-        self.run_command_button.image = icon_image  # Keep a reference to avoid garbage collection
-        self.run_command_button.grid(row=2, column=2, padx=10, pady=5, sticky="w")
+        self.run_command_button.image = icon_image
+        self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
         ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
 
-        self.grid_rowconfigure(3, weight=1)
+        self.grid_rowconfigure(2, weight=1)
         self.tab_control = ttk.Notebook(self)
-        self.tab_control.grid(row=3, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
+        self.tab_control.grid(row=2, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
 
         # Highlight buttons
         self.highlight_frame = ttk.Frame(self)
-        self.highlight_frame.grid(row=2, column=3, columnspan=1, padx=10, pady=5, sticky="we")
+        self.highlight_frame.grid(row=1, column=3, padx=10, pady=5, sticky="we")
 
         self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="right", padx=5, pady=5)
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
 
-        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="Remove Highlight", command=self.logic.remove_highlight)
+        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="\U000025B1 Remove Highlight", command=self.logic.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
 
         # Search bar
         self.search_frame = ttk.Frame(self, width=10)
         self.search_frame.grid_propagate(True)
-        self.search_frame.grid(row=1, column=2, padx=10, pady=5, sticky="w")
+        self.search_frame.grid(row=0, column=2, padx=10, pady=5, sticky="w")
 
         self.search_label = ttk.Label(self.search_frame, text="Search:")
         self.search_label.pack(side="left", padx=5, pady=5)
@@ -90,14 +89,14 @@ class WorkspaceFrame(tk.Frame):
         self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="w")
         self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
 
-        self.select_all_button = ttk.Button(self.sidebar_frame, text="Select All", command=self.select_all_files)
+        self.select_all_button = ttk.Button(self.sidebar_frame, text="\U0001F5F9 Select All", command=self.select_all_files)
         self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
-        self.close_file_button = ttk.Button(self.sidebar_frame, text="Close File", command=self.close_file)
+        self.close_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5F5 Close File", command=self.close_file)
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
-        self.add_file_button = ttk.Button(self.sidebar_frame, text="Add File", command=self.add_file)
+        self.add_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5C0 Open File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
 
-        self.toggle_terminal_button = ttk.Button(self.sidebar_frame, text="Show Terminal", command=self.toggle_terminal)
+        self.toggle_terminal_button = ttk.Button(self.sidebar_frame, text="\U0001F5D4 Show Terminal", command=self.toggle_terminal)
         self.toggle_terminal_button.grid(row=5, column=0, columnspan=2, pady=5)
 
         self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
@@ -110,7 +109,7 @@ class WorkspaceFrame(tk.Frame):
 
         self.terminal_frame.grid_remove()
 
-        self.toggle_sidebar_button = ttk.Button(self, text="Toggle Sidebar", command=self.toggle_sidebar)
+        self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
 
     def select_first_file_in_sidebar(self):
@@ -121,10 +120,10 @@ class WorkspaceFrame(tk.Frame):
     def toggle_terminal(self):
         if self.terminal_frame.winfo_viewable():
             self.terminal_frame.grid_remove()
-            self.toggle_terminal_button.configure(text="Show Terminal")
+            self.toggle_terminal_button.configure(text="\U0001F5D4 Show Terminal")
         else:
             self.terminal_frame.grid()
-            self.toggle_terminal_button.configure(text="Hide Terminal")
+            self.toggle_terminal_button.configure(text="\U0001F5F5 Hide Terminal")
 
     def set_selected_file(self, file):
         self.file_handler.selected_file = file
