@@ -143,5 +143,10 @@
         "command": "dada",
         "type": "Enter typedadada",
         "description": "Enter descriptiondadada"
+    },
+    {
+        "type": "Custom Plugin",
+        "command": "customplugin123",
+        "description": "This is your custom plugin customplugin123"
     }
 ]

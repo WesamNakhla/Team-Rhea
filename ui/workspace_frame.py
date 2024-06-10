@@ -23,10 +23,11 @@ class WorkspaceFrame(tk.Frame):
         # Command dropdown and input
         self.command_var = tk.StringVar()
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
-        self.dropdown = CustomDropdown(self, self.command_options, self.command_var, width=30)
-        self.dropdown.grid(row=2, column=0, padx=10, pady=5, sticky="we")
-        self.dropdown.grid_propagate(False)
+        self.command_dropdown = CustomDropdown(self, self.command_options, self.command_var, width=30)
+        self.command_dropdown.grid(row=2, column=0, padx=10, pady=5, sticky="we")
+        self.command_dropdown.grid_propagate(False)
         self.bind('<<MenuSelect>>', self.update_command_info)
+
         
 
 
@@ -154,6 +155,8 @@ class WorkspaceFrame(tk.Frame):
             self.sidebar_frame.grid()
         else:
             self.sidebar_frame.grid_remove()  # Ensure the sidebar is h
+
+
 
     def hide_sidebar(self):
         self.sidebar_frame.grid_remove()

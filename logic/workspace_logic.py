@@ -169,6 +169,7 @@ class CustomDropdown(tk.Frame):
         self.variable = var
         self.original_options = options
         self.filtered_options = options
+        self.selected_index = -1  # Initialize selected index
 
         # Entry for input
         self.entry = tk.Entry(self, textvariable=self.variable)
@@ -242,6 +243,7 @@ class CustomDropdown(tk.Frame):
             index = self.listbox.curselection()[0]
             value = self.listbox.get(index)
             self.set_value(value)
+            self.selected_index = index  # Set the selected index
 
     def on_listbox_key(self, event):
         if event.keysym == 'Return':
@@ -254,6 +256,9 @@ class CustomDropdown(tk.Frame):
         self.entry.after(1, self.refocus_entry)
         self.event_generate('<<MenuSelect>>')
         self.confirm_focus()
+
+    def get_selected_index(self):
+        return self.selected_index
 
     def refocus_entry(self):
         self.entry.focus_set()
@@ -274,6 +279,7 @@ class CustomDropdown(tk.Frame):
 
 
 
+
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -284,6 +290,10 @@ class WorkspaceFrameLogic:
         self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=4)  # Initialize ThreadPoolExecutor
         self.running_process = None  # Store the running process
         self.futures = []  # Initialize the futures list
+       
+        
+       
+
 
     def update_loaded_file_label(self, loaded_files=None):
         if loaded_files is None:
@@ -302,23 +312,37 @@ class WorkspaceFrameLogic:
         self.search_entry.pack(side=tk.TOP, fill=tk.X, padx=10, pady=10)
         self.search_entry.focus_set()
 
+    def save_commands(self):
+        try:
+            with open('commands.json', 'w') as file:
+                json.dump(self.commands, file, indent=4)
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to save commands: {str(e)}")
+
     def add_custom_plugin(self):
         file_path = filedialog.askopenfilename(title="Select Custom Plugin", filetypes=[("Python Files", "*.py")])
         if file_path:
             plugin_name = os.path.basename(file_path)
             if plugin_name.endswith('.py'):
                 plugin_name = plugin_name[:-3]  # Remove the .py extension
+
+            # Check for duplicates
+            if any(cmd['command'] == plugin_name for cmd in self.commands):
+                messagebox.showerror("Error", "Plugin already exists.")
+                return
+
             custom_plugin_details = {
                 "type": "Custom Plugin",
                 "command": plugin_name,
                 "description": f"This is your custom plugin {plugin_name}"
             }
             self.commands.append(custom_plugin_details)
+            self.save_commands()
             self.update_command_dropdown()
 
     def update_command_dropdown(self):
         command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
-        self.parent.update_command_dropdown(command_options)
+        self.update_command_dropdown(command_options)
 
     def load_commands(self):
         try:
@@ -419,7 +443,6 @@ class WorkspaceFrameLogic:
             self.prepare_export_data()  # Now prepare export data
 
     def run_command(self):
-        # print the content
         print("Running command")
         selected_file = self.file_handler.get_selected_file()
         print(f"Selected file: {selected_file}")
@@ -427,7 +450,7 @@ class WorkspaceFrameLogic:
             messagebox.showerror("Error", "No file selected.")
             return
 
-        selected_index = self.parent.command_dropdown.current()
+        selected_index = self.parent.command_dropdown.get_selected_index()
         command = None
         command_name = None
         if selected_index == 1:  # Custom command
