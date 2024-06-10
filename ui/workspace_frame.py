@@ -74,10 +74,7 @@ class WorkspaceFrame(tk.Frame):
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
 
-        # Export button with unicode icon
-        self.export_button = ttk.Button(self.highlight_frame, text="\u23CF Export", command=self.logic.export_results)
-        self.export_button.pack(side="right", padx=5, pady=5)
-        ToolTip(self.export_button, "Export the results and data to a file.")
+        
 
         # Configure grid to expand correctly
         self.grid_rowconfigure(3, weight=1)
