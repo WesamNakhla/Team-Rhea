@@ -1,6 +1,8 @@
 import tkinter as tk
 from tkinter import ttk
 from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText
+from tkinter import PhotoImage
+from PIL import Image, ImageTk
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
@@ -32,16 +34,22 @@ class WorkspaceFrame(tk.Frame):
 
 
         # Parameter input label and entry
+        
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
         self.parameter_label.grid(row=1, column=1, padx=10, pady=5, sticky="w")
         self.parameter_entry = ttk.Entry(self)
         self.parameter_entry.grid(row=2, column=1, padx=10, pady=5, sticky="w")
 
-        # Execute command button
-        self.run_command_button = ttk.Button(self, text="Execute Command", command=self.run_command)
+        image_path = "img/run_arrow.png"  # Adjust path as necessary
+        img = Image.open(image_path)
+        img = img.resize((20, 20), Image.LANCZOS)  # Resize image if needed
+        icon_image = ImageTk.PhotoImage(img)
+
+        # Execute command button with icon
+        self.run_command_button = ttk.Button(self, text="Run Command", command=self.run_command, image=icon_image, compound=tk.LEFT)
+        self.run_command_button.image = icon_image  # Keep a reference to avoid garbage collection
         self.run_command_button.grid(row=2, column=2, padx=10, pady=5, sticky="w")
         ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
-        
        
         self.grid_rowconfigure(3, weight=1) 
         # OutputFrame OUTPUT REAL STUFF HERE from vol <--------
