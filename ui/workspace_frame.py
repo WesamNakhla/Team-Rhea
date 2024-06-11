@@ -1,7 +1,9 @@
 import tkinter as tk
-from tkinter import ttk, filedialog
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText
-from tkinter import PhotoImage
+from tkinter import ttk, filedialog, messagebox
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText, PslistOutputFrame
+from matplotlib.figure import Figure
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+import csv
 from PIL import Image, ImageTk
 
 class WorkspaceFrame(tk.Frame):
@@ -13,6 +15,7 @@ class WorkspaceFrame(tk.Frame):
         self.switch_to_export_frame = switch_to_export_frame
 
         self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
+
 
         self.init_ui()
 
@@ -120,6 +123,8 @@ class WorkspaceFrame(tk.Frame):
 
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
+
+        
 
     def select_first_file_in_sidebar(self):
         if self.sidebar_listbox.size() > 0:
