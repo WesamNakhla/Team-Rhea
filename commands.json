@@ -18,11 +18,11 @@
         "command": "windows.pstreegraph",
         "type": "Windows-Specific Plugins",
         "description": "Graphical representation of the process tree."
-    }, 
+    },
     {
-        "type": "windows.filescan",
+        "type": "Windows-Specific Plugins",
         "command": "windows.filescan",
-        "description": "This is plugin filescan"
+        "description": "Scans for file objects in memory."
     },
     {
         "command": "windows.dlllist",
@@ -32,7 +32,7 @@
     {
         "command": "windows.modules",
         "type": "Windows-Specific Plugins",
-        "description": "window module"
+        "description": "Lists kernel modules."
     },
     {
         "command": "windows.handles",
@@ -63,6 +63,226 @@
         "command": "windows.malfind",
         "type": "Windows-Specific Plugins",
         "description": "Detects hidden and injected code in processes."
+    },
+    {
+        "command": "windows.hashdump",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts NTLM hashes from the memory dump."
+    },
+    {
+        "command": "windows.registry",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists registry hives."
+    },
+    {
+        "command": "windows.userassist",
+        "type": "Windows-Specific Plugins",
+        "description": "Parses UserAssist registry keys."
+    },
+    {
+        "command": "windows.registryprint",
+        "type": "Windows-Specific Plugins",
+        "description": "Prints registry keys and values."
+    },
+    {
+        "command": "windows.services",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists Windows services."
+    },
+    {
+        "command": "windows.malfinddeep",
+        "type": "Windows-Specific Plugins",
+        "description": "Deep scan for malware artifacts in memory."
+    },
+    {
+        "command": "windows.sids",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists user and group SIDs."
+    },
+    {
+        "command": "windows.evtx",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts and parses Windows Event Logs."
+    },
+    {
+        "command": "windows.filescan",
+        "type": "Windows-Specific Plugins",
+        "description": "Scans for file objects in memory."
+    },
+    {
+        "command": "windows.ssdt",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists the System Service Descriptor Table entries."
+    },
+    {
+        "command": "windows.netscan",
+        "type": "Windows-Specific Plugins",
+        "description": "Scans for network connections and sockets."
+    },
+    {
+        "command": "windows.bigpools",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists big pool allocations."
+    },
+    {
+        "command": "windows.driverscan",
+        "type": "Windows-Specific Plugins",
+        "description": "Scans for driver objects in memory."
+    },
+    {
+        "command": "windows.mftparser",
+        "type": "Windows-Specific Plugins",
+        "description": "Parses the NTFS Master File Table."
+    },
+    {
+        "command": "windows.shimcache",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists application compatibility cache entries."
+    },
+    {
+        "command": "windows.registrydump",
+        "type": "Windows-Specific Plugins",
+        "description": "Dumps registry keys and values."
+    },
+    {
+        "command": "windows.volumes",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists volume information."
+    },
+    {
+        "command": "windows.getsids",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts security identifiers."
+    },
+    {
+        "command": "windows.network",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists network interfaces and connections."
+    },
+    {
+        "command": "windows.lsadump",
+        "type": "Windows-Specific Plugins",
+        "description": "Dumps LSA secrets."
+    },
+    {
+        "command": "windows.envars",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists environment variables."
+    },
+    {
+        "command": "windows.eventhooks",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists global event hooks."
+    },
+    {
+        "command": "windows.apihooks",
+        "type": "Windows-Specific Plugins",
+        "description": "Detects API hooks in processes."
+    },
+    {
+        "command": "windows.notifiers",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists registered notification routines."
+    },
+    {
+        "command": "windows.getservicesids",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists services and their associated SIDs."
+    },
+    {
+        "command": "windows.getuserhive",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts user registry hives."
+    },
+    {
+        "command": "windows.registryuser",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists user-specific registry keys and values."
+    },
+    {
+        "command": "windows.getsyscalls",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists system calls in processes."
+    },
+    {
+        "command": "windows.getcommandline",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts command line arguments from processes."
+    },
+    {
+        "command": "windows.privs",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists process privileges."
+    },
+    {
+        "command": "windows.getmodules",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists loaded modules in processes."
+    },
+    {
+        "command": "windows.scheduler",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists scheduled tasks."
+    },
+    {
+        "command": "windows.sockets",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists open network sockets."
+    },
+    {
+        "command": "windows.hiveparser",
+        "type": "Windows-Specific Plugins",
+        "description": "Parses registry hive files."
+    },
+    {
+        "command": "windows.evtlogs",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts Windows Event Log entries."
+    },
+    {
+        "command": "windows.routines",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists system routines."
+    },
+    {
+        "command": "windows.profiles",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists user profiles."
+    },
+    {
+        "command": "windows.lsassecrets",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts LSA secrets from memory."
+    },
+    {
+        "command": "windows.authentications",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists authentication credentials."
+    },
+    {
+        "command": "windows.hooks",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists hooked functions in processes."
+    },
+    {
+        "command": "windows.kerneldrivers",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists kernel drivers."
+    },
+    {
+        "command": "windows.usbdevices",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists USB devices connected to the system."
+    },
+    {
+        "command": "windows.browserhistory",
+        "type": "Windows-Specific Plugins",
+        "description": "Extracts browser history data."
+    },
+    {
+        "command": "windows.safeboot",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists safe boot configuration."
     },
     {
         "command": "linux.pslist",
