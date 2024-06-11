@@ -70,6 +70,8 @@ class WorkspaceFrame(tk.Frame):
 
         self.search_entry = ttk.Entry(self.search_frame, width=10)
         self.search_entry.pack(side="left", padx=5, pady=5)
+        self.search_entry.bind("<Return>", self.search_text)
+        self.search_entry.bind("<KeyRelease>", self.clear_search_highlight)
 
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
         self.search_button.pack(side="left", padx=5, pady=5)
@@ -182,7 +184,14 @@ class WorkspaceFrame(tk.Frame):
         self.search_frame.grid()
         self.search_entry.focus_set()
 
-    def search_text(self):
+    def clear_search_highlight(self, event):
+        if not self.search_entry.get().strip():
+            for tab_id in self.tab_control.tabs():
+                tab = self.tab_control.nametowidget(tab_id)
+                text_widget = tab.winfo_children()[0]
+                text_widget.tag_remove('search_highlight', '1.0', tk.END)
+
+    def search_text(self, event=None):
         search_term = self.search_entry.get().strip()
         if not search_term:
             return
@@ -199,7 +208,7 @@ class WorkspaceFrame(tk.Frame):
                 end_pos = f'{start_pos}+{len(search_term)}c'
                 text_widget.tag_add('search_highlight', start_pos, end_pos)
                 start_pos = end_pos
-            text_widget.tag_config('search_highlight', background='yellow')
+            text_widget.tag_config('search_highlight', background='lightyellow')
 
     def search_command(self, event=None):
         search_term = self.command_var.get().strip().lower()
