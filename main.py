@@ -133,6 +133,11 @@ class MainApplication(TkinterDnD.Tk):
         if current_frame:
             current_frame.search_text()
 
+    def search_command(self, event=None):
+        current_frame = self.frames.get(WorkspaceFrame)
+        if current_frame:
+            current_frame.search_command()
+
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()

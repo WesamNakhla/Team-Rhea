@@ -76,6 +76,9 @@ class WorkspaceFrame(tk.Frame):
         ToolTip(self.search_button, "Search for specific strings in the output.")
         self.search_frame.grid_remove()
 
+        # Bind Ctrl+F to show search bar
+        self.bind_all('<Control-f>', self.show_search_box)
+
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
         self.sidebar_frame.grid_propagate(False)
@@ -175,15 +178,11 @@ class WorkspaceFrame(tk.Frame):
             else:
                 self.update_selected_file_label("No file selected")
 
-    def show_search_box(self):
+    def show_search_box(self, event=None):
         self.search_frame.grid()
         self.search_entry.focus_set()
 
     def search_text(self):
-        if not self.search_frame.winfo_ismapped():
-            self.show_search_box()
-            return
-
         search_term = self.search_entry.get().strip()
         if not search_term:
             return
