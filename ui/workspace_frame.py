@@ -246,7 +246,6 @@ class WorkspaceFrame(tk.Frame):
         self.logic.update_command_info(event)
 
     def init_ui(self):
-        self.configure(bg="#ffffff")
         for row in range(5):
             for col in range(4):
                 cell_frame = tk.Frame(self, width=100, height=30)
@@ -259,3 +258,21 @@ class WorkspaceFrame(tk.Frame):
 
         for col in range(4):
             self.grid_columnconfigure(col, weight=1)
+
+    def get_export_data(self):
+        export_data = {
+            "memory_dump_file": self.file_handler.get_selected_file(),
+            "commands": []
+        }
+        for tab in self.tab_control.tabs():
+            tab_widget = self.tab_control.nametowidget(tab)
+            command = self.command_dropdown.get()
+            if not command:
+                command = "Custom Command"
+            text_widget = tab_widget.winfo_children()[0]
+            output = text_widget.get("1.0", tk.END)
+            export_data["commands"].append({
+                "command": command,
+                "output": output
+            })
+        return export_data

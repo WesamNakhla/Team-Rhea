@@ -1,10 +1,10 @@
 import json
 import os
-import tkinter as tk
-from tkinter import messagebox, filedialog
 import zipfile
-from ui.workspace_frame import WorkspaceFrame
+import tkinter as tk  # Import tkinter
+from tkinter import messagebox, filedialog
 import threading
+from ui.workspace_frame import WorkspaceFrame
 
 class ExportFrameLogic:
     def __init__(self, parent, scan_result, commands_details, highlights):
@@ -22,6 +22,7 @@ class ExportFrameLogic:
             with open(filepath, 'w') as file:
                 file.write(command.get('output', ''))  # Use .get to handle missing 'output'
             command['output_file'] = filename  # Update the command dict with the output file path for later use in the metadata
+            print(f"Saved command output to {filepath}")
 
     def save_metadata(self, export_dir, memory_dump_file, commands):
         metadata = {
@@ -38,6 +39,7 @@ class ExportFrameLogic:
         metadata_path = os.path.join(export_dir, "metadata.json")
         with open(metadata_path, 'w') as file:
             json.dump(metadata, file, indent=4)
+        print(f"Saved metadata to {metadata_path}")
         return metadata_path
 
     def zip_files(self, files, zip_path):
@@ -45,6 +47,7 @@ class ExportFrameLogic:
             for file in files:
                 if file and os.path.exists(file):  # Check if file path is not None and file exists
                     zf.write(file, os.path.basename(file))
+                    print(f"Added {file} to zip file {zip_path}")
                 else:
                     print(f"Skipping missing file: {file}")  # Logging the skipped file
 
@@ -74,8 +77,12 @@ class ExportFrameLogic:
         files_to_zip += [os.path.join(self.export_dir, cmd['output_file']) for cmd in export_data['commands'] if 'output_file' in cmd]
 
         self.zip_files(files_to_zip, zip_path)
-        self.parent.after(0, self.parent.frames[self.__class__].export_complete)
+        self.parent.after(0, self.export_complete)
 
+    def export_complete(self):
+        self.hide_loading()
+        messagebox.showinfo("Export Complete", "Exported package saved successfully.")
+        os.startfile(self.export_dir)
 
     def cancel(self):
         self.parent.switch_frame_callback()

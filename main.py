@@ -133,8 +133,6 @@ class MainApplication(TkinterDnD.Tk):
         if current_frame:
             current_frame.search_text()
 
-
 if __name__ == "__main__":
     app = MainApplication()
     app.mainloop()
-
