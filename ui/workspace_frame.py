@@ -25,7 +25,7 @@ class WorkspaceFrame(tk.Frame):
 
         # Command dropdown and input
         self.command_var = tk.StringVar()
-        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
+        self.command_options = ["-choose command-"] + [cmd['command'] for cmd in self.logic.commands]
         self.command_dropdown = ttk.Combobox(self, textvariable=self.command_var, values=self.command_options)
         self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
