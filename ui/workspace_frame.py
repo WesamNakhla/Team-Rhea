@@ -251,7 +251,7 @@ class WorkspaceFrame(tk.Frame):
         self.logic.update_command_info(event)
 
     def init_ui(self):
-        #self.configure(bg="#ffffff")
+        self.configure(bg="#ffffff")
         for row in range(5):
             for col in range(4):
                 cell_frame = tk.Frame(self, width=100, height=30)
