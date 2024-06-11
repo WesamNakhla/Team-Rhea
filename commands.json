@@ -30,6 +30,11 @@
         "description": "Lists loaded DLLs."
     },
     {
+        "command": "windows.modules",
+        "type": "Windows-Specific Plugins",
+        "description": "window module"
+    },
+    {
         "command": "windows.handles",
         "type": "Windows-Specific Plugins",
         "description": "Lists open handles for each process."
