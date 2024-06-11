@@ -243,8 +243,7 @@ class WorkspaceFrame(tk.Frame):
         self.logic.update_loaded_file_label()
 
     def update_command_info(self, event=None):
-        selected_command = self.command_var.get()
-        print(f"Command selected: {selected_command}")
+        self.logic.update_command_info(event)
 
     def init_ui(self):
         self.configure(bg="#ffffff")

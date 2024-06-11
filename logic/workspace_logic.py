@@ -82,7 +82,6 @@ class LineNumberCanvas(tk.Canvas):
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
 
-
 class FileHandler:
     def __init__(self):
         self.loaded_files = []
@@ -106,7 +105,6 @@ class FileHandler:
 
     def remove_path(self, file_path):
         return os.path.basename(file_path)
-
 
 class ToolTip(object):
     def __init__(self, widget, text, delay=300):
@@ -181,7 +179,7 @@ class ScrollingText(tk.Canvas):
     def start_scrolling(self):
         x, y = self.coords(self.text_id)
         if x < -self.bbox(self.text_id)[2]:
-            self.coords(self.text_id, self.winfo_width(), y)
+            self.coords(self.winfo_width(), y)
         else:
             self.move(self.text_id, -2, 0)  # Move text left by 2 pixels
         self.after(50, self.start_scrolling)  # Repeat every 50 ms
@@ -579,7 +577,6 @@ class PstreeOutputFrame(tk.Frame):
         if item:
             self.tree.selection_add(item)
 
-
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -734,6 +731,7 @@ class WorkspaceFrameLogic:
         if all(f.done() for f in self.futures):
             print("All commands have finished executing.")
             self.prepare_export_data()
+            self.parent.run_command_button.config(state=tk.NORMAL)  # Re-enable button
 
     def run_command(self):
         selected_file = self.file_handler.get_selected_file()
@@ -761,6 +759,9 @@ class WorkspaceFrameLogic:
         vol_path = self.get_volatility_path()
         full_command = f"python {vol_path} -f {selected_file} {command} {command_parameters}"
         print(f"Running command: {full_command}")
+
+        self.parent.run_command_button.config(state=tk.DISABLED)  # Disable button
+        messagebox.showwarning("Process Execution", "The process is being executed and it may take some time.")  # Show warning message
 
         future = self.executor.submit(self.execute_command, full_command)
         future.add_done_callback(lambda f, cmd=command_name, fp=selected_file: self.command_finished(f, cmd, fp))
