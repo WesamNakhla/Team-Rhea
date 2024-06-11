@@ -36,7 +36,7 @@ class ImportFrameLogic:
                 messagebox.showerror("Error", f"Invalid file type: {file_extension}. Allowed types are: {', '.join(ALLOWED_FILE_TYPES)}")
                 continue
             self.file_handler.load_files(file_path)
-            messagebox.showinfo("Success", f"File loaded: {file_path}")
+            #messagebox.showinfo("Success", f"File loaded: {file_path}")
             self.app.app.update_loaded_file_label()  # Call update_loaded_file_label on the main application object
             self.switch_to_workspace_frame()
 
