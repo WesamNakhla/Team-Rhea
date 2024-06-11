@@ -68,7 +68,7 @@ class WorkspaceFrame(tk.Frame):
         self.search_label = ttk.Label(self.search_frame, text="Search:")
         self.search_label.pack(side="left", padx=5, pady=5)
 
-        self.search_entry = ttk.Entry(self.search_frame, width=20)
+        self.search_entry = ttk.Entry(self.search_frame, width=10)
         self.search_entry.pack(side="left", padx=5, pady=5)
 
         self.search_button = ttk.Button(self.search_frame, text="Search", command=self.search_text)
