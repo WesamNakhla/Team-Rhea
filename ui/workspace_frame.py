@@ -6,6 +6,14 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import csv
 from PIL import Image, ImageTk
 
+from logic.workspace_logic import WorkspaceFrameLogic
+from logic.src.custom_dropdown import CustomDropdown
+from logic.src.tool_tip import ToolTip
+from logic.src.scrolling_text import ScrollingText
+from logic.src.pslist_output_frame import PslistOutputFrame
+from logic.src.pstree_output_frame import PstreeOutputFrame
+
+
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
         super().__init__(parent)

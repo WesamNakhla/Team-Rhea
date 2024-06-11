@@ -9,6 +9,9 @@ from ui.settings_frame import SettingsFrame
 from ui.command_frame import CommandFrame
 from logic.src.file_handler import FileHandler
 from logic.workspace_logic import WorkspaceFrameLogic
+from logic.src.file_handler import FileHandler
+from logic.workspace_logic import WorkspaceFrameLogic
+
 
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
