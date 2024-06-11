@@ -832,6 +832,160 @@ class FilescanOutputFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+class DllListOutputFrame(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.columns = ["PID", "Process Name", "Base", "Size", "Name", "Path", "LoadTime", "File output"]
+
+        self.tree = ttk.Treeview(self, columns=self.columns, show='headings')
+        self.tree.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        for col in self.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150, anchor="center")
+
+        self.scrollbar_y = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.grid(row=0, column=2, sticky="ns")
+        self.tree.configure(yscroll=self.scrollbar_y.set)
+
+        self.scrollbar_x = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.tree.configure(xscroll=self.scrollbar_x.set)
+
+        self.tree.bind("<Button-3>", self.show_context_menu)
+
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="Export to CSV", command=self.export_to_csv)
+        self.context_menu.add_command(label="Show Grouped Bar Chart", command=self.show_grouped_bar_chart)
+        self.context_menu.add_command(label="Visualize Tree Structure", command=self.visualize_tree_structure)
+
+        # Add buttons for visualization and export
+        self.export_button = ttk.Button(self, text="Export to CSV", command=self.export_to_csv)
+        self.export_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+
+        self.chart_button = ttk.Button(self, text="Show Grouped Bar Chart", command=self.show_grouped_bar_chart)
+        self.chart_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+
+        self.tree_button = ttk.Button(self, text="Visualize Tree Structure", command=self.visualize_tree_structure)
+        self.tree_button.grid(row=3, column=0, columnspan=2, padx=10, pady=5, sticky="ew")
+
+    def populate(self, findings):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        lines = findings.strip().split("\n")
+        filtered_lines = []
+        for line in lines:
+            if line.strip() and not self.is_unwanted_line(line):
+                filtered_lines.append(line)
+
+        for line in filtered_lines:
+            values = re.split(r'\s+', line.strip(), maxsplit=len(self.columns) - 1)
+            values = self.adjust_columns(values)
+            if len(values) == len(self.columns):
+                self.tree.insert("", "end", values=values)
+
+    def is_unwanted_line(self, line):
+        """Check if the line contains any unwanted keywords."""
+        unwanted_keywords = ["Progress", "Scanning", "Error", "Stacking attempts", "PDB scanning finished"]
+        return any(keyword in line for keyword in unwanted_keywords)
+
+    def adjust_columns(self, values):
+        """Adjust columns to match the expected number of columns."""
+        if len(values) > len(self.columns):
+            values = values[:len(self.columns) - 1] + [' '.join(values[len(self.columns) - 1:])]
+        elif len(values) < len(self.columns):
+            values += [''] * (len(self.columns) - len(values))
+        return values
+
+    def show_context_menu(self, event):
+        try:
+            row_id = self.tree.identify_row(event.y)
+            self.tree.selection_set(row_id)
+            self.context_menu.post(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(self.columns)
+                    for row in self.tree.get_children():
+                        row_values = self.tree.item(row, 'values')
+                        writer.writerow(row_values)
+                messagebox.showinfo("Export to CSV", f"Data successfully exported to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export to CSV", f"Error exporting to CSV: {e}")
+
+    def show_grouped_bar_chart(self):
+        # Extracting the data
+        data = {}
+        for row in self.tree.get_children():
+            values = self.tree.item(row, 'values')
+            pid = values[0]
+            process_name = values[1]
+            size = int(values[3], 16) if values[3].startswith('0x') else int(values[3])
+
+            if pid not in data:
+                data[pid] = {'process_name': process_name, 'size': size}
+            else:
+                data[pid]['size'] += size
+
+        pids = list(data.keys())
+        sizes = [data[pid]['size'] for pid in pids]
+        process_names = [data[pid]['process_name'] for pid in pids]
+
+        # Creating the bar chart
+        fig, ax = plt.subplots(figsize=(10, 6))
+        bars = ax.bar(pids, sizes, color='skyblue')
+
+        ax.set_xlabel('PID')
+        ax.set_ylabel('Size')
+        ax.set_title('Grouped Bar Chart of DLL Sizes by PID')
+
+        ax.set_xticks(pids)
+        ax.set_xticklabels(process_names, rotation=45, ha='right')
+
+        plt.tight_layout()
+
+        chart_window = tk.Toplevel(self)
+        chart_window.title("Grouped Bar Chart")
+        canvas = FigureCanvasTkAgg(fig, master=chart_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    def visualize_tree_structure(self):
+        import networkx as nx
+        import matplotlib.pyplot as plt
+
+        G = nx.DiGraph()
+
+        for row in self.tree.get_children():
+            values = self.tree.item(row, 'values')
+            pid = values[0]
+            process_name = values[1]
+            path = values[5]
+
+            if pid and process_name and path:
+                node_label = f"{process_name}\n{pid}"
+                G.add_node(node_label, path=path)
+
+        pos = nx.spring_layout(G)
+        plt.figure(figsize=(12, 8))
+
+        nx.draw(G, pos, with_labels=True, node_size=3000, node_color='skyblue', font_size=10, font_weight='bold')
+        plt.title("Tree Structure of DLL List")
+
+        plt.show()
+
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -968,6 +1122,12 @@ class WorkspaceFrameLogic:
             pstree_frame = FilescanOutputFrame(new_tab)
             pstree_frame.pack(expand=True, fill='both')
             pstree_frame.populate(findings)
+
+        elif command_name == 'windows.dlllist':
+            pstree_frame = DllListOutputFrame(new_tab)
+            pstree_frame.pack(expand=True, fill='both')
+            pstree_frame.populate(findings)
+
 
         else:
             text_widget = CustomText(new_tab, wrap='word')
