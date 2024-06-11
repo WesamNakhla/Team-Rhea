@@ -7,6 +7,8 @@ import re
 from tkinter import ttk
 import tkinter as tk
 import csv
+import networkx as nx
+import matplotlib.pyplot as plt
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from tkinter import filedialog, messagebox, colorchooser
@@ -353,6 +355,10 @@ class PslistOutputFrame(tk.Frame):
         self.chart_button = ttk.Button(self, text="Show Bar Chart", command=self.show_bar_chart)
         self.chart_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
 
+        self.tree_button = ttk.Button(self, text="Show Process Tree", command=self.show_process_tree)
+        self.tree_button.grid(row=2, column=2, padx=10, pady=5, sticky="ew")
+
+
     def sort_treeview(self, col, reverse):
         def convert(data):
             try:
@@ -480,6 +486,36 @@ class PslistOutputFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
         
+
+    def show_process_tree(self):
+        selected_items = self.tree.get_children()
+        if not selected_items:
+           messagebox.showwarning("No Data", "No data available to show process tree.")
+           return
+
+        process_data = []
+        for item in selected_items:
+           row_values = self.tree.item(item, "values")
+           process_data.append(row_values)
+ 
+        G = nx.DiGraph()
+
+        for process in process_data:
+            pid, ppid, image_name = process[0], process[1], process[2]
+            G.add_node(pid, label=image_name)
+            if ppid != '0':  # Typically, PID 0 is the root or system process
+                G.add_edge(ppid, pid)
+
+        pos = nx.spring_layout(G, k=0.5, iterations=50)
+        labels = nx.get_node_attributes(G, 'label')
+
+        fig, ax = plt.subplots(figsize=(12, 8))
+        nx.draw(G, pos, with_labels=False, ax=ax, node_size=500, node_color='lightblue', linewidths=0.5, font_size=10)
+        nx.draw_networkx_labels(G, pos, labels, font_size=8)
+
+        plt.title("Process Tree")
+        plt.show()
+
 class PstreeOutputFrame(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
