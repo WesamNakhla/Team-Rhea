@@ -59,6 +59,10 @@ class WorkspaceFrame(tk.Frame):
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=2, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
 
+        # Custom command label
+        self.custom_command_label = ttk.Label(self, text="")
+        self.custom_command_label.grid(row=3, column=0, padx=10, pady=5, sticky="w")
+
         # Highlight buttons
         self.highlight_frame = ttk.Frame(self)
         self.highlight_frame.grid(row=1, column=3, padx=10, pady=5, sticky="we")
