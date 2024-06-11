@@ -105,18 +105,8 @@ class WorkspaceFrame(tk.Frame):
         self.add_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5C0 Open File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
 
-        self.toggle_terminal_button = ttk.Button(self.sidebar_frame, text="\U0001F5D4 Show Terminal", command=self.toggle_terminal)
-        self.toggle_terminal_button.grid(row=5, column=0, columnspan=2, pady=5)
-
         self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
-
-        self.terminal_frame = tk.Frame(self.sidebar_frame, height=200, width=200)
-        self.terminal_frame.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
-        self.terminal_output = tk.Text(self.terminal_frame, state='disabled', height=8, width=25, bg='black', fg='white')
-        self.terminal_output.pack(expand=True, fill='both')
-
-        self.terminal_frame.grid_remove()
 
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
@@ -125,14 +115,6 @@ class WorkspaceFrame(tk.Frame):
         if self.sidebar_listbox.size() > 0:
             self.sidebar_listbox.selection_set(0)
             self.sidebar_listbox.event_generate("<<ListboxSelect>>")
-
-    def toggle_terminal(self):
-        if self.terminal_frame.winfo_viewable():
-            self.terminal_frame.grid_remove()
-            self.toggle_terminal_button.configure(text="\U0001F5D4 Show Terminal")
-        else:
-            self.terminal_frame.grid()
-            self.toggle_terminal_button.configure(text="\U0001F5F5 Hide Terminal")
 
     def set_selected_file(self, file):
         self.file_handler.selected_file = file
