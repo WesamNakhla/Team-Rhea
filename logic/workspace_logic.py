@@ -522,97 +522,113 @@ class PstreeOutputFrame(tk.Frame):
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        # Define column names
-        self.columns = ["PPID", "ImageFileName", "Offset", "Threads", "Handles",
-                        "SessionId", "Wow64", "CreateTime", "ExitTime", "FileOutput"]
+        self.columns = ["PPID", "PID", "ImageFileName", "Offset", "Threads", "Handles", "SessionId", "Wow64", "CreateTime", "ExitTime", "Path"]
 
         # Create Treeview widget
         self.tree = ttk.Treeview(self, columns=self.columns, show='headings')
-        self.tree.grid(row=0, column=0, sticky="nsew")
+        self.tree.grid(row=0, column=0, columnspan=2, sticky="nsew")
 
-        # Configure columns
         for col in self.columns:
-            self.tree.heading(col, text=col)
+            self.tree.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
             self.tree.column(col, width=100, anchor="center")
 
-        # Add scrollbars
         self.scrollbar_y = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
-        self.scrollbar_y.grid(row=0, column=1, sticky="ns")
+        self.scrollbar_y.grid(row=0, column=2, sticky="ns")
         self.tree.configure(yscroll=self.scrollbar_y.set)
 
         self.scrollbar_x = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
-        self.scrollbar_x.grid(row=1, column=0, sticky="ew")
+        self.scrollbar_x.grid(row=1, column=0, columnspan=2, sticky="ew")
         self.tree.configure(xscroll=self.scrollbar_x.set)
 
-        # Bind right-click for context menu
+        self.style = ttk.Style()
+        self.style.configure("Treeview", font=("Helvetica", 10), rowheight=25)
+        self.style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"))
+
         self.tree.bind("<Button-1>", self.start_selection)
         self.tree.bind("<B1-Motion>", self.drag_selection)
         self.tree.bind("<Button-3>", self.show_context_menu)
 
         self.context_menu = tk.Menu(self, tearoff=0)
         self.context_menu.add_command(label="Copy", command=self.copy_selected)
+        self.context_menu.add_command(label="Export to CSV", command=self.export_to_csv)
+        self.context_menu.add_command(label="Visualize Process Tree", command=self.visualize_process_tree)
+        self.context_menu.add_command(label="Visualize Network Graph", command=self.visualize_network_graph)
+
+        self.export_button = ttk.Button(self, text="Export to CSV", command=self.export_to_csv)
+        self.export_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+
+        self.visualize_tree_button = ttk.Button(self, text="Visualize Process Tree", command=self.visualize_process_tree)
+        self.visualize_tree_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+
+        self.visualize_network_button = ttk.Button(self, text="Visualize Network Graph", command=self.visualize_network_graph)
+        self.visualize_network_button.grid(row=2, column=2, padx=10, pady=5, sticky="ew")
+
+    def sort_treeview(self, col, reverse):
+        def convert(data):
+            try:
+                return int(data)
+            except ValueError:
+                try:
+                    return float(data)
+                except ValueError:
+                    return data
+
+        data_list = [(self.tree.set(item, col), item) for item in self.tree.get_children('')]
+        data_list.sort(key=lambda t: convert(t[0]), reverse=reverse)
+
+        for index, (_, item) in enumerate(data_list):
+            self.tree.move(item, '', index)
+
+        self.tree.heading(col, command=lambda: self.sort_treeview(col, not reverse))
 
     def populate(self, findings):
-        # Clear existing data
         for i in self.tree.get_children():
             self.tree.delete(i)
 
-        # Split findings into lines
         lines = findings.strip().split("\n")
+        filtered_lines = []
+        for line in lines[1:]:
+            if line.strip() and not self.is_unwanted_line(line):
+                filtered_lines.append(line)
 
-        # Skip the first two lines and filter out unwanted lines
-        filtered_lines = self.filter_lines(lines)
-
-        # Print filtered findings for debugging
-        print("Filtered findings for population:")
         for line in filtered_lines:
-            print(line)
-
-        # Parse and insert rows into Treeview
-        for line in filtered_lines:
-            # Use regex to split based on multiple spaces
             values = re.split(r'\s+', line.strip())
 
-            # Adjust columns to match exactly the number of safe columns
-            values = self.adjust_columns(values)
+            # Ensure PID and PPID are valid integers
+            try:
+                ppid = int(values[0])
+                pid = int(values[1])
+            except ValueError:
+                print(f"Skipping row with non-integer PID or PPID: {values}")
+                continue
 
-            # Only add rows that match the column count
+            values = self.adjust_columns(values)
             if len(values) == len(self.columns):
                 self.tree.insert("", "end", values=values)
-            else:
-                print(f"Skipped line (doesn't match column count): {line}")
 
     def filter_lines(self, lines):
-        """Filter lines to remove the header and unwanted content."""
-        # Skip the first two lines
         filtered_lines = []
-        for line in lines[3:]:
-            if line.strip() and not self.is_unwanted_line(line):  # Skip empty lines
+        for line in lines[4:]:
+            if not self.is_unwanted_line(line) and self.contains_data(line):
                 filtered_lines.append(line)
         return filtered_lines
-    
+
     def is_unwanted_line(self, line):
-        """Check if the line contains any unwanted keywords."""
         unwanted_keywords = ["Progress", "Scanning", "Error", "Stacking attempts", "PDB scanning finished"]
         return any(keyword in line for keyword in unwanted_keywords)
 
     def contains_data(self, line):
-        """Check if the line contains data."""
-        return any(char.isdigit() for char in line)  # Check for digits indicating data presence
+        return any(char.isdigit() for char in line)
 
     def adjust_columns(self, values):
-        """Adjust columns to match the expected number of columns"""
         if len(values) > len(self.columns):
-            # Concatenate extra columns to the last expected column
             values = values[:len(self.columns) - 1] + [' '.join(values[len(self.columns) - 1:])]
         elif len(values) < len(self.columns):
-            # Append empty values to meet the expected column count
             values += [''] * (len(self.columns) - len(values))
         return values
 
     def show_context_menu(self, event):
         try:
-            # Select the row under the right-click event
             row_id = self.tree.identify_row(event.y)
             self.tree.selection_set(row_id)
             self.context_menu.post(event.x_root, event.y_root)
@@ -621,36 +637,123 @@ class PstreeOutputFrame(tk.Frame):
 
     def copy_selected(self):
         try:
-            # Get selected items
             selected_items = self.tree.selection()
             if not selected_items:
                 return
 
-            # Prepare text to copy
             copied_text = ""
             for item in selected_items:
                 row_values = self.tree.item(item, "values")
                 copied_text += "\t".join(row_values) + "\n"
 
-            # Copy text to clipboard
             self.clipboard_clear()
             self.clipboard_append(copied_text)
         except Exception as e:
             print(f"Error copying to clipboard: {e}")
-    
 
     def start_selection(self, event):
-        # Start selection with left mouse button
         item = self.tree.identify_row(event.y)
         if item:
             self.tree.selection_set(item)
 
     def drag_selection(self, event):
-        # Select rows by dragging
         self.tree.selection_set(self.tree.selection())
         item = self.tree.identify_row(event.y)
         if item:
             self.tree.selection_add(item)
+
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(self.columns)
+                    for row in self.tree.get_children():
+                        row_values = self.tree.item(row, 'values')
+                        writer.writerow(row_values)
+                messagebox.showinfo("Export to CSV", f"Data successfully exported to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export to CSV", f"Error exporting to CSV: {e}")
+
+    def visualize_process_tree(self):
+        data = self.get_tree_data()
+        if not data:
+            messagebox.showerror("Error", "No data available for visualization.")
+            return
+
+        plt.figure(figsize=(12, 8))
+        G = nx.DiGraph()
+
+        for pid, ppid, label in data:
+            G.add_edge(ppid, pid, label=label)
+
+        pos = nx.spring_layout(G, k=0.5, iterations=50)
+        nx.draw(G, pos, with_labels=True, node_size=2000, node_color='lightblue', font_size=10, font_weight='bold', font_color='darkblue')
+        edge_labels = nx.get_edge_attributes(G, 'label')
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels, font_size=8)
+
+        plt.title("Process Tree")
+        plt.show()
+
+    def visualize_network_graph(self):
+        data = self.get_network_data()
+        if not data:
+            messagebox.showwarning("No Data", "No data available for visualization.")
+            return
+
+        fig, ax = plt.subplots(figsize=(10, 6))
+        pos = nx.spring_layout(data)
+        nx.draw(data, pos=pos, with_labels=True, node_size=3000, node_color="lightgreen", font_size=10, font_weight="bold", ax=ax, arrows=True)
+
+        network_window = tk.Toplevel(self)
+        network_window.title("Process Network Graph")
+        canvas = FigureCanvasTkAgg(fig, master=network_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
+    def get_tree_data(self):
+        data = nx.DiGraph()
+        for row in self.tree.get_children():
+            values = self.tree.item(row, 'values')
+            try:
+                pid = int(values[0])
+                ppid = int(values[1])
+                data.add_node(pid)
+                if ppid != 0:
+                    data.add_edge(ppid, pid)
+            except ValueError:
+                print(f"Skipping row with non-integer PID or PPID: {values}")
+                continue
+        return data
+
+    def get_network_data(self):
+        data = nx.DiGraph()
+        for row in self.tree.get_children():
+            values = self.tree.item(row, 'values')
+            try:
+                pid = int(values[0])
+                ppid = int(values[1])
+                data.add_node(pid, label=values[2])
+                if ppid != 0:
+                    data.add_edge(ppid, pid)
+            except ValueError:
+                print(f"Skipping row with non-integer PID or PPID: {values}")
+                continue
+        return data
+
+    def hierarchy_pos(self, G, root, width=1., vert_gap=0.2, vert_loc=0, xcenter=0.5):
+        pos = {root: (xcenter, vert_loc)}
+        neighbors = list(G.neighbors(root))
+        if len(neighbors) != 0:
+            dx = width / len(neighbors)
+            nextx = xcenter - width / 2 - dx / 2
+            for neighbor in neighbors:
+                nextx += dx
+                pos.update(self.hierarchy_pos(G, neighbor, width=dx, vert_gap=vert_gap, vert_loc=vert_loc - vert_gap, xcenter=nextx))
+        return pos
+
 
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
