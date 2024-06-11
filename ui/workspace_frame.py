@@ -208,7 +208,7 @@ class WorkspaceFrame(tk.Frame):
                 end_pos = f'{start_pos}+{len(search_term)}c'
                 text_widget.tag_add('search_highlight', start_pos, end_pos)
                 start_pos = end_pos
-            text_widget.tag_config('search_highlight', background='lightyellow')
+            text_widget.tag_config('search_highlight', background='yellow', foreground='black')
 
     def search_command(self, event=None):
         search_term = self.command_var.get().strip().lower()
