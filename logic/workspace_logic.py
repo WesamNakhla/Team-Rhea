@@ -1725,7 +1725,7 @@ class WorkspaceFrameLogic:
             self.update_command_dropdown()
 
     def update_command_dropdown(self):
-        command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
+        command_options = ["-choose command-"] + [cmd['command'] for cmd in self.commands]
         self.parent.update_command_dropdown(command_options)
 
     def load_commands(self):
