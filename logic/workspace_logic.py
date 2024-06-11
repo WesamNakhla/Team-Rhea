@@ -132,8 +132,29 @@ class WorkspaceFrameLogic:
             self.highlight_color = color[1]
 
     def remove_highlight(self):
-        # Implement the logic to remove highlight here
-        print("Remove highlight functionality needs to be implemented")
+        for tab in self.command_tabs.values():
+            text_widget = tab.nametowidget(tab.winfo_children()[0])
+            if isinstance(text_widget, CustomText):
+                text_widget.tag_remove("highlight", "1.0", tk.END)
+
+    def run_command(self):
+        selected_command = self.parent.command_var.get()
+        selected_file = self.file_handler.get_selected_file()
+        if not selected_command or selected_command == "-choose command-":
+            messagebox.showerror("Error", "Please select a command to run.")
+            return
+        if not selected_file:
+            messagebox.showerror("Error", "No file selected.")
+            return
+
+        self.parent.run_command_button.config(state=tk.DISABLED)
+        self.parent.config(cursor="wait")
+
+        full_command = f"{self.get_volatility_path()} -f {selected_file} {selected_command}"
+        future = self.executor.submit(self.execute_command, full_command)
+        future.add_done_callback(lambda fut: self.command_finished(fut, selected_command, selected_file))
+        self.futures.append(future)
+
 
     def command_finished(self, future, command_name, file_path):
         try:
