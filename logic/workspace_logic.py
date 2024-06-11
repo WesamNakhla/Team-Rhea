@@ -986,6 +986,110 @@ class DllListOutputFrame(tk.Frame):
 
         plt.show()
 
+class NetstatOutputFrame(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
+        self.columns = ["Protocol", "Local Address", "Foreign Address", "State", "PID", "Process Name"]
+        
+        self.tree = ttk.Treeview(self, columns=self.columns, show='headings')
+        self.tree.grid(row=0, column=0, columnspan=2, sticky="nsew")
+        
+        for col in self.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150, anchor="center")
+        
+        self.scrollbar_y = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.grid(row=0, column=2, sticky="ns")
+        self.tree.configure(yscroll=self.scrollbar_y.set)
+        
+        self.scrollbar_x = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.tree.configure(xscroll=self.scrollbar_x.set)
+        
+        # Add buttons for Export to CSV, Network Map, and Pie Chart
+        self.export_button = ttk.Button(self, text="Export to CSV", command=self.export_to_csv)
+        self.export_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+        
+        self.network_map_button = ttk.Button(self, text="Show Network Map", command=self.show_network_map)
+        self.network_map_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+        
+        self.pie_chart_button = ttk.Button(self, text="Show Pie Chart", command=self.show_pie_chart)
+        self.pie_chart_button.grid(row=2, column=2, padx=10, pady=5, sticky="ew")
+        
+    def populate(self, findings):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+        
+        lines = findings.strip().split("\n")
+        filtered_lines = []
+        for line in lines:
+            if line.strip() and not self.is_unwanted_line(line):
+                filtered_lines.append(line)
+        
+        for line in filtered_lines:
+            values = re.split(r'\s+', line.strip(), maxsplit=5)
+            values = self.adjust_columns(values)
+            if len(values) == len(self.columns):
+                self.tree.insert("", "end", values=values)
+    
+    def adjust_columns(self, values):
+        if len(values) < len(self.columns):
+            values += [''] * (len(self.columns) - len(values))
+        return values
+    
+    def is_unwanted_line(self, line):
+        unwanted_keywords = ["Progress", "Scanning", "Error"]
+        return any(keyword in line for keyword in unwanted_keywords)
+    
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(self.columns)
+                    for row in self.tree.get_children():
+                        row_values = self.tree.item(row, 'values')
+                        writer.writerow(row_values)
+                messagebox.showinfo("Export to CSV", f"Data successfully exported to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export to CSV", f"Error exporting to CSV: {e}")
+    
+    def show_network_map(self):
+        G = nx.Graph()
+        for row in self.tree.get_children():
+            row_values = self.tree.item(row, 'values')
+            local_address = row_values[1]
+            foreign_address = row_values[2]
+            G.add_edge(local_address, foreign_address)
+        
+        fig, ax = plt.subplots(figsize=(10, 6))
+        pos = nx.spring_layout(G)
+        nx.draw(G, pos, with_labels=True, node_size=500, node_color="skyblue", ax=ax)
+        plt.title("Network Map of Connections")
+        plt.show()
+    
+    def show_pie_chart(self):
+        connection_types = {}
+        for row in self.tree.get_children():
+            row_values = self.tree.item(row, 'values')
+            protocol = row_values[0]
+            connection_types[protocol] = connection_types.get(protocol, 0) + 1
+        
+        labels = list(connection_types.keys())
+        sizes = list(connection_types.values())
+        
+        fig, ax = plt.subplots(figsize=(6, 6))
+        ax.pie(sizes, labels=labels, autopct='%1.1f%%', startangle=140)
+        ax.axis('equal')
+        plt.title("Distribution of Connection Types")
+        plt.show()
+
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -1127,6 +1231,12 @@ class WorkspaceFrameLogic:
             pstree_frame = DllListOutputFrame(new_tab)
             pstree_frame.pack(expand=True, fill='both')
             pstree_frame.populate(findings)
+
+        elif command_name == 'windows.netscan':
+            pstree_frame = NetstatOutputFrame(new_tab)
+            pstree_frame.pack(expand=True, fill='both')
+            pstree_frame.populate(findings)
+
 
 
         else:
