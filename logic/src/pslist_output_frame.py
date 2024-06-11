@@ -12,4 +12,7 @@ class PslistOutputFrame(tk.Frame):
 
     def populate(self, data):
         for item in data:
-            self.tree.insert('', tk.END, values=(item['name'], item['pid'], item['ppid']))
+            if isinstance(item, dict) and 'name' in item and 'pid' in item and 'ppid' in item:
+                self.tree.insert('', tk.END, values=(item['name'], item['pid'], item['ppid']))
+            else:
+                print(f"Invalid item format: {item}")

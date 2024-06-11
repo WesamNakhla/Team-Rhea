@@ -242,3 +242,11 @@ class WorkspaceFrameLogic:
             print("All commands have finished executing.")
             self.parent.run_command_button.config(state=tk.NORMAL)  # Re-enable button
             self.parent.config(cursor="")
+
+    def show_close_button(self, tab):
+        close_button = ttk.Button(tab, text="Close", command=lambda: self.close_tab(tab))
+        close_button.pack(side=tk.RIGHT, padx=5, pady=5)
+
+    def close_tab(self, tab):
+        self.parent.tab_control.forget(tab)
+        del self.command_tabs[tab]
