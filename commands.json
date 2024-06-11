@@ -18,6 +18,11 @@
         "command": "windows.pstreegraph",
         "type": "Windows-Specific Plugins",
         "description": "Graphical representation of the process tree."
+    }, 
+    {
+        "type": "windows.filescan",
+        "command": "windows.filescan",
+        "description": "This is plugin filescan"
     },
     {
         "command": "windows.dlllist",
@@ -148,11 +153,6 @@
         "type": "Custom Plugin",
         "command": "customplugin123",
         "description": "This is your custom plugin customplugin123"
-    }, 
-    {
-        "type": "windows.filescan",
-        "command": "filescan",
-        "description": "This is your custom plugin filescan"
     }
-
+   
 ]

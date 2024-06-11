@@ -652,6 +652,186 @@ class PstreeOutputFrame(tk.Frame):
         if item:
             self.tree.selection_add(item)
 
+class FilescanOutputFrame(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+
+        self.columns = ["Offset", "File Name", "File Path", "File Size", "File Creation Time", "File Access Time", "File Modification Time"]
+
+        # Create Treeview widget
+        self.tree = ttk.Treeview(self, columns=self.columns, show='headings')
+        self.tree.grid(row=0, column=0, columnspan=2, sticky="nsew")
+
+        for col in self.columns:
+            self.tree.heading(col, text=col, command=lambda _col=col: self.sort_treeview(_col, False))
+            self.tree.column(col, width=150, anchor="center")
+
+        self.scrollbar_y = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.grid(row=0, column=2, sticky="ns")
+        self.tree.configure(yscroll=self.scrollbar_y.set)
+
+        self.scrollbar_x = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.tree.configure(xscroll=self.scrollbar_x.set)
+
+        self.style = ttk.Style()
+        self.style.configure("Treeview", font=("Helvetica", 10), rowheight=25)
+        self.style.configure("Treeview.Heading", font=("Helvetica", 10, "bold"))
+
+        self.tree.tag_configure('oddrow', background='#f0f0f0')
+        self.tree.tag_configure('evenrow', background='#ffffff')
+
+        self.tree.bind("<Button-1>", self.start_selection)
+        self.tree.bind("<B1-Motion>", self.drag_selection)
+        self.tree.bind("<Button-3>", self.show_context_menu)
+
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="Copy", command=self.copy_selected)
+        self.context_menu.add_command(label="Export to CSV", command=self.export_to_csv)
+        self.context_menu.add_command(label="Show Histogram", command=self.show_histogram)
+
+        self.export_button = ttk.Button(self, text="Export to CSV", command=self.export_to_csv)
+        self.export_button.grid(row=2, column=0, padx=10, pady=5, sticky="ew")
+
+        self.histogram_button = ttk.Button(self, text="Show Histogram", command=self.show_histogram)
+        self.histogram_button.grid(row=2, column=1, padx=10, pady=5, sticky="ew")
+
+    def sort_treeview(self, col, reverse):
+        def convert(data):
+            try:
+                return int(data)
+            except ValueError:
+                try:
+                    return float(data)
+                except ValueError:
+                    return data
+
+        data_list = [(self.tree.set(item, col), item) for item in self.tree.get_children('')]
+        data_list.sort(key=lambda t: convert(t[0]), reverse=reverse)
+
+        for index, (_, item) in enumerate(data_list):
+            self.tree.move(item, '', index)
+
+        self.tree.heading(col, command=lambda: self.sort_treeview(col, not reverse))
+
+    def populate(self, findings):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+
+        lines = findings.strip().split("\n")
+        filtered_lines = []
+        for line in lines[1:]:
+            if line.strip() and not self.is_unwanted_line(line):
+                filtered_lines.append(line)
+
+        for line in filtered_lines:
+            values = re.split(r'\s+', line.strip(), maxsplit=2)  # Adjust the split to handle variable spaces
+            if len(values) < len(self.columns):
+                values.append('')  # Ensure all columns are filled
+            values = self.adjust_columns(values)
+            if len(values) == len(self.columns):
+                self.tree.insert("", "end", values=values, tags=('evenrow' if self.tree.index(self.tree.get_children()[-1]) % 2 == 0 else 'oddrow'))
+
+    def filter_lines(self, lines):
+        filtered_lines = []
+        for line in lines[4:]:
+            if not self.is_unwanted_line(line) and self.contains_data(line):
+                filtered_lines.append(line)
+        return filtered_lines
+
+    def is_unwanted_line(self, line):
+        unwanted_keywords = ["Progress", "Scanning", "Error", "Stacking attempts", "PDB scanning finished"]
+        return any(keyword in line for keyword in unwanted_keywords)
+
+    def contains_data(self, line):
+        return any(char.isdigit() for char in line)
+
+    def adjust_columns(self, values):
+        if len(values) > len(self.columns):
+            values = values[:len(self.columns) - 1] + [' '.join(values[len(self.columns) - 1:])]
+        elif len(values) < len(self.columns):
+            values += [''] * (len(self.columns) - len(values))
+        return values
+
+    def show_context_menu(self, event):
+        try:
+            row_id = self.tree.identify_row(event.y)
+            self.tree.selection_set(row_id)
+            self.context_menu.post(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+
+    def copy_selected(self):
+        try:
+            selected_items = self.tree.selection()
+            if not selected_items:
+                return
+
+            copied_text = ""
+            for item in selected_items:
+                row_values = self.tree.item(item, "values")
+                copied_text += "\t".join(row_values) + "\n"
+
+            self.clipboard_clear()
+            self.clipboard_append(copied_text)
+        except Exception as e:
+            print(f"Error copying to clipboard: {e}")
+
+    def start_selection(self, event):
+        item = self.tree.identify_row(event.y)
+        if item:
+            self.tree.selection_set(item)
+
+    def drag_selection(self, event):
+        self.tree.selection_set(self.tree.selection())
+        item = self.tree.identify_row(event.y)
+        if item:
+            self.tree.selection_add(item)
+
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(self.columns)
+                    for row in self.tree.get_children():
+                        row_values = self.tree.item(row, 'values')
+                        writer.writerow(row_values)
+                messagebox.showinfo("Export to CSV", f"Data successfully exported to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export to CSV", f"Error exporting to CSV: {e}")
+
+    def show_histogram(self):
+        file_sizes = []
+        for row in self.tree.get_children():
+            values = self.tree.item(row, 'values')
+            try:
+                file_size = int(values[3])  # Assuming the file size is in the fourth column
+                file_sizes.append(file_size)
+            except ValueError:
+                continue
+
+        if not file_sizes:
+            messagebox.showwarning("No Data", "No file sizes available for plotting.")
+            return
+
+        fig, ax = plt.subplots(figsize=(8, 6))
+        ax.hist(file_sizes, bins=30, color='blue', alpha=0.7)
+        ax.set_title("File Size Distribution")
+        ax.set_xlabel("File Size")
+        ax.set_ylabel("Frequency")
+
+        chart_window = tk.Toplevel(self)
+        chart_window.title("File Size Histogram")
+        canvas = FigureCanvasTkAgg(fig, master=chart_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
+
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -783,6 +963,11 @@ class WorkspaceFrameLogic:
             pstree_frame = PstreeOutputFrame(new_tab)
             pstree_frame.pack(expand=True, fill='both')
             pstree_frame.populate(findings)
+        
+        elif command_name == 'windows.filescan':
+            pstree_frame = FilescanOutputFrame(new_tab)
+            pstree_frame.pack(expand=True, fill='both')
+            pstree_frame.populate(findings)
 
         else:
             text_widget = CustomText(new_tab, wrap='word')
@@ -793,7 +978,7 @@ class WorkspaceFrameLogic:
         self.show_close_button(new_tab)
 
     def execute_command(self, full_command):
-        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True, encoding='utf-8', errors='ignore')
         stdout, stderr = process.communicate()
 
         findings = stdout if stdout else "No output received."
@@ -822,7 +1007,7 @@ class WorkspaceFrameLogic:
             command = self.parent.custom_command_entry.get().strip()
             command_name = "Custom"
         elif selected_index > 1:
-            command_index = selected_index - 2
+            command_index = selected_index - 1
             if command_index < len(self.commands):
                 command = self.commands[command_index]['command']
                 command_name = self.commands[command_index]['command']
