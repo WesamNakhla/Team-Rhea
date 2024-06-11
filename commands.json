@@ -75,12 +75,17 @@
         "description": "Lists registry hives."
     },
     {
+        "command": "windows.registry.hivelist",
+        "type": "Windows-Specific Plugins",
+        "description": "Lists registry hives."
+    },
+    {
         "command": "windows.userassist",
         "type": "Windows-Specific Plugins",
         "description": "Parses UserAssist registry keys."
     },
     {
-        "command": "windows.registryprint",
+        "command": "windows.registry.printkey",
         "type": "Windows-Specific Plugins",
         "description": "Prints registry keys and values."
     },

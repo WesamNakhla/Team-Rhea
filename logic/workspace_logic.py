@@ -7,6 +7,9 @@ import re
 from tkinter import ttk
 import tkinter as tk
 import csv
+import seaborn as sns
+import pandas as pd
+import numpy as np
 from wordcloud import WordCloud
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -1511,6 +1514,166 @@ class CmdLineOutputFrame(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().pack(fill=tk.BOTH, expand=True)
 
+class WindowsRegistryHiveList(tk.Frame):
+    def __init__(self, parent, *args, **kwargs):
+        super().__init__(parent, *args, **kwargs)
+        
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_rowconfigure(0, weight=1)
+        
+        self.columns = ["Hive", "Offset", "Name", "Root", "Subkeys", "Values", "LastWriteTime"]
+        
+        # Create Treeview widget
+        self.tree = ttk.Treeview(self, columns=self.columns, show='headings')
+        self.tree.grid(row=0, column=0, sticky="nsew")
+        
+        for col in self.columns:
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150, anchor="center")
+        
+        # Add scrollbars
+        self.scrollbar_y = ttk.Scrollbar(self, orient="vertical", command=self.tree.yview)
+        self.scrollbar_y.grid(row=0, column=1, sticky="ns")
+        self.tree.configure(yscroll=self.scrollbar_y.set)
+        
+        self.scrollbar_x = ttk.Scrollbar(self, orient="horizontal", command=self.tree.xview)
+        self.scrollbar_x.grid(row=1, column=0, sticky="ew")
+        self.tree.configure(xscroll=self.scrollbar_x.set)
+        
+        # Bind right-click for context menu
+        self.tree.bind("<Button-3>", self.show_context_menu)
+        
+        self.context_menu = tk.Menu(self, tearoff=0)
+        self.context_menu.add_command(label="Export to CSV", command=self.export_to_csv)
+        self.context_menu.add_command(label="Show Tree View", command=self.visualize_tree_view)
+        self.context_menu.add_command(label="Show Heat Map", command=self.visualize_heat_map)
+        
+    def populate(self, findings):
+        for i in self.tree.get_children():
+            self.tree.delete(i)
+        
+        lines = findings.strip().split("\n")
+        filtered_lines = []
+        for line in lines:
+            if line.strip() and not self.is_unwanted_line(line):
+                filtered_lines.append(line)
+        
+        for line in filtered_lines:
+            values = re.split(r'\s+', line.strip(), maxsplit=len(self.columns)-1)
+            values = self.adjust_columns(values)
+            if len(values) == len(self.columns):
+                self.tree.insert("", "end", values=values)
+    
+    def adjust_columns(self, values):
+        if len(values) < len(self.columns):
+            values += [''] * (len(self.columns) - len(values))
+        return values
+    
+    def is_unwanted_line(self, line):
+        unwanted_keywords = ["Progress", "Scanning", "Error", "Finished"]
+        return any(keyword in line for keyword in unwanted_keywords)
+    
+    def show_context_menu(self, event):
+        try:
+            row_id = self.tree.identify_row(event.y)
+            self.tree.selection_set(row_id)
+            self.context_menu.post(event.x_root, event.y_root)
+        finally:
+            self.context_menu.grab_release()
+    
+    def export_to_csv(self):
+        file_path = filedialog.asksaveasfilename(defaultextension=".csv",
+                                                 filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
+        if file_path:
+            try:
+                with open(file_path, mode='w', newline='') as file:
+                    writer = csv.writer(file)
+                    writer.writerow(self.columns)
+                    for row in self.tree.get_children():
+                        row_values = self.tree.item(row, 'values')
+                        writer.writerow(row_values)
+                messagebox.showinfo("Export to CSV", f"Data successfully exported to {file_path}")
+            except Exception as e:
+                messagebox.showerror("Export to CSV", f"Error exporting to CSV: {e}")
+    
+    def visualize_tree_view(self):
+        data = self.get_tree_data()
+        if not data:
+            messagebox.showwarning("No Data", "No data available to visualize.")
+            return
+        
+        tree_window = tk.Toplevel(self)
+        tree_window.title("Registry Hive Tree View")
+        tree_tree = ttk.Treeview(tree_window, columns=["Key", "Value"], show='tree headings')
+        tree_tree.pack(expand=True, fill='both')
+        
+        for root, branches in data.items():
+            root_id = tree_tree.insert("", "end", text=root, values=(root, ""))
+            self.add_subkeys(tree_tree, root_id, branches)
+        
+        tree_tree.column("#0", width=300)
+        tree_tree.heading("#0", text="Registry Hive Structure")
+    
+    def get_tree_data(self):
+        data = {}
+        for row in self.tree.get_children():
+            values = self.tree.item(row, "values")
+            hive = values[0]
+            subkeys = values[4]
+            key_path = values[3]
+            self.add_key_to_tree(data, hive, key_path, subkeys)
+        return data
+    
+    def add_key_to_tree(self, tree, hive, path, subkeys):
+        parts = path.split("\\")
+        current = tree.setdefault(hive, {})
+        for part in parts:
+            current = current.setdefault(part, {})
+        current["_subkeys"] = subkeys
+    
+    def add_subkeys(self, tree_tree, parent_id, branches):
+        for key, sub in branches.items():
+            if key == "_subkeys":
+                continue
+            key_id = tree_tree.insert(parent_id, "end", text=key, values=(key, ""))
+            if sub:
+                self.add_subkeys(tree_tree, key_id, sub)
+    
+    def visualize_heat_map(self):
+        data = self.get_heatmap_data()
+        if not data:
+            messagebox.showwarning("No Data", "No data available to visualize.")
+            return
+        
+        heatmap_window = tk.Toplevel(self)
+        heatmap_window.title("Registry Hive Heat Map")
+        fig = Figure(figsize=(8, 6), dpi=100)
+        ax = fig.add_subplot(111)
+        
+        sns.heatmap(data, annot=True, fmt="d", cmap="YlGnBu", ax=ax)
+        ax.set_title("Registry Hive Activity Heat Map")
+        
+        canvas = FigureCanvasTkAgg(fig, master=heatmap_window)
+        canvas.draw()
+        canvas.get_tk_widget().pack(fill='both', expand=True)
+    
+    def get_heatmap_data(self):
+        keys = []
+        subkeys_counts = []
+        for row in self.tree.get_children():
+            values = self.tree.item(row, "values")
+            key_path = values[3]
+            subkeys = int(values[4]) if values[4].isdigit() else 0
+            keys.append(key_path)
+            subkeys_counts.append(subkeys)
+        
+        df = pd.DataFrame({
+            "Key": keys,
+            "Subkeys": subkeys_counts
+        })
+        df_pivot = df.pivot_table(index="Key", values="Subkeys", aggfunc=np.sum)
+        return df_pivot
+
 class WorkspaceFrameLogic:
     def __init__(self, parent, file_handler):
         self.parent = parent
@@ -1670,6 +1833,11 @@ class WorkspaceFrameLogic:
 
         elif command_name == 'windows.cmdline':
             pstree_frame = CmdLineOutputFrame(new_tab)
+            pstree_frame.pack(expand=True, fill='both')
+            pstree_frame.populate(findings)
+
+        elif command_name == 'windows.registry.hivelist':
+            pstree_frame = WindowsRegistryHiveList(new_tab)
             pstree_frame.pack(expand=True, fill='both')
             pstree_frame.populate(findings)
 
