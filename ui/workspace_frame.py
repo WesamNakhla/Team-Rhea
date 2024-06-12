@@ -17,6 +17,8 @@ class WorkspaceFrame(tk.Frame):
         self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
         self.font_settings = self.load_font_settings()
 
+        self.highlights = []  # Initialize the highlights attribute
+
         self.init_ui()
 
         # Choose command label
@@ -39,6 +41,10 @@ class WorkspaceFrame(tk.Frame):
         self.parameter_label.grid(row=0, column=1, padx=10, pady=5, sticky="w")
         self.parameter_entry = ttk.Entry(self)
         self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+
+        # Command info label
+        self.command_info_label = ttk.Label(self, text="Command Info:")
+        self.command_info_label.grid(row=2, column=0, columnspan=2, padx=10, pady=5, sticky="w")
 
         image_path = "img/run_arrow.png"
         img = Image.open(image_path)
@@ -66,6 +72,12 @@ class WorkspaceFrame(tk.Frame):
         self.remove_highlight_button = ttk.Button(self.highlight_frame, text="\U000025B1 Remove Highlight", command=self.logic.remove_highlight)
         self.remove_highlight_button.pack(side="left", padx=5, pady=5)
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
+
+        # Ensure text_widget is defined before using it
+        for tab_id in self.tab_control.tabs():
+            tab = self.tab_control.nametowidget(tab_id)
+            text_widget = tab.winfo_children()[0]
+            text_widget.tag_config('search_highlight', foreground='black')
 
         # Search bar
         self.search_frame = ttk.Frame(self, width=10)
@@ -123,8 +135,7 @@ class WorkspaceFrame(tk.Frame):
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
 
-        self.apply_font_settings()  # Apply initial font settings
-
+        self.apply_font_settings()
     def select_first_file_in_sidebar(self):
         if self.sidebar_listbox.size() > 0:
             self.sidebar_listbox.selection_set(0)
