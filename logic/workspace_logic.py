@@ -732,6 +732,7 @@ class WorkspaceFrameLogic:
             print("All commands have finished executing.")
             self.prepare_export_data()
             self.parent.run_command_button.config(state=tk.NORMAL)  # Re-enable button
+            self.parent.config(cursor="")
 
     def run_command(self):
         selected_file = self.file_handler.get_selected_file()
@@ -761,7 +762,8 @@ class WorkspaceFrameLogic:
         print(f"Running command: {full_command}")
 
         self.parent.run_command_button.config(state=tk.DISABLED)  # Disable button
-        messagebox.showwarning("Process Execution", "The process is being executed and it may take some time.")  # Show warning message
+        #messagebox.showwarning("Process Execution", "The process is being executed and it may take some time.")  # Show warning message
+        self.parent.config(cursor="wait")
 
         future = self.executor.submit(self.execute_command, full_command)
         future.add_done_callback(lambda f, cmd=command_name, fp=selected_file: self.command_finished(f, cmd, fp))
