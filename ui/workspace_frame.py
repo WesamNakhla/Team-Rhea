@@ -1,7 +1,8 @@
+
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter import messagebox
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, CustomText, RedirectOutput
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 import json
@@ -89,7 +90,7 @@ class WorkspaceFrame(tk.Frame):
         # Ensure text_widget is defined before using it
         for tab_id in self.tab_control.tabs():
             tab = self.tab_control.nametowidget(tab_id)
-            text_widget = tab.winfo_children()[0]
+            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
             text_widget.tag_config('search_highlight', foreground='black')
 
         # Search bar
@@ -289,7 +290,7 @@ class WorkspaceFrame(tk.Frame):
         if not self.search_entry.get().strip():
             for tab_id in self.tab_control.tabs():
                 tab = self.tab_control.nametowidget(tab_id)
-                text_widget = tab.winfo_children()[0]
+                text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
                 text_widget.tag_remove('search_highlight', '1.0', tk.END)
 
     def search_text(self, event=None):
@@ -299,7 +300,7 @@ class WorkspaceFrame(tk.Frame):
 
         for tab_id in self.tab_control.tabs():
             tab = self.tab_control.nametowidget(tab_id)
-            text_widget = tab.winfo_children()[0]
+            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
             text_widget.tag_remove('search_highlight', '1.0', tk.END)
             start_pos = '1.0'
             while True:
@@ -362,7 +363,7 @@ class WorkspaceFrame(tk.Frame):
             command = self.command_dropdown.get()
             if not command:
                 command = "Custom Command"
-            text_widget = tab_widget.winfo_children()[0]
+            text_widget = tab_widget.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
             output = text_widget.get("1.0", tk.END)
             export_data["commands"].append({
                 "command": command,
@@ -392,7 +393,7 @@ class WorkspaceFrame(tk.Frame):
         font_family = "Arial"
         for tab_id in self.tab_control.tabs():
             tab = self.tab_control.nametowidget(tab_id)
-            text_widget = tab.winfo_children()[0]
+            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
             text_widget.config(font=(font_family, font_size))
 
     def apply_font_settings_to_console(self):

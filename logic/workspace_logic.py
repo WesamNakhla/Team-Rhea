@@ -375,19 +375,32 @@ class WorkspaceFrameLogic:
     def add_tab(self, file_path, command_name, findings):
         # Construct the title for the tab using the file name and command name
         tab_title = f"{command_name} ({os.path.basename(file_path)}) "
-    
+
         # Create a new frame in the notebook (tab control) and add it with the title
         new_tab = ttk.Frame(self.parent.tab_control)
         self.parent.tab_control.add(new_tab, text=tab_title)
-    
+
         # Store the tab reference if needed for later manipulation or access
         self.command_tabs[tab_title] = new_tab
-    
-        # Create a CustomText widget within the newly created tab
-        text_widget = CustomText(new_tab, wrap='word')
+
+        # Create a frame to hold the text widget and scroll bars
+        text_frame = tk.Frame(new_tab)
+        text_frame.pack(expand=True, fill='both')
+
+        # Create the text widget
+        text_widget = CustomText(text_frame, wrap='none')  # Disable line wrapping
         text_widget.insert('1.0', findings)  # Insert the findings at the start
         text_widget.config(state='disabled')  # Make the text widget read-only
-        text_widget.pack(expand=True, fill='both')  # Make the widget expand and fill the space
+
+        # Create the scroll bars
+        v_scrollbar = tk.Scrollbar(text_frame, orient='vertical', command=text_widget.yview)
+        h_scrollbar = tk.Scrollbar(text_frame, orient='horizontal', command=text_widget.xview)
+        text_widget.config(yscrollcommand=v_scrollbar.set, xscrollcommand=h_scrollbar.set)
+
+        # Pack the widgets
+        v_scrollbar.pack(side='right', fill='y')
+        h_scrollbar.pack(side='bottom', fill='x')
+        text_widget.pack(side='left', fill='both', expand=True)
 
         self.parent.show_close_button(new_tab)
 
