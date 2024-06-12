@@ -69,6 +69,13 @@ class MainApplication(TkinterDnD.Tk):
         self.bind('<Control-o>', self.open_file)
         self.bind_all('<Control-h>', self.highlight_selected_text)
         self.bind_all('<Control-e>', self.switch_to_export_frame)
+        self.bind_all('<Control-r>', self.toggle_refresh_button)
+
+    def toggle_refresh_button(self, event=None):
+        if WorkspaceFrame in self.frames:
+            workspace_frame = self.frames[WorkspaceFrame]
+            workspace_frame.toggle_refresh_button()
+
 
 
     def highlight_selected_text(self, event=None):

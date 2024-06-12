@@ -90,10 +90,12 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.\n\nTip: Use CTRL + H to quickly highlight text with a dark orange color.")
 
+        # Refresh button
         self.refresh_button = ttk.Button(self, text="Refresh Commands", image=self.refresh_icon, compound=tk.LEFT, command=self.refresh_command_dropdown)
         self.refresh_button.image = self.refresh_icon  # Keep a reference to prevent garbage-collection
         self.refresh_button.grid(row=0, column=1, padx=5, pady=5)
-        ToolTip(self.refresh_button, "Refresh the list of commands to ensure it includes all recent updates.")
+        ToolTip(self.refresh_button, "Refresh the list of commands to ensure it includes all recent updates.\n\n TIP: use CTRL + R to hide or show refresh button, refresh each time you change commands!")
+        
 
 
         # Ensure text_widget is defined before using it
@@ -425,3 +427,17 @@ class WorkspaceFrame(tk.Frame):
     def apply_font_settings_to_console(self):
         self.font_settings = self.load_font_settings()
         self.apply_font_settings()
+
+
+    def show_refresh_button(self):
+        self.refresh_button.grid()
+
+    def hide_refresh_button(self):
+        print("Commands refreshed and hiding button.")
+        self.refresh_button.grid_remove()
+
+    def toggle_refresh_button(self, event=None):
+        if self.refresh_button.winfo_ismapped():
+           self.hide_refresh_button()
+        else:
+           self.show_refresh_button()
