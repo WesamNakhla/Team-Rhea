@@ -35,9 +35,9 @@ class WorkspaceFrame(tk.Frame):
 
        
 
-        self.placeholder_text = "Enter parameters here"
+        #self.placeholder_text = "Enter parameters here"
         self.parameter_entry = ttk.Entry(self)
-        self.parameter_entry.insert(0, self.placeholder_text)
+        #self.parameter_entry.insert(0, self.placeholder_text)
         self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
         self.parameter_entry.bind("<FocusIn>", self.on_entry_click)
         self.parameter_entry.bind("<FocusOut>", self.on_focusout)
