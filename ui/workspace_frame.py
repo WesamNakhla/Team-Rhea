@@ -24,12 +24,14 @@ class WorkspaceFrame(tk.Frame):
         # Command dropdown and input
         self.command_var = tk.StringVar()
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
+        self.filtered_command_options = self.command_options.copy()
         self.command_dropdown = ttk.Combobox(self, textvariable=self.command_var, values=self.command_options)
         self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
         self.command_dropdown.set("-choose command-")  # Default display value
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
         self.command_dropdown.bind('<FocusIn>', self.on_focus_in)
         self.command_dropdown.bind('<FocusOut>', self.on_focus_out)
+        self.command_dropdown.bind('<KeyRelease>', self.filter_command_options)
         ToolTip(self.command_dropdown, "Select a command from the list or search to find a specific command")
 
         self.placeholder_text = "Enter parameters here"
@@ -67,10 +69,8 @@ class WorkspaceFrame(tk.Frame):
         base_directory = os.path.dirname(os.path.dirname(__file__))
         highlight_image = Image.open(os.path.join(base_directory, "img", "highlighter.png"))
         eraser_image = Image.open(os.path.join(base_directory, "img", "eraser.png"))
-        refresh_image = Image.open(os.path.join(base_directory, "img", "refresh.png"))
         highlight_image = highlight_image.resize((20, 20), Image.LANCZOS)  # Resize to 20x20 pixels
         eraser_image = eraser_image.resize((20, 20), Image.LANCZOS)
-        refresh_image = refresh_image.resize((20, 20), Image.LANCZOS)
 
         self.highlight_icon = ImageTk.PhotoImage(highlight_image)
         self.remove_highlight_icon = ImageTk.PhotoImage(eraser_image)
@@ -155,6 +155,13 @@ class WorkspaceFrame(tk.Frame):
 
         self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
+
+    def filter_command_options(self, event):
+        search_term = self.command_var.get().strip().lower()
+        self.filtered_command_options = [option for option in self.command_options if search_term in option.lower()]
+        self.command_dropdown['values'] = self.filtered_command_options
+        if self.filtered_command_options:
+            self.command_dropdown.event_generate('<Down>')
 
     def on_app_focus(self, event=None):
         self.logic.reload_commands_from_file()
@@ -315,7 +322,12 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown.event_generate('<Button-1>')
 
     def run_command(self):
-        self.logic.run_command()
+        selected_command = self.command_var.get()
+        if selected_command not in self.command_options:
+            messagebox.showerror("Error", "Invalid command selected.")
+            return
+
+        self.logic.run_command(selected_command)
 
     def update_command_info(self, event):
         self.logic.update_command_info(event)
@@ -384,15 +396,9 @@ class WorkspaceFrame(tk.Frame):
         self.font_settings = self.load_font_settings()
         self.apply_font_settings()
 
-    def show_refresh_button(self):
-        self.refresh_button.grid()
+    def show_close_button(self, tab):
+        close_button = ttk.Button(tab, text="Close Tab", command=lambda: self.logic.close_tab(tab))
+        close_button.pack(side="top", anchor="ne", pady=5, padx=5)
 
-    def hide_refresh_button(self):
-        print("Commands refreshed and hiding button.")
-        self.refresh_button.grid_remove()
-
-    def toggle_refresh_button(self, event=None):
-        if self.refresh_button.winfo_ismapped():
-           self.hide_refresh_button()
-        else:
-           self.show_refresh_button()
+    def close_tab(self, tab):
+        self.logic.close_tab(tab)

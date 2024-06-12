@@ -82,7 +82,6 @@ class LineNumberCanvas(tk.Canvas):
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
 
-
 class ToolTip(object):
     def __init__(self, widget, text, delay=900):
         self.widget = widget
@@ -307,11 +306,7 @@ class WorkspaceFrameLogic:
         }
         self.commands.append(custom_plugin_details)
         self.save_commands()  # Save changes to disk or other storage
-        
-    
-    
 
-    
     def reload_commands_from_file(self):
         try:
             with open('commands.json', 'r') as file:
@@ -320,9 +315,6 @@ class WorkspaceFrameLogic:
         except Exception as e:
             print("Failed to reload commands:", str(e))
             self.commands = []  # Default to an empty list on failure
-
-    
-
 
     def load_commands(self):
         try:
@@ -351,19 +343,13 @@ class WorkspaceFrameLogic:
     def update_command_info(self, event):
         selected_command = self.parent.command_var.get()
         if selected_command == "Custom":
-            self.parent.custom_command_label.grid(row=2, column=0, padx=10, pady=5, sticky="w")
-            self.parent.custom_command_entry.grid(row=2, column=1, padx=10, pady=5, sticky="we")
             self.parent.command_info_label.config(text="Enter your custom command.")
             self.parent.run_command_button.config(state=tk.NORMAL)
         elif selected_command == "-choose command-":
-            self.parent.custom_command_label.grid_forget()
-            self.parent.custom_command_entry.grid_forget()
             self.parent.command_info_label.config(text="Select a command to see the description and type.")
             self.parent.run_command_button.config(state=tk.DISABLED)
         else:
-            self.parent.custom_command_label.grid_forget()
-            self.parent.custom_command_entry.grid_forget()
-            index = self.parent.command_dropdown.current() - 2
+            index = self.parent.command_options.index(selected_command) - 2
             if index >= 0 and index < len(self.commands):
                 command_info = self.commands[index]
                 wrapped_text = textwrap.fill(f"Type: {command_info['type']}\nDescription: {command_info['description']}", width=50)
@@ -378,7 +364,7 @@ class WorkspaceFrameLogic:
                 tab_title = f"{command_name} ({os.path.basename(file_path)})"
                 self.command_details[tab_title] = {
                     "command": command_name,
-                    "output": findings,
+                                        "output": findings,
                     "highlights": []
                 }
                 self.check_all_commands_finished()
@@ -387,26 +373,23 @@ class WorkspaceFrameLogic:
             print(f"Exception when processing command result: {e}")
 
     def add_tab(self, file_path, command_name, findings):
-    # Construct the title for the tab using the file name and command name
+        # Construct the title for the tab using the file name and command name
         tab_title = f"{command_name} ({os.path.basename(file_path)}) "
     
-    # Create a new frame in the notebook (tab control) and add it with the title
+        # Create a new frame in the notebook (tab control) and add it with the title
         new_tab = ttk.Frame(self.parent.tab_control)
         self.parent.tab_control.add(new_tab, text=tab_title)
     
-    # Store the tab reference if needed for later manipulation or access
+        # Store the tab reference if needed for later manipulation or access
         self.command_tabs[tab_title] = new_tab
     
-    # Create a CustomText widget within the newly created tab
+        # Create a CustomText widget within the newly created tab
         text_widget = CustomText(new_tab, wrap='word')
         text_widget.insert('1.0', findings)  # Insert the findings at the start
         text_widget.config(state='disabled')  # Make the text widget read-only
         text_widget.pack(expand=True, fill='both')  # Make the widget expand and fill the space
-    
 
-        self.show_close_button(new_tab)
-
-    
+        self.parent.show_close_button(new_tab)
 
     def execute_command(self, full_command):
         process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
@@ -425,23 +408,22 @@ class WorkspaceFrameLogic:
             self.parent.run_command_button.config(state=tk.NORMAL)  # Re-enable button
             self.parent.config(cursor="")
 
-    def run_command(self):
+    def run_command(self, selected_command):
         selected_file = self.file_handler.get_selected_file()
         if not selected_file:
             messagebox.showerror("Error", "No file selected.")
             return
 
-        selected_index = self.parent.command_dropdown.current()
-        command = None
-        command_name = None
-        if selected_index == 1:
-            command = self.parent.custom_command_entry.get().strip()
+        if selected_command == "Custom":
+            command = self.parent.parameter_entry.get().strip()
             command_name = "Custom"
-        elif selected_index > 1:
-            command_index = selected_index - 2
-            if command_index < len(self.commands):
-                command = self.commands[command_index]['command']
-                command_name = self.commands[command_index]['command']
+        else:
+            command_index = self.parent.command_options.index(selected_command) - 2
+            if command_index < 0 or command_index >= len(self.commands):
+                messagebox.showerror("Error", "Invalid command selected.")
+                return
+            command = self.commands[command_index]['command']
+            command_name = self.commands[command_index]['command']
 
         if not command:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
@@ -452,13 +434,11 @@ class WorkspaceFrameLogic:
         if command_parameters == placeholder_text:
             command_parameters = ""  # Treat as empty if it's the placeholder
 
-        
         vol_path = self.get_volatility_path()
         full_command = f"python {vol_path} -f {selected_file} {command} {command_parameters}"
         print(f"Running command: {full_command}")
 
         self.parent.run_command_button.config(state=tk.DISABLED)  # Disable button
-        #messagebox.showwarning("Process Execution", "The process is being executed and it may take some time.")  # Show warning message
         self.parent.config(cursor="wait")
 
         future = self.executor.submit(self.execute_command, full_command)
@@ -558,3 +538,4 @@ class WorkspaceFrameLogic:
         new_index = self.parent.tab_control.index(f"@{event.x},{event.y}")
         if new_index != self.parent.tab_control.index("current"):
             self.parent.tab_control.insert(new_index, self.parent.tab_control.select())
+
