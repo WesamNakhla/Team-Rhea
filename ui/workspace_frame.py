@@ -141,11 +141,13 @@ class WorkspaceFrame(tk.Frame):
         self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
         self.close_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5F5 Close File", command=self.close_file)
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
-        self.add_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5C0 Open File", command=self.add_file)
-        self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
+
+        # Add the new "Open" button in the sidebar
+        self.open_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5C0 Open", command=self.app.open_file)
+        self.open_file_button.grid(row=4, column=0, columnspan=2, pady=5)
         ToolTip(self.select_all_button, "Select all files listed in the sidebar.")
         ToolTip(self.close_file_button, "Close the selected file from the list.")
-        ToolTip(self.add_file_button, "Open a new file and add it to the list in the sidebar.")
+        ToolTip(self.open_file_button, "Open a new file and add it to the list in the sidebar.")
 
         self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
