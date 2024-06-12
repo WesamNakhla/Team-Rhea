@@ -67,6 +67,45 @@ class MainApplication(TkinterDnD.Tk):
         self.bind('<Control-q>', self.quit_app)
         self.bind('<Control-f>', self.search_text)
         self.bind('<Control-o>', self.open_file)
+        self.bind_all('<Control-h>', self.highlight_selected_text)
+
+
+    def highlight_selected_text(self, event=None):
+        """Highlight the selected text with a default or chosen color."""
+    # Access the WorkspaceFrame instance
+        workspace_frame = self.frames[WorkspaceFrame]
+    
+    # Retrieve the currently selected tab from the WorkspaceFrame's tab_control
+        selected_tab = workspace_frame.tab_control.select()
+        if not selected_tab:
+           return
+
+        tab_widget = workspace_frame.tab_control.nametowidget(selected_tab)
+        if not tab_widget:
+           return
+
+        text_widget = tab_widget.winfo_children()[0]
+        try:
+        # Get selected text range
+            start = text_widget.index("sel.first")
+            end = text_widget.index("sel.last")
+            if not start or not end:
+                return
+        
+        # Choose a default highlight color or call the logic's color picker
+            default_color = "#FF8C00"  # Yellow
+            text_widget.tag_add("highlight", start, end)
+            text_widget.tag_config("highlight", background=default_color)
+
+        # Store the highlight information if needed
+            self.highlights.append((default_color, start, end))
+
+        # Optional: Log or print the highlight action
+            print(f"Highlighted text from {start} to {end} with color {default_color}")
+
+        except tk.TclError:
+            print("No text selected or invalid selection range.")
+
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
