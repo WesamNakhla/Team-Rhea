@@ -32,15 +32,15 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
 
-        # Custom command label and entry
-        self.custom_command_label = ttk.Label(self, text="Custom Command:")
-        self.custom_command_entry = ttk.Entry(self)
+       
 
-        # Parameter input label and entry
-        self.parameter_label = ttk.Label(self, text="Input Parameters:")
-        self.parameter_label.grid(row=0, column=1, padx=10, pady=5, sticky="w")
+        self.placeholder_text = "Enter parameters here"
         self.parameter_entry = ttk.Entry(self)
+        self.parameter_entry.insert(0, self.placeholder_text)
         self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        self.parameter_entry.bind("<FocusIn>", self.on_entry_click)
+        self.parameter_entry.bind("<FocusOut>", self.on_focusout)
+        self.parameter_entry.config(foreground='grey')
 
         # Command info label
         self.command_info_label = ttk.Label(self, text="Command Info:")
@@ -137,6 +137,20 @@ class WorkspaceFrame(tk.Frame):
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
 
         self.apply_font_settings()
+
+
+    def on_entry_click(self, event):
+        """Clear the entry on focus if it contains the placeholder."""
+        if self.parameter_entry.get() == self.placeholder_text:
+            self.parameter_entry.delete(0, tk.END)  # Delete all the text in the entry
+            self.parameter_entry.config(foreground='white')  # Reset the text color
+
+    def on_focusout(self, event):
+        """Put placeholder text back if the entry is empty."""
+        if not self.parameter_entry.get():
+            self.parameter_entry.insert(0, self.placeholder_text)
+            self.parameter_entry.config(foreground='grey')  # Change the text color to grey to indicate placeholder
+    
     def select_first_file_in_sidebar(self):
         if self.sidebar_listbox.size() > 0:
             self.sidebar_listbox.selection_set(0)
