@@ -107,7 +107,7 @@ class FileHandler:
         return os.path.basename(file_path)
 
 class ToolTip(object):
-    def __init__(self, widget, text, delay=300):
+    def __init__(self, widget, text, delay=900):
         self.widget = widget
         self.tipwindow = None
         self.text = text

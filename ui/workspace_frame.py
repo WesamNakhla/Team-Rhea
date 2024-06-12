@@ -32,6 +32,7 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
         self.command_dropdown.bind('<FocusIn>', self.on_focus_in)
         self.command_dropdown.bind('<FocusOut>', self.on_focus_out)
+        ToolTip(self.command_dropdown, "Select a command from the list or search to find a specific command")
 
        
 
@@ -42,6 +43,7 @@ class WorkspaceFrame(tk.Frame):
         self.parameter_entry.bind("<FocusIn>", self.on_entry_click)
         self.parameter_entry.bind("<FocusOut>", self.on_focusout)
         self.parameter_entry.config(foreground='grey')
+        ToolTip(self.parameter_entry, "Enter parameters here, e.g., '--pid 1234' This field is used to specify additional options or arguments for the selected command.")
 
         # Command info label
         self.command_info_label = ttk.Label(self, text="Command Info:")
@@ -56,7 +58,7 @@ class WorkspaceFrame(tk.Frame):
         self.run_command_button = ttk.Button(self, text="Run Command", command=self.run_command, image=icon_image, compound=tk.LEFT)
         self.run_command_button.image = icon_image
         self.run_command_button.grid(row=1, column=2, padx=10, pady=5, sticky="w")
-        ToolTip(self.run_command_button, "Click to execute the selected command with specified parameters.")
+        ToolTip(self.run_command_button, "Click to run the selected command. Parameters are optional and can refine the command's behavior.")
 
         self.grid_rowconfigure(2, weight=1)
         self.tab_control = ttk.Notebook(self)
@@ -84,7 +86,8 @@ class WorkspaceFrame(tk.Frame):
         # Button for highlighting
         self.highlight_button = ttk.Button(self.highlight_frame, image=self.highlight_icon, command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
-        ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
+        ToolTip(self.highlight_button, "Highlight selected text with a chosen color.\n\nTip: Use CTRL + H to quickly highlight text with a dark orange color.")
+
 
         # Ensure text_widget is defined before using it
         for tab_id in self.tab_control.tabs():
@@ -142,12 +145,16 @@ class WorkspaceFrame(tk.Frame):
         self.close_file_button.grid(row=3, column=0, columnspan=2, pady=5)
         self.add_file_button = ttk.Button(self.sidebar_frame, text="\U0001F5C0 Open File", command=self.add_file)
         self.add_file_button.grid(row=4, column=0, columnspan=2, pady=5)
+        ToolTip(self.select_all_button, "Select all files listed in the sidebar.")
+        ToolTip(self.close_file_button, "Close the selected file from the list.")
+        ToolTip(self.add_file_button, "Open a new file and add it to the list in the sidebar.")
 
         self.sidebar_frame.grid(row=1, column=4, rowspan=6, padx=10, pady=5, sticky="nsew")
         self.sidebar_frame.grid_remove()
 
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="e")
+        ToolTip(self.toggle_sidebar_button, "Toggle the visibility of the sidebar to show or hide loaded files.")
 
         self.apply_font_settings()
 
