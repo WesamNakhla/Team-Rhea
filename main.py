@@ -13,7 +13,7 @@ from logic.workspace_logic import WorkspaceFrameLogic
 class MainApplication(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
-        self.title('Mnemonic Volatility3 GUI')
+        self.title('VolGUI')
         self.geometry('1024x768')
 
         self.file_handler = FileHandler()  # Initialize FileHandler
@@ -40,12 +40,9 @@ class MainApplication(TkinterDnD.Tk):
         # Edit Menu
         edit_menu = tk.Menu(self.menu_bar, tearoff=0)
         edit_menu.add_command(label="Settings", command=self.switch_to_settings_frame)
+        edit_menu.add_command(label="Manage Commands", command=self.switch_to_command_frame)
+        edit_menu.add_command(label="Add Custom Plugins", command=self.logic.add_custom_plugin)
         self.menu_bar.add_cascade(label="Edit", menu=edit_menu)
-
-        commands_menu = tk.Menu(self.menu_bar, tearoff=0)
-        commands_menu.add_command(label="Manage Commands", command=self.switch_to_command_frame)
-        commands_menu.add_command(label="Add Custom Plugins",  command=self.logic.add_custom_plugin)
-        self.menu_bar.add_cascade(label="Commands", menu=commands_menu)
 
         self.frames = {}
 
@@ -76,44 +73,32 @@ class MainApplication(TkinterDnD.Tk):
             workspace_frame = self.frames[WorkspaceFrame]
             workspace_frame.toggle_refresh_button()
 
-
-
     def highlight_selected_text(self, event=None):
         """Highlight the selected text with a default or chosen color."""
-    # Access the WorkspaceFrame instance
         workspace_frame = self.frames[WorkspaceFrame]
-    
-    # Retrieve the currently selected tab from the WorkspaceFrame's tab_control
         selected_tab = workspace_frame.tab_control.select()
         if not selected_tab:
-           return
+            return
 
         tab_widget = workspace_frame.tab_control.nametowidget(selected_tab)
         if not tab_widget:
-           return
+            return
 
         text_widget = tab_widget.winfo_children()[0]
         try:
-        # Get selected text range
             start = text_widget.index("sel.first")
             end = text_widget.index("sel.last")
             if not start or not end:
                 return
-        
-        # Choose a default highlight color or call the logic's color picker
-            default_color = "#FF8C00"  # Yellow
+
+            default_color = "#FF8C00"
             text_widget.tag_add("highlight", start, end)
             text_widget.tag_config("highlight", background=default_color)
-
-        # Store the highlight information if needed
             self.highlights.append((default_color, start, end))
-
-        # Optional: Log or print the highlight action
             print(f"Highlighted text from {start} to {end} with color {default_color}")
 
         except tk.TclError:
             print("No text selected or invalid selection range.")
-
 
     def load_theme(self):
         theme_dir = os.path.join(os.path.dirname(__file__), 'theme')
@@ -139,14 +124,14 @@ class MainApplication(TkinterDnD.Tk):
         self.file_handler = FileHandler()  # Reset the file handler
         self.frames[ImportFrame].file_handler = self.file_handler
         self.frames[WorkspaceFrame].file_handler = self.file_handler
-        self.update_loaded_file_label()  # Update label
+        self.update_loaded_file_label()
         self.show_frame(ImportFrame)
 
     def switch_to_export_frame(self, event=None):
         self.show_frame(ExportFrame)
 
     def switch_to_workspace_frame(self):
-        self.update_loaded_file_label()  # Update the loaded file label
+        self.update_loaded_file_label()
         self.show_frame(WorkspaceFrame)
 
     def switch_to_settings_frame(self):
@@ -165,13 +150,13 @@ class MainApplication(TkinterDnD.Tk):
 
     def update_loaded_file_label(self):
         frame = self.frames[WorkspaceFrame]
-        frame.update_loaded_file_label()  # Update label using file handler
+        frame.update_loaded_file_label()
 
     def set_selected_file(self, file):
         self.file_handler.selected_file = file
         frame = self.frames[WorkspaceFrame]
         frame.update_selected_file_label(file)
-    
+
     def quit_app(self, event=None):
         self.quit()
 

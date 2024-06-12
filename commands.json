@@ -155,13 +155,13 @@
         "description": "This is your custom plugin filescan"
     },
     {
-        "type": "Custom Plugin",
         "command": "socket_filters",
+        "type": "Custom Plugin",
         "description": "This is your custom plugin socket_filters"
     },
     {
-        "type": "Custom Plugin",
         "command": "vfsevents",
+        "type": "Custom Plugin",
         "description": "This is your custom plugin vfsevents"
     }
 ]
