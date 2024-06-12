@@ -312,27 +312,35 @@ class WorkspaceFrameLogic:
 
     def add_custom_plugin(self):
         file_path = filedialog.askopenfilename(title="Select Custom Plugin", filetypes=[("Python Files", "*.py")])
-        if file_path:
-            plugin_name = os.path.basename(file_path)
-            if plugin_name.endswith('.py'):
-                plugin_name = plugin_name[:-3]
+        if not file_path:
+            return  # User cancelled
 
-            if any(cmd['command'] == plugin_name for cmd in self.commands):
-                messagebox.showerror("Error", "Plugin already exists.")
-                return
+        plugin_name = os.path.basename(file_path)
+        if plugin_name.endswith('.py'):
+            plugin_name = plugin_name[:-3]
 
-            custom_plugin_details = {
-                "type": "Custom Plugin",
-                "command": plugin_name,
-                "description": f"This is your custom plugin {plugin_name}"
-            }
-            self.commands.append(custom_plugin_details)
-            self.save_commands()
-            self.update_command_dropdown()
+        if any(cmd['command'] == plugin_name for cmd in self.commands):
+            messagebox.showerror("Error", "Plugin already exists.")
+            return
 
-    def update_command_dropdown(self):
+        custom_plugin_details = {
+            "type": "Custom Plugin",
+            "command": plugin_name,
+            "description": f"This is your custom plugin {plugin_name}"
+        }
+        self.commands.append(custom_plugin_details)
+        self.save_commands()  # Save changes to disk or other storage
+    
+    # Generate command options and update dropdown
         command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
-        self.parent.update_command_dropdown(command_options)
+        self.update_command_dropdown(command_options)
+
+
+    def update_command_dropdown(self, command_options):
+    # Assuming there's a ttk.Combobox or similar widget to update:
+        self.command_dropdown['values'] = command_options
+        self.command_dropdown.set('-choose command-')  # Reset the current selection
+
 
     def load_commands(self):
         try:
