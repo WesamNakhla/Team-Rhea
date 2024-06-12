@@ -82,29 +82,6 @@ class LineNumberCanvas(tk.Canvas):
     def on_mouse_scroll(self, event):
         self.update_line_numbers()
 
-class FileHandler:
-    def __init__(self):
-        self.loaded_files = []
-        self.selected_file = None
-
-    def load_files(self, file_paths):
-        self.loaded_files.extend(file_paths)
-        if not self.selected_file:
-            self.selected_file = self.loaded_files[0]
-        print(f"Loaded files: {self.loaded_files}. Selected file: {self.selected_file}")
-
-    def get_loaded_files(self):
-        return self.loaded_files
-
-    def get_selected_file(self):
-        if self.selected_file:
-            print(f"get_selected_file called. Result: {self.selected_file}")
-            return self.selected_file
-        print("get_selected_file called. No file selected.")
-        return None
-
-    def remove_path(self, file_path):
-        return os.path.basename(file_path)
 
 class ToolTip(object):
     def __init__(self, widget, text, delay=900):
@@ -406,7 +383,7 @@ class WorkspaceFrameLogic:
 
     def add_tab(self, file_path, command_name, findings):
     # Construct the title for the tab using the file name and command name
-        tab_title = f"{os.path.basename(file_path)} - {command_name}"
+        tab_title = f"{command_name} ({os.path.basename(file_path)}) "
     
     # Create a new frame in the notebook (tab control) and add it with the title
         new_tab = ttk.Frame(self.parent.tab_control)
