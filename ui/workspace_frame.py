@@ -147,7 +147,7 @@ class WorkspaceFrame(tk.Frame):
         self.sidebar_frame.grid_remove()
 
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
-        self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
+        self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="e")
 
         self.apply_font_settings()
 
