@@ -21,8 +21,6 @@ class WorkspaceFrame(tk.Frame):
 
         self.init_ui()
 
-        
-
         # Command dropdown and input
         self.command_var = tk.StringVar()
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
@@ -62,8 +60,6 @@ class WorkspaceFrame(tk.Frame):
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=2, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
 
-        
-
         self.highlight_frame = ttk.Frame(self)
         self.highlight_frame.grid(row=1, column=3, padx=10, pady=5, sticky="we")
 
@@ -78,7 +74,6 @@ class WorkspaceFrame(tk.Frame):
 
         self.highlight_icon = ImageTk.PhotoImage(highlight_image)
         self.remove_highlight_icon = ImageTk.PhotoImage(eraser_image)
-        self.refresh_icon = ImageTk.PhotoImage(refresh_image)
 
         # Button for removing highlight
         self.remove_highlight_button = ttk.Button(self.highlight_frame, image=self.remove_highlight_icon, command=self.logic.remove_highlight)
@@ -89,14 +84,6 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_button = ttk.Button(self.highlight_frame, image=self.highlight_icon, command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.\n\nTip: Use CTRL + H to quickly highlight text with a dark orange color.")
-
-        # Refresh button
-        self.refresh_button = ttk.Button(self, text="Refresh Commands", image=self.refresh_icon, compound=tk.LEFT, command=self.refresh_command_dropdown)
-        self.refresh_button.image = self.refresh_icon  # Keep a reference to prevent garbage-collection
-        self.refresh_button.grid(row=0, column=1, padx=5, pady=5)
-        ToolTip(self.refresh_button, "Refresh the list of commands to ensure it includes all recent updates.\n\n TIP: use CTRL + R to hide or show refresh button, refresh each time you change commands!")
-        
-
 
         # Ensure text_widget is defined before using it
         for tab_id in self.tab_control.tabs():
@@ -166,25 +153,11 @@ class WorkspaceFrame(tk.Frame):
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="e")
         ToolTip(self.toggle_sidebar_button, "Toggle the visibility of the sidebar to show or hide loaded files.")
 
-
         self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
 
-
-    def refresh_command_dropdown(self):
-        print("Refreshing commands...")
-        # Reload commands directly from the JSON file to ensure they are up-to-date
-        self.logic.reload_commands_from_file()
-    
-        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
-    
-        self.command_dropdown['values'] = self.command_options
-        self.command_dropdown.set('-choose command-')  # Optionally reset the selected value
-        
     def on_app_focus(self, event=None):
-        self.refresh_command_dropdown()
-
-    
+        self.logic.reload_commands_from_file()
 
     def show_file_tooltip(self, event):
         """Show the tooltip for the file currently under the cursor in the sidebar listbox."""
@@ -198,7 +171,6 @@ class WorkspaceFrame(tk.Frame):
         self.file_tooltip.update_text(full_file_path)
         self.file_tooltip.schedule_tip()
 
-
     def on_entry_click(self, event):
         """Clear the entry on focus if it contains the placeholder."""
         if self.parameter_entry.get() == self.placeholder_text:
@@ -210,7 +182,7 @@ class WorkspaceFrame(tk.Frame):
         if not self.parameter_entry.get():
             self.parameter_entry.insert(0, self.placeholder_text)
             self.parameter_entry.config(foreground='grey')  # Change the text color to grey to indicate placeholder
-    
+
     def select_first_file_in_sidebar(self):
         if self.sidebar_listbox.size() > 0:
             self.sidebar_listbox.selection_set(0)
@@ -229,15 +201,7 @@ class WorkspaceFrame(tk.Frame):
         if selected_command == "-choose command-":
             self.command_var.set("")  # Clear the selection if the placeholder is selected
         else:
-            # Update the interface or perform actions based on the command selected
             print(f"Command selected: {selected_command}")
-
-
-    def update_command_info(self, event):
-        """Handle the event when a command is selected."""
-        selected_command = self.command_var.get()
-        if selected_command == "-choose command-":
-            self.command_var.set("")  # Clear the selection if the placeholder is selected
 
     def on_focus_in(self, event):
         """Clear the combobox text if it's the default prompt when focused."""
@@ -266,11 +230,9 @@ class WorkspaceFrame(tk.Frame):
             self.sidebar_frame.grid_remove()
         else:
             self.sidebar_frame.grid()
-            
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
-        
 
     def on_file_select(self, event):
         selected_indices = self.sidebar_listbox.curselection()
@@ -286,7 +248,6 @@ class WorkspaceFrame(tk.Frame):
             display_text = f"Selected file:\n{filename_only}"
         else:
             display_text = "No file selected"
-        
         self.selected_file_label.config(text=display_text)  # Use config to update the label's text
 
     def add_file(self):
@@ -307,8 +268,6 @@ class WorkspaceFrame(tk.Frame):
             else:
                 self.update_selected_file_label("No file selected")
 
-    
-    
     def show_search_box(self, event=None):
         if self.search_frame.grid_info():  # Checks if search_frame is visible
             self.search_frame.grid_remove()  # Hide the search_frame
@@ -363,9 +322,6 @@ class WorkspaceFrame(tk.Frame):
 
     def update_loaded_file_label(self):
         self.logic.update_loaded_file_label()
-
-    def update_command_info(self, event=None):
-        self.logic.update_command_info(event)
 
     def init_ui(self):
         for row in range(5):
@@ -427,7 +383,6 @@ class WorkspaceFrame(tk.Frame):
     def apply_font_settings_to_console(self):
         self.font_settings = self.load_font_settings()
         self.apply_font_settings()
-
 
     def show_refresh_button(self):
         self.refresh_button.grid()

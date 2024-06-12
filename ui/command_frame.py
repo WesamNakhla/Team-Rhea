@@ -37,11 +37,11 @@ class CommandFrame(ttk.Frame, CommandFrameLogic):
         self.command_entries = []
         self.type_entries = []
         self.description_entries = []
-        
+
         # Variables for width and height
         self.frame_width = 580
         self.frame_height = 500
-        
+
         self.create_widgets()
 
         # Initialize command counts
@@ -173,10 +173,11 @@ class CommandFrame(ttk.Frame, CommandFrameLogic):
         self.deleted_commands_count += 1
         del self.commands[index]
         self.load_commands_ui()
+        messagebox.showinfo("Restart Required", "Please restart the application for changes to take effect.")
 
     def save_commands(self):
         if self.deleted_commands_count > 0:
-            confirm = tk.messagebox.askyesno("Confirm Deletion", f"{self.deleted_commands_count} commands will be deleted. Are you sure you want to proceed?")
+            confirm = messagebox.askyesno("Confirm Deletion", f"{self.deleted_commands_count} commands will be deleted. Are you sure you want to proceed?")
             if not confirm:
                 return
 
@@ -207,5 +208,7 @@ class CommandFrame(ttk.Frame, CommandFrameLogic):
 
             self.initial_commands_count = len(commands_to_save)  # Update initial count
             self.commands = commands_to_save  # Update current commands
+
+            messagebox.showinfo("Restart Required", "Please restart the application for changes to take effect.")
         except Exception as e:
             tk.messagebox.showerror("Error", f"Error saving commands: {e}")
