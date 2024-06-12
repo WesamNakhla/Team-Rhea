@@ -138,6 +138,7 @@ class WorkspaceFrame(tk.Frame):
         self.sidebar_listbox = tk.Listbox(self.centered_frame, selectmode=tk.SINGLE)
         self.sidebar_listbox.grid(row=1, column=0, columnspan=2, sticky="nsew")
         self.sidebar_listbox.bind("<<ListboxSelect>>", self.on_file_select)
+        self.sidebar_listbox.bind("<Motion>", self.show_file_tooltip)
 
         self.select_all_button = ttk.Button(self.sidebar_frame, text="\U0001F5F9 Select All", command=self.select_all_files)
         self.select_all_button.grid(row=2, column=0, columnspan=2, pady=5)
@@ -156,7 +157,21 @@ class WorkspaceFrame(tk.Frame):
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="e")
         ToolTip(self.toggle_sidebar_button, "Toggle the visibility of the sidebar to show or hide loaded files.")
 
+        self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
+
+
+    def show_file_tooltip(self, event):
+        """Show the tooltip for the file currently under the cursor in the sidebar listbox."""
+        index = self.sidebar_listbox.nearest(event.y)
+        if index < 0 or index >= self.sidebar_listbox.size():
+            self.file_tooltip.hide_tip()
+            return
+
+        file_name = self.sidebar_listbox.get(index)
+        full_file_path = self.file_handler.loaded_files[index]
+        self.file_tooltip.update_text(full_file_path)
+        self.file_tooltip.schedule_tip()
 
 
     def on_entry_click(self, event):

@@ -149,6 +149,10 @@ class ToolTip(object):
             self.widget.after_cancel(self.after_id)
             self.after_id = None
 
+    def update_text(self, text):
+        """Update the tooltip text."""
+        self.text = text
+
 class RedirectOutput:
     def __init__(self, text_widget):
         self.text_widget = text_widget
