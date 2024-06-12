@@ -3,6 +3,8 @@ from tkinter import ttk, filedialog
 from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
+import json
+import os
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
@@ -13,6 +15,7 @@ class WorkspaceFrame(tk.Frame):
         self.switch_to_export_frame = switch_to_export_frame
 
         self.logic = WorkspaceFrameLogic(parent=self, file_handler=self.file_handler)
+        self.font_settings = self.load_font_settings()
 
         self.init_ui()
 
@@ -26,6 +29,10 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown = ttk.Combobox(self, textvariable=self.command_var, values=self.command_options)
         self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
+
+        # Custom command label and entry
+        self.custom_command_label = ttk.Label(self, text="Custom Command:")
+        self.custom_command_entry = ttk.Entry(self)
 
         # Parameter input label and entry
         self.parameter_label = ttk.Label(self, text="Input Parameters:")
@@ -115,6 +122,8 @@ class WorkspaceFrame(tk.Frame):
 
         self.toggle_sidebar_button = ttk.Button(self, text="\U000025E8 Toggle Sidebar", command=self.toggle_sidebar)
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="w")
+
+        self.apply_font_settings()  # Apply initial font settings
 
     def select_first_file_in_sidebar(self):
         if self.sidebar_listbox.size() > 0:
@@ -266,3 +275,32 @@ class WorkspaceFrame(tk.Frame):
                 "output": output
             })
         return export_data
+
+    def load_font_settings(self):
+        settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
+        if os.path.exists(settings_file_path):
+            with open(settings_file_path, 'r') as f:
+                settings = json.load(f)
+                return {
+                    "font_size": settings.get("font_size", "12"),
+                    "line_distance": settings.get("line_distance", "1"),
+                    "letter_distance": settings.get("letter_distance", "1")
+                }
+        else:
+            return {
+                "font_size": "12",
+                "line_distance": "1",
+                "letter_distance": "1"
+            }
+
+    def apply_font_settings(self):
+        font_size = int(self.font_settings.get("font_size", "12"))
+        font_family = "Arial"
+        for tab_id in self.tab_control.tabs():
+            tab = self.tab_control.nametowidget(tab_id)
+            text_widget = tab.winfo_children()[0]
+            text_widget.config(font=(font_family, font_size))
+
+    def apply_font_settings_to_console(self):
+        self.font_settings = self.load_font_settings()
+        self.apply_font_settings()

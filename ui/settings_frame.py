@@ -81,3 +81,38 @@ class SettingsFrame(tk.Frame, SettingsFrameLogic):
 
         self.version_label = tk.Label(self.bottom_frame, text=version_text)
         self.version_label.grid(row=0, column=0, sticky="w", padx=10, pady=10)
+
+    def load_settings(self):
+        settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
+        if os.path.exists(settings_file_path):
+            with open(settings_file_path, 'r') as f:
+                settings = json.load(f)
+                self.volatility_path_entry.insert(0, settings.get("volatility_path", ""))
+                self.font_size_spinbox.set(settings.get("font_size", "12"))
+                self.line_distance_spinbox.set(settings.get("line_distance", "1"))
+                self.letter_distance_spinbox.set(settings.get("letter_distance", "1"))
+        else:
+            messagebox.showerror("Error", f"Settings file not found at {settings_file_path}")
+
+    def save_settings(self):
+        settings = {
+            "volatility_path": self.volatility_path_entry.get(),
+            "font_size": self.font_size_spinbox.get(),
+            "line_distance": self.line_distance_spinbox.get(),
+            "letter_distance": self.letter_distance_spinbox.get(),
+            "volatility_version": "2.7.0"  # Keep this constant for now
+        }
+        settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
+        with open(settings_file_path, 'w') as f:
+            json.dump(settings, f, indent=4)
+        messagebox.showinfo("Settings Saved", "Settings have been saved successfully.")
+        self.app.apply_font_settings_to_console()
+
+    def browse_folder(self):
+        folder_path = filedialog.askdirectory()
+        if folder_path:
+            self.volatility_path_entry.delete(0, tk.END)
+            self.volatility_path_entry.insert(0, folder_path)
+
+    def exit_settings(self):
+        self.app.switch_to_workspace_frame()
