@@ -68,6 +68,7 @@ class MainApplication(TkinterDnD.Tk):
         self.bind('<Control-f>', self.search_text)
         self.bind('<Control-o>', self.open_file)
         self.bind_all('<Control-h>', self.highlight_selected_text)
+        self.bind_all('<Control-e>', self.switch_to_export_frame)
 
 
     def highlight_selected_text(self, event=None):
@@ -134,7 +135,7 @@ class MainApplication(TkinterDnD.Tk):
         self.update_loaded_file_label()  # Update label
         self.show_frame(ImportFrame)
 
-    def switch_to_export_frame(self):
+    def switch_to_export_frame(self, event=None):
         self.show_frame(ExportFrame)
 
     def switch_to_workspace_frame(self):
