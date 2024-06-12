@@ -2,11 +2,12 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter import messagebox
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, CustomText, RedirectOutput
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 import json
 import os
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
@@ -159,6 +160,20 @@ class WorkspaceFrame(tk.Frame):
 
         self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
+
+        # Bindings for tab reordering
+        self.tab_control.bind("<ButtonPress-1>", self.on_tab_click)
+        self.tab_control.bind("<B1-Motion>", self.on_tab_drag)
+
+    def on_tab_click(self, event):
+        self._drag_data = {"x": event.x, "y": event.y}
+
+    def on_tab_drag(self, event):
+        new_index = self.tab_control.index(f"@{event.x},{event.y}")
+        current_index = self.tab_control.index("current")
+        if new_index != current_index:
+            self.tab_control.insert(new_index, self.tab_control.select())
+            self.tab_control.select(new_index)
 
     def filter_command_options(self, event):
         search_term = self.command_var.get().strip().lower()
