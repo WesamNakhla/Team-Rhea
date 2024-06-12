@@ -62,17 +62,29 @@ class WorkspaceFrame(tk.Frame):
         self.tab_control = ttk.Notebook(self)
         self.tab_control.grid(row=2, column=0, columnspan=4, rowspan=4, padx=10, pady=10, sticky="nsew")
 
-        # Highlight buttons
+        
+
         self.highlight_frame = ttk.Frame(self)
         self.highlight_frame.grid(row=1, column=3, padx=10, pady=5, sticky="we")
 
-        self.highlight_button = ttk.Button(self.highlight_frame, text="\U0001F58D Highlight", command=self.logic.choose_highlight_color)
-        self.highlight_button.pack(side="right", padx=5, pady=5)
-        ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
+        # Load icons for buttons
+        highlight_image = Image.open("C:\\Projects\\Team-Rhea\\img\\highlighter.png")
+        eraser_image = Image.open("C:\\Projects\\Team-Rhea\\img\\eraser.png")
+        highlight_image = highlight_image.resize((20, 20), Image.LANCZOS)  # Resize to 20x20 pixels
+        eraser_image = eraser_image.resize((20, 20), Image.LANCZOS)
 
-        self.remove_highlight_button = ttk.Button(self.highlight_frame, text="\U000025B1 Remove Highlight", command=self.logic.remove_highlight)
-        self.remove_highlight_button.pack(side="left", padx=5, pady=5)
+        self.highlight_icon = ImageTk.PhotoImage(highlight_image)
+        self.remove_highlight_icon = ImageTk.PhotoImage(eraser_image)
+
+        # Button for removing highlight
+        self.remove_highlight_button = ttk.Button(self.highlight_frame, image=self.remove_highlight_icon, command=self.logic.remove_highlight)
+        self.remove_highlight_button.pack(side="right", padx=5, pady=5)  # Swapped to 'right'
         ToolTip(self.remove_highlight_button, "Remove selected highlight")
+
+        # Button for highlighting
+        self.highlight_button = ttk.Button(self.highlight_frame, image=self.highlight_icon, command=self.logic.choose_highlight_color)
+        self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
+        ToolTip(self.highlight_button, "Highlight selected text with a chosen color.")
 
         # Ensure text_widget is defined before using it
         for tab_id in self.tab_control.tabs():
