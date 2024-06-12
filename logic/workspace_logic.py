@@ -307,6 +307,9 @@ class WorkspaceFrameLogic:
         self.commands.append(custom_plugin_details)
         self.save_commands()  # Save changes to disk or other storage
 
+        # Show popup message after adding the custom plugin
+        messagebox.showinfo("Restart Required", "Please restart the application for this to work.")
+
     def reload_commands_from_file(self):
         try:
             with open('commands.json', 'r') as file:
