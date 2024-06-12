@@ -21,16 +21,17 @@ class WorkspaceFrame(tk.Frame):
 
         self.init_ui()
 
-        # Choose command label
-        self.command_label = ttk.Label(self, text="Choose command:")
-        self.command_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
+        
 
         # Command dropdown and input
         self.command_var = tk.StringVar()
         self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
         self.command_dropdown = ttk.Combobox(self, textvariable=self.command_var, values=self.command_options)
         self.command_dropdown.grid(row=1, column=0, padx=10, pady=5, sticky="we")
+        self.command_dropdown.set("-choose command-")  # Default display value
         self.command_dropdown.bind('<<ComboboxSelected>>', self.update_command_info)
+        self.command_dropdown.bind('<FocusIn>', self.on_focus_in)
+        self.command_dropdown.bind('<FocusOut>', self.on_focus_out)
 
        
 
@@ -162,6 +163,33 @@ class WorkspaceFrame(tk.Frame):
 
     def update_command_dropdown(self, command_options):
         self.command_dropdown['values'] = command_options
+
+    def update_command_info(self, event):
+        """Handle the event when a command is selected."""
+        selected_command = self.command_var.get()
+        if selected_command == "-choose command-":
+            self.command_var.set("")  # Clear the selection if the placeholder is selected
+        else:
+            # Update the interface or perform actions based on the command selected
+            print(f"Command selected: {selected_command}")
+
+    
+
+    def update_command_info(self, event):
+        """Handle the event when a command is selected."""
+        selected_command = self.command_var.get()
+        if selected_command == "-choose command-":
+            self.command_var.set("")  # Clear the selection if the placeholder is selected
+
+    def on_focus_in(self, event):
+        """Clear the combobox text if it's the default prompt when focused."""
+        if self.command_var.get() == "-choose command-":
+            self.command_dropdown.set('')
+
+    def on_focus_out(self, event):
+        """Reset the default prompt if no valid command has been selected."""
+        if not self.command_var.get().strip():  # Check if the field is empty
+            self.command_dropdown.set('-choose command-')
 
     def show_sidebar(self, files):
         self.sidebar_listbox.delete(0, tk.END)
