@@ -1,6 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, ScrollingText
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 import json
@@ -105,7 +105,7 @@ class WorkspaceFrame(tk.Frame):
         self.sidebar_frame = ttk.Frame(self, width=200)
         self.sidebar_frame.grid_propagate(False)
 
-        self.selected_file_label = ScrollingText(self, text="No file selected", width=150, height=30)
+        self.selected_file_label = ttk.Label(self, text="No file selected", width=30)
         self.selected_file_label.grid(row=0, column=0, padx=10, pady=5, sticky="w")
         self.selected_file_label.grid_propagate(False)
         self.sidebar_frame.grid_remove()
@@ -179,9 +179,13 @@ class WorkspaceFrame(tk.Frame):
             self.update_selected_file_label(selected_file)
 
     def update_selected_file_label(self, file):
-        filename_only = self.file_handler.remove_path(file)
-        new_text = f"Selected file: {filename_only}"
-        self.selected_file_label.update_text(new_text)
+        if file:
+            filename_only = os.path.basename(file)  # Assuming you want just the file name, not the entire path
+            display_text = f"Selected file:\n{filename_only}"
+        else:
+            display_text = "No file selected"
+        
+        self.selected_file_label.config(text=display_text)  # Use config to update the label's text
 
     def add_file(self):
         file_paths = filedialog.askopenfilenames()

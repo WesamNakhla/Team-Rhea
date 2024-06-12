@@ -153,5 +153,10 @@
         "command": "filescan",
         "type": "windows.filescan",
         "description": "This is your custom plugin filescan"
+    },
+    {
+        "type": "Custom Plugin",
+        "command": "socket_filters",
+        "description": "This is your custom plugin socket_filters"
     }
 ]
