@@ -307,16 +307,21 @@ class WorkspaceFrameLogic:
         }
         self.commands.append(custom_plugin_details)
         self.save_commands()  # Save changes to disk or other storage
+        
     
-    # Generate command options and update dropdown
-        command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.commands]
-        self.update_command_dropdown(command_options)
+    
 
+    
+    def reload_commands_from_file(self):
+        try:
+            with open('commands.json', 'r') as file:
+                self.commands = json.load(file)
+                print("Commands reloaded from file:", self.commands)
+        except Exception as e:
+            print("Failed to reload commands:", str(e))
+            self.commands = []  # Default to an empty list on failure
 
-    def update_command_dropdown(self, command_options):
-    # Assuming there's a ttk.Combobox or similar widget to update:
-        self.command_dropdown['values'] = command_options
-        self.command_dropdown.set('-choose command-')  # Reset the current selection
+    
 
 
     def load_commands(self):

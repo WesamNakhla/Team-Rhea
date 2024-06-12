@@ -158,5 +158,10 @@
         "type": "Custom Plugin",
         "command": "socket_filters",
         "description": "This is your custom plugin socket_filters"
+    },
+    {
+        "type": "Custom Plugin",
+        "command": "vfsevents",
+        "description": "This is your custom plugin vfsevents"
     }
 ]

@@ -34,8 +34,6 @@ class WorkspaceFrame(tk.Frame):
         self.command_dropdown.bind('<FocusOut>', self.on_focus_out)
         ToolTip(self.command_dropdown, "Select a command from the list or search to find a specific command")
 
-       
-
         self.placeholder_text = "Enter parameters here"
         self.parameter_entry = ttk.Entry(self)
         self.parameter_entry.insert(0, self.placeholder_text)
@@ -73,11 +71,14 @@ class WorkspaceFrame(tk.Frame):
         base_directory = os.path.dirname(os.path.dirname(__file__))
         highlight_image = Image.open(os.path.join(base_directory, "img", "highlighter.png"))
         eraser_image = Image.open(os.path.join(base_directory, "img", "eraser.png"))
+        refresh_image = Image.open(os.path.join(base_directory, "img", "refresh.png"))
         highlight_image = highlight_image.resize((20, 20), Image.LANCZOS)  # Resize to 20x20 pixels
         eraser_image = eraser_image.resize((20, 20), Image.LANCZOS)
+        refresh_image = refresh_image.resize((20, 20), Image.LANCZOS)
 
         self.highlight_icon = ImageTk.PhotoImage(highlight_image)
         self.remove_highlight_icon = ImageTk.PhotoImage(eraser_image)
+        self.refresh_icon = ImageTk.PhotoImage(refresh_image)
 
         # Button for removing highlight
         self.remove_highlight_button = ttk.Button(self.highlight_frame, image=self.remove_highlight_icon, command=self.logic.remove_highlight)
@@ -88,6 +89,11 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_button = ttk.Button(self.highlight_frame, image=self.highlight_icon, command=self.logic.choose_highlight_color)
         self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.\n\nTip: Use CTRL + H to quickly highlight text with a dark orange color.")
+
+        self.refresh_button = ttk.Button(self, text="Refresh Commands", image=self.refresh_icon, compound=tk.LEFT, command=self.refresh_command_dropdown)
+        self.refresh_button.image = self.refresh_icon  # Keep a reference to prevent garbage-collection
+        self.refresh_button.grid(row=0, column=1, padx=5, pady=5)
+        ToolTip(self.refresh_button, "Refresh the list of commands to ensure it includes all recent updates.")
 
 
         # Ensure text_widget is defined before using it
@@ -158,9 +164,25 @@ class WorkspaceFrame(tk.Frame):
         self.toggle_sidebar_button.grid(row=0, column=3, padx=10, pady=5, sticky="e")
         ToolTip(self.toggle_sidebar_button, "Toggle the visibility of the sidebar to show or hide loaded files.")
 
+
         self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
 
+
+    def refresh_command_dropdown(self):
+        print("Refreshing commands...")
+        # Reload commands directly from the JSON file to ensure they are up-to-date
+        self.logic.reload_commands_from_file()
+    
+        self.command_options = ["-choose command-", "Custom"] + [cmd['command'] for cmd in self.logic.commands]
+    
+        self.command_dropdown['values'] = self.command_options
+        self.command_dropdown.set('-choose command-')  # Optionally reset the selected value
+        
+    def on_app_focus(self, event=None):
+        self.refresh_command_dropdown()
+
+    
 
     def show_file_tooltip(self, event):
         """Show the tooltip for the file currently under the cursor in the sidebar listbox."""
@@ -242,9 +264,11 @@ class WorkspaceFrame(tk.Frame):
             self.sidebar_frame.grid_remove()
         else:
             self.sidebar_frame.grid()
+            
 
     def select_all_files(self):
         self.sidebar_listbox.select_set(0, tk.END)
+        
 
     def on_file_select(self, event):
         selected_indices = self.sidebar_listbox.curselection()
