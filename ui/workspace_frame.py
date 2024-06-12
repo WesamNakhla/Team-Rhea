@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, filedialog
+from tkinter import messagebox
 from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
