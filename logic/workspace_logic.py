@@ -162,6 +162,8 @@ class RedirectOutput:
     def flush(self):
         pass
 
+
+
 class CustomDropdown(tk.Frame):
     def __init__(self, parent, options, var, *args, **kwargs):
         super().__init__(parent, *args, **kwargs)
@@ -729,8 +731,13 @@ class WorkspaceFrameLogic:
         if not command:
             messagebox.showerror("Error", "Please select a command or enter a custom command.")
             return
-
+        
         command_parameters = self.parent.parameter_entry.get().strip()
+        placeholder_text = "Enter parameters here"
+        if command_parameters == placeholder_text:
+            command_parameters = ""  # Treat as empty if it's the placeholder
+
+        
         vol_path = self.get_volatility_path()
         full_command = f"python {vol_path} -f {selected_file} {command} {command_parameters}"
         print(f"Running command: {full_command}")
