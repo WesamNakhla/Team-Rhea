@@ -70,8 +70,9 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_frame.grid(row=1, column=3, padx=10, pady=5, sticky="we")
 
         # Load icons for buttons
-        highlight_image = Image.open("C:\\Projects\\Team-Rhea\\img\\highlighter.png")
-        eraser_image = Image.open("C:\\Projects\\Team-Rhea\\img\\eraser.png")
+        base_directory = os.path.dirname(os.path.dirname(__file__))
+        highlight_image = Image.open(os.path.join(base_directory, "img", "highlighter.png"))
+        eraser_image = Image.open(os.path.join(base_directory, "img", "eraser.png"))
         highlight_image = highlight_image.resize((20, 20), Image.LANCZOS)  # Resize to 20x20 pixels
         eraser_image = eraser_image.resize((20, 20), Image.LANCZOS)
 
