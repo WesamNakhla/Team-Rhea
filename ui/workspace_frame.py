@@ -38,7 +38,7 @@ class WorkspaceFrame(tk.Frame):
         self.placeholder_text = "Enter parameters here"
         self.parameter_entry = ttk.Entry(self)
         self.parameter_entry.insert(0, self.placeholder_text)
-        self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="w")
+        self.parameter_entry.grid(row=1, column=1, padx=10, pady=5, sticky="we")
         self.parameter_entry.bind("<FocusIn>", self.on_entry_click)
         self.parameter_entry.bind("<FocusOut>", self.on_focusout)
         self.parameter_entry.config(foreground='grey')
@@ -185,8 +185,6 @@ class WorkspaceFrame(tk.Frame):
             # Update the interface or perform actions based on the command selected
             print(f"Command selected: {selected_command}")
 
-    def get_placeholder_text(self):
-        return self.placeholder_text
 
     def update_command_info(self, event):
         """Handle the event when a command is selected."""
