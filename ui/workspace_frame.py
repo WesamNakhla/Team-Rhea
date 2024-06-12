@@ -99,6 +99,7 @@ class WorkspaceFrame(tk.Frame):
 
         # Bind Ctrl+F to show search bar
         self.bind_all('<Control-f>', self.show_search_box)
+        self.search_entry.bind('<Return>', self.search_text)  # Bind Enter key to the search_text method
 
         # Sidebar to display loaded files (initially hidden)
         self.sidebar_frame = ttk.Frame(self, width=200)
@@ -200,9 +201,14 @@ class WorkspaceFrame(tk.Frame):
             else:
                 self.update_selected_file_label("No file selected")
 
+    
+    
     def show_search_box(self, event=None):
-        self.search_frame.grid()
-        self.search_entry.focus_set()
+        if self.search_frame.grid_info():  # Checks if search_frame is visible
+            self.search_frame.grid_remove()  # Hide the search_frame
+        else:
+            self.search_frame.grid()  # Show the search_frame
+            self.search_entry.focus_set()
 
     def clear_search_highlight(self, event):
         if not self.search_entry.get().strip():
