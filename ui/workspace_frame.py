@@ -406,15 +406,12 @@ class WorkspaceFrame(tk.Frame):
                 "letter_distance": "1"
             }
 
-    def apply_font_settings(self, font_family='Arial', font_size=12):
-     self.parent.file_label.config(font=(font_family, font_size))
-     self.parent.command_label.config(font=(font_family, font_size))
-     self.parent.command_info_label.config(font=(font_family, font_size))
-     for tab in self.parent.tab_control.tabs():
-        tab_widget = self.parent.tab_control.nametowidget(tab)
-        text_frame = tab_widget.winfo_children()[0]
-        text_widget = text_frame.winfo_children()[0]
-        if isinstance(text_widget, tk.Text):
+    def apply_font_settings(self):
+        font_size = int(self.font_settings.get("font_size", "12"))
+        font_family = "Arial"
+        for tab_id in self.tab_control.tabs():
+            tab = self.tab_control.nametowidget(tab_id)
+            text_widget = tab.winfo_children()[0].winfo_children()[0]
             text_widget.config(font=(font_family, font_size))
 
     def apply_font_settings_to_console(self):
