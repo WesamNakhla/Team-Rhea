@@ -1,137 +1,177 @@
 [
     {
-        "type": "Framework Information",
         "command": "frameworkinfo",
+        "type": "Framework Information",
         "description": "Provides detailed information about the Volatility framework."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.pslist",
+        "type": "Windows-Specific Plugins",
         "description": "Lists processes."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.pstree",
+        "type": "Windows-Specific Plugins",
         "description": "Displays processes in a tree structure."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.pstreegraph",
+        "type": "Windows-Specific Plugins",
         "description": "Graphical representation of the process tree."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.dlllist",
+        "type": "Windows-Specific Plugins",
         "description": "Lists loaded DLLs."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.handles",
+        "type": "Windows-Specific Plugins",
         "description": "Lists open handles for each process."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.cmdline",
+        "type": "Windows-Specific Plugins",
         "description": "Extracts command line arguments."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.netscan",
+        "type": "Windows-Specific Plugins",
         "description": "Scans for network connections and sockets."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.vaddump",
+        "type": "Windows-Specific Plugins",
         "description": "Dumps virtual address space for processes."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.memmap",
+        "type": "Windows-Specific Plugins",
         "description": "Displays memory mappings for processes."
     },
     {
-        "type": "Windows-Specific Plugins",
         "command": "windows.malfind",
+        "type": "Windows-Specific Plugins",
         "description": "Detects hidden and injected code in processes."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.pslist",
+        "type": "Linux-Specific Plugins",
         "description": "Lists processes."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.lsmod",
+        "type": "Linux-Specific Plugins",
         "description": "Lists loaded kernel modules."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.bash",
+        "type": "Linux-Specific Plugins",
         "description": "Retrieves bash history."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.ifconfig",
+        "type": "Linux-Specific Plugins",
         "description": "Displays network interfaces."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.dmesg",
+        "type": "Linux-Specific Plugins",
         "description": "Shows kernel ring buffer messages."
     },
     {
-        "type": "Linux-Specific Plugins",
         "command": "linux.proc_maps",
+        "type": "Linux-Specific Plugins",
         "description": "Displays process memory maps."
     },
     {
-        "type": "Mac-Specific Plugins",
         "command": "mac.pslist",
+        "type": "Mac-Specific Plugins",
         "description": "Lists processes."
     },
     {
-        "type": "Mac-Specific Plugins",
         "command": "mac.lsmod",
+        "type": "Mac-Specific Plugins",
         "description": "Lists loaded kernel modules."
     },
     {
-        "type": "Mac-Specific Plugins",
         "command": "mac.lsof",
+        "type": "Mac-Specific Plugins",
         "description": "Lists open files."
     },
     {
-        "type": "Mac-Specific Plugins",
         "command": "mac.machoinfo",
+        "type": "Mac-Specific Plugins",
         "description": "Displays Mach-O file information."
     },
     {
-        "type": "Mac-Specific Plugins",
         "command": "mac.check_syscall",
+        "type": "Mac-Specific Plugins",
         "description": "Checks system call table."
     },
     {
-        "type": "Volshell",
         "command": "volshell",
+        "type": "Volshell",
         "description": "An interactive shell for exploring memory images."
     },
     {
-        "type": "Volshell Commands",
         "command": "list_tasks",
+        "type": "Volshell Commands",
         "description": "Lists tasks in the interactive shell."
     },
     {
-        "type": "Volshell Commands",
         "command": "display_bytes",
+        "type": "Volshell Commands",
         "description": "Displays bytes in the interactive shell."
     },
     {
-        "type": "Volshell Commands",
         "command": "disassemble",
+        "type": "Volshell Commands",
         "description": "Disassembles code in the interactive shell."
     },
     {
-        "type": "Volshell Commands",
         "command": "change_process",
+        "type": "Volshell Commands",
         "description": "Changes the current process in the interactive shell."
+    },
+    {
+        "command": "Enter command",
+        "type": "Enter type",
+        "description": "Enter description"
+    },
+    {
+        "command": "dada",
+        "type": "Enter typedadada",
+        "description": "Enter descriptiondadada"
+    },
+    {
+        "command": "customplugin123",
+        "type": "Custom Plugin",
+        "description": "This is your custom plugin customplugin123"
+    },
+    {
+        "command": "filescan",
+        "type": "windows.filescan",
+        "description": "This is your custom plugin filescan"
+    },
+    {
+        "command": "socket_filters",
+        "type": "Custom Plugin",
+        "description": "This is your custom plugin socket_filters"
+    },
+    {
+        "command": "vfsevents",
+        "type": "Custom Plugin",
+        "description": "This is your custom plugin vfsevents"
+    },
+    {
+        "command": "output_frame",
+        "type": "Custom Plugin",
+        "description": "This is your custom plugin output_frame"
+    },
+    {
+        "command": "dasd",
+        "type": "dada",
+        "description": "dada"
     }
 ]
