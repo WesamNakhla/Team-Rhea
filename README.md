@@ -68,4 +68,4 @@ The license for this project is currently unknown.
 
 ## Contact
 
-For more information, please visit our GitHub repository [here](https://github.com/yourgithubrepo/mnemonic_volatility3_gui).(FIXXXXXX)
+For more information, please visit our GitHub repository [here](https://github.com/WesamNakhla/Team-Rhea/).
