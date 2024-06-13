@@ -1,13 +1,11 @@
-
 import tkinter as tk
 from tkinter import ttk, filedialog
 from tkinter import messagebox
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
+from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip, CustomText, RedirectOutput
 from tkinter import PhotoImage
 from PIL import Image, ImageTk
 import json
 import os
-from logic.workspace_logic import CustomDropdown, WorkspaceFrameLogic, ToolTip
 
 class WorkspaceFrame(tk.Frame):
     def __init__(self, parent, app, file_handler, switch_to_export_frame):
@@ -88,11 +86,8 @@ class WorkspaceFrame(tk.Frame):
         self.highlight_button.pack(side="right", padx=5, pady=5)  # Also 'right', will appear to the left of remove button
         ToolTip(self.highlight_button, "Highlight selected text with a chosen color.\n\nTip: Use CTRL + H to quickly highlight text with a dark orange color.")
 
-        # Ensure text_widget is defined before using it
-        for tab_id in self.tab_control.tabs():
-            tab = self.tab_control.nametowidget(tab_id)
-            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
-            text_widget.tag_config('search_highlight', foreground='black')
+        # Add scrollbars
+        self.add_scrollbar_to_tabs()
 
         # Search bar
         self.search_frame = ttk.Frame(self, width=10)
@@ -161,19 +156,17 @@ class WorkspaceFrame(tk.Frame):
         self.file_tooltip = ToolTip(self.sidebar_listbox, "")
         self.apply_font_settings()
 
-        # Bindings for tab reordering
-        self.tab_control.bind("<ButtonPress-1>", self.on_tab_click)
-        self.tab_control.bind("<B1-Motion>", self.on_tab_drag)
+    def add_scrollbar_to_tabs(self):
+        for tab_id in self.tab_control.tabs():
+            tab = self.tab_control.nametowidget(tab_id)
+            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
 
-    def on_tab_click(self, event):
-        self._drag_data = {"x": event.x, "y": event.y}
+            # Create a scrollbar
+            scrollbar = tk.Scrollbar(tab, command=text_widget.yview)
+            text_widget.configure(yscrollcommand=scrollbar.set)
 
-    def on_tab_drag(self, event):
-        new_index = self.tab_control.index(f"@{event.x},{event.y}")
-        current_index = self.tab_control.index("current")
-        if new_index != current_index:
-            self.tab_control.insert(new_index, self.tab_control.select())
-            self.tab_control.select(new_index)
+            # Pack the scrollbar
+            scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
     def filter_command_options(self, event):
         search_term = self.command_var.get().strip().lower()
@@ -369,22 +362,32 @@ class WorkspaceFrame(tk.Frame):
             self.grid_columnconfigure(col, weight=1)
 
     def get_export_data(self):
-        export_data = {
-            "memory_dump_file": self.file_handler.get_selected_file(),
-            "commands": []
-        }
-        for tab in self.tab_control.tabs():
-            tab_widget = self.tab_control.nametowidget(tab)
-            command = self.command_dropdown.get()
-            if not command:
-                command = "Custom Command"
-            text_widget = tab_widget.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
-            output = text_widget.get("1.0", tk.END)
-            export_data["commands"].append({
-                "command": command,
-                "output": output
-            })
-        return export_data
+     export_data = {
+        "memory_dump_file": self.file_handler.get_selected_file(),
+        "commands": []
+     }
+     for tab_id in self.tab_control.tabs():
+        tab_widget = self.tab_control.nametowidget(tab_id)
+        text_frame = tab_widget.winfo_children()[0]  # Access the frame within the tab
+        text_widget = text_frame.winfo_children()[0]  # Access the text widget within the frame
+        command = self.tab_control.tab(tab_widget, "text").split(" (")[0]
+        output = text_widget.get("1.0", tk.END)
+        highlights = []
+        for tag in text_widget.tag_names():
+            if tag != 'sel':
+                ranges = text_widget.tag_ranges(tag)
+                for i in range(0, len(ranges), 2):
+                    highlights.append({
+                        "color": tag,
+                        "start": ranges[i].string,
+                        "end": ranges[i + 1].string
+                    })
+        export_data["commands"].append({
+            "command": command,
+            "output": output,
+            "highlights": highlights
+        })
+     return export_data
 
     def load_font_settings(self):
         settings_file_path = os.path.join(os.path.dirname(__file__), '..', 'settings.json')
@@ -403,12 +406,15 @@ class WorkspaceFrame(tk.Frame):
                 "letter_distance": "1"
             }
 
-    def apply_font_settings(self):
-        font_size = int(self.font_settings.get("font_size", "12"))
-        font_family = "Arial"
-        for tab_id in self.tab_control.tabs():
-            tab = self.tab_control.nametowidget(tab_id)
-            text_widget = tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
+    def apply_font_settings(self, font_family='Arial', font_size=12):
+     self.parent.file_label.config(font=(font_family, font_size))
+     self.parent.command_label.config(font=(font_family, font_size))
+     self.parent.command_info_label.config(font=(font_family, font_size))
+     for tab in self.parent.tab_control.tabs():
+        tab_widget = self.parent.tab_control.nametowidget(tab)
+        text_frame = tab_widget.winfo_children()[0]
+        text_widget = text_frame.winfo_children()[0]
+        if isinstance(text_widget, tk.Text):
             text_widget.config(font=(font_family, font_size))
 
     def apply_font_settings_to_console(self):

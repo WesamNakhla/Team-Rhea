@@ -306,8 +306,6 @@ class WorkspaceFrameLogic:
         }
         self.commands.append(custom_plugin_details)
         self.save_commands()  # Save changes to disk or other storage
-
-        # Show popup message after adding the custom plugin
         messagebox.showinfo("Restart Required", "Please restart the application for this to work.")
 
     def reload_commands_from_file(self):
@@ -417,6 +415,16 @@ class WorkspaceFrameLogic:
 
         return full_command, findings
 
+    def execute_command(self, full_command):
+        process = subprocess.Popen(full_command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True, shell=True)
+        stdout, stderr = process.communicate()
+
+        findings = stdout if stdout else "No output received."
+        if stderr:
+            findings += "\nError:\n" + stderr
+
+        return full_command, findings
+
     def check_all_commands_finished(self):
         if all(f.done() for f in self.futures):
             print("All commands have finished executing.")
@@ -482,7 +490,7 @@ class WorkspaceFrameLogic:
     def highlight_text(self, color):
         try:
             selected_tab = self.parent.tab_control.nametowidget(self.parent.tab_control.select())
-            text_widget = selected_tab.winfo_children()[0]
+            text_widget = selected_tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
             start = text_widget.index("sel.first")
             end = text_widget.index("sel.last")
             text_widget.tag_add(color, start, end)
@@ -509,15 +517,15 @@ class WorkspaceFrameLogic:
             print("No text selected")
 
     def remove_highlight(self):
-        try:
-            selected_tab = self.parent.tab_control.nametowidget(self.parent.tab_control.select())
-            text_widget = selected_tab.winfo_children()[0]
-            start = text_widget.index("sel.first")
-            end = text_widget.index("sel.last")
-            for tag in text_widget.tag_names():
-                text_widget.tag_remove(tag, start, end)
-        except tk.TclError:
-            print("No text selected")
+     try:
+        selected_tab = self.parent.tab_control.nametowidget(self.parent.tab_control.select())
+        text_widget = selected_tab.winfo_children()[0].winfo_children()[0]  # Update to access the text widget
+        start = text_widget.index("sel.first")
+        end = text_widget.index("sel.last")
+        for tag in text_widget.tag_names():
+            text_widget.tag_remove(tag, start, end)
+     except tk.TclError:
+        print("No text selected")
 
     def apply_font_settings(self, font_size):
         self.parent.file_label.config(font=('Arial', font_size))
@@ -554,4 +562,3 @@ class WorkspaceFrameLogic:
         new_index = self.parent.tab_control.index(f"@{event.x},{event.y}")
         if new_index != self.parent.tab_control.index("current"):
             self.parent.tab_control.insert(new_index, self.parent.tab_control.select())
-

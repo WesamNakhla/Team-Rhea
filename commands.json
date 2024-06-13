@@ -163,5 +163,15 @@
         "command": "vfsevents",
         "type": "Custom Plugin",
         "description": "This is your custom plugin vfsevents"
+    },
+    {
+        "command": "output_frame",
+        "type": "Custom Plugin",
+        "description": "This is your custom plugin output_frame"
+    },
+    {
+        "command": "dasd",
+        "type": "dada",
+        "description": "dada"
     }
 ]
