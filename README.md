@@ -1,12 +1,12 @@
 # Mnemonic Volatility3 GUI
 
 ## Overview
-Mnemonic Volatility3 GUI is a robust Python/Tkinter application designed for managing volatile memory analysis using Volatility 3. Unlike typical design tools, this application uses a unique development approach integrating ChatGPT with Python/Tkinter, facilitating rapid prototyping and efficient iteration. This GUI allows users to manage memory dumps, execute forensic commands, and customize application preferences.
+Mnemonic Volatility3 GUI is a robust Python/Tkinter application designed for managing volatile memory analysis using Volatility 3. Unlike typical design tools, this application uses a unique development approach integrating ChatGPT with Python/Tkinter, facilitating rapid prototyping and efficient iteration. This GUI allows users to manage memory dumps, execute forensic commands, and customize application preferences...
 
 ## Features
 
 ### Import Frame
-- **Drag and Drop:** Users can drag and drop memory dump files directly into the GUI..
+- **Drag and Drop:** Users can drag and drop memory dump files directly into the GUI.
 - **Browse Functionality:** Alternatively, users can browse their filesystem to select a memory dump file.
 
 ### Workspace Frame
