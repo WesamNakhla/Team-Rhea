@@ -3,7 +3,7 @@
 
 # VolGUI
 
-![Logo](img/git/logo3.png)
+![Logo](img/git/Logo3.png)
 
 ## Overview
 
