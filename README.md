@@ -16,29 +16,55 @@ VolGUI is a Python/Tkinter application designed to simplify volatile memory anal
 - **Drag and Drop**: Easily import memory dump files by dragging them into the GUI.
 - **Browse Functionality**: Alternatively, use a file browser to select memory dump files.
 
-
-
 ### Workspace Frame
 ![WorkspaceFrame](img/git/workspace_frame.png)
 - **Command Execution**: Execute forensic analysis commands with custom command options.
 - **Output Management**: Tabbed interface for viewing multiple command outputs, with highlighting capabilities.
 - **Tab Functionalities**: Rearrange tabs by dragging and dropping, and close tabs to manage workspace efficiently.
-- **Highlighting**: Easily highlight specific sections of the output for better analysis and focus on critical data points.
-- **File Selection**: Quickly select and switch between multiple loaded files from the sidebar.
+- **Highlighting**: Users can easily highlight specific sections of the output to enhance analysis and focus on critical data points. There is a button for setting the highlight color, allowing users to choose their preferred color for highlighting. Additionally, there is a remove highlight button to clear any unwanted highlights.
+- **File Selection**: The sidebar allows users to quickly select and switch between multiple loaded files. Users can add or remove files for analysis without needing to restart the GUI, facilitating a seamless and efficient workflow.
 - **Custom Commands**: Add and manage custom commands to tailor the forensic analysis workflow to specific needs.
+- **Input Parameters**: Users can enter custom parameters for each command, providing flexibility and precision in forensic analysis. This feature allows for tailored command execution based on specific investigative needs.
 - **Closing Tabs**: Close unnecessary tabs to keep the workspace organized and focused.
 
 ### Settings Frame
 ![SettingsFrame](img/git/settings_frame.png)
-- **Customization**: Set font sizes, line spacing, letter spacing, and other output settings to tailor the application to your needs.
+- **Path to Volatility3**: Allows users to specify the location of their Volatility3 installation, ensuring the GUI can connect and interact with it seamlessly.
+- **Font Sizes**: Users can set font sizes to ensure that text is displayed in a way that best suits their visual comfort levels.
+- **Line Spacing**: Users can adjust the line spacing to improve the presentation and readability of output data.
+- **Letter Spacing**: Users can adjust the letter spacing to enhance the readability and aesthetics of the text.
 
 ### Command Management Frame
 ![CommandFrame](img/git/command_frame.png)
-- **Command Management**: Add and remove commands to customize the forensic analysis workflow.
+- **Add Commands**: Expand and customize the list of available forensic analysis commands by adding new commands.
+- **Remove Commands**: Simplify and customize the command set to suit specific requirements by removing existing commands.
 
 ### Export Frame
 ![ExportFrame](img/git/export_frame.png)
-- **Data Exporting**: Compile and export findings into a ZIP file, with options to include or exclude specific types of data.
+- **Export Options**: Choose to include the original memory dump file and text formatting (highlighting) in the exported package.
+- **Tabbed Output Export**: Each tab in the GUI, representing different analysis outputs or data views, is saved as a separate text file.
+- **ZIP File Compilation**: All exported items, including text files with analysis results, the commands used, and the memory dump, are compiled into a single ZIP file. This makes it convenient for users to store, share, or archive their analysis data.
+- **Metadata File**: The `metadata.json` file within the ZIP package encapsulates the commands executed, the parameters used, and the output generated. This file is crucial for recreating the analysis environment or for future reference.
+
+## Hotkeys
+- **CTRL + F**: Toggle the search function in the Workspace Frame.
+- **CTRL + E**: Navigate directly to the Export Frame.
+- **CTRL + O**: Open new memory dump files.
+- **CTRL + Q**: Quit the program.
+
+## Menu and Navigation
+VolGUI features a straightforward menu system that provides easy access to various functions and settings, enhancing the overall user experience. The menu is divided into two main sections: File and Edit.
+
+- **File Menu**:
+  - **Open**: Load new memory dump files into the application for analysis.
+  - **New**: Start a new analysis session.
+  - **Export**: Navigate to the Export Frame to compile and export analysis results.
+  - **Exit**: Quit the application.
+
+- **Edit Menu**:
+  - **Settings**: Access the Settings Frame to customize font sizes, line spacing, letter spacing, and specify the path to the Volatility3 installation.
+  - **Manage Commands**: Open the Command Management Frame to add, remove, or manage forensic analysis commands.
+  - **Add Custom Plugins**: Incorporate additional plugins into the GUI to extend its functionality.
 
 ## Getting Started
 
